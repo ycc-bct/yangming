@@ -1,0 +1,3 @@
+Earth texture: https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg
+Country geometry and label positions: Natural Earth public domain data. https://www.naturalearthdata.com/about/terms-of-use/
+This is a satellite-style global visualization, not Google Earth, not live imagery, and not a navigational chart.
