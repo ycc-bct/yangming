@@ -1,0 +1,4 @@
+/* Untrusted URL contents stay inside a scriptless, network-isolated sandbox. */
+let readVersion=0;
+async function readReport(){const version=++readVersion,status=document.querySelector('#status'),frame=document.querySelector('#reportFrame');frame.hidden=true;frame.srcdoc='';status.hidden=false;status.textContent='正在讀取報告…';try{const html=await ReportCodec.decode(location.hash.slice(1));if(version!==readVersion)return;const csp="<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'\">";frame.srcdoc=csp+html;frame.hidden=false;status.hidden=true}catch(error){if(version===readVersion)status.textContent=error.message||'無法讀取此報告。'}}
+window.addEventListener('hashchange',readReport);readReport();
