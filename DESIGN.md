@@ -44,3 +44,9 @@ Use neutral bordered cards for independent information groups, rows for comparab
 - Shadows or gradients as the primary hierarchy.
 - Changing route geometry or risk calculations during a styling task.
 - Removing the password gate or weakening report isolation for previewing.
+
+## Overview map motion
+The user's October 13 reference permits a dark ocean texture and top-down container ships on route paths. Keep other pages black. Ships and wakes are illustrative, never presented as live AIS positions. Preserve route geometry, keep labels above vessels, pause motion offscreen and honor reduced motion.
+
+## Current palette (October 13 update)
+Primary #004ea2, background #101010, foreground #f1f1f1 replace the previous red primary palette. Use lighter blue #609fe4 for small links on dark surfaces for legibility. Keep red, amber and emerald risk meanings; preserve the Yang Ming logo colors and the ocean illustration.
