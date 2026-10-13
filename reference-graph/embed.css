@@ -1,3 +1,4 @@
+@import url('../fonts.css');
 /* Keep the reference prototype's graph and interaction styles intact while
    removing its application shell for embedding in the YM risk page. */
 html,
@@ -73,3 +74,7 @@ body,
     padding: 8px;
   }
 }
+
+:root{--bg:#09090b;--surface-1:#111113;--surface-2:#18181b;--line:#27272a;--text:#fafafa;--text-muted:#a1a1aa;--accent:#ef4444;--font-ui:Inter,'Noto Sans TC',sans-serif;--font-data:Inter,'Noto Sans TC',sans-serif;--type-event:#f87171;--type-indicator:#fbbf24;--type-route:#60a5fa;--type-country:#a78bfa;--risk-high:#ef4444;--risk-mid:#fbbf24;--risk-low:#34d399;}
+body{font-family:var(--font-ui);font-size:14px;font-variant-numeric:tabular-nums;}
+.graph-canvas{background:#09090b;}.graph-side{background:#111113;}.graph-legend{background:#09090be6;font-size:12px;color:#a1a1aa;}.ctx-panel{background:#111113;}.ctx-title{font-size:20px;}.ctx-body{font-size:14px;line-height:1.8;}.ctx-h{font-size:13px;color:#a1a1aa;}.ctx-kicker,.ctx-meta,.muted{color:#a1a1aa;}.ctx-body .btn{background:#dc2626;color:#fff;border-color:#dc2626;}.row-btn{border-radius:6px;}.row-btn.is-active{background:#ef444410!important;border-color:#ef4444!important;color:#fafafa;}.node-list .row-btn{font-size:13px;padding:7px 6px;}.type-dot{box-shadow:none;}.card{border-radius:10px;border-color:#27272a;}.search{background:#101012;border-color:#3f3f46;border-radius:6px;}.graph-legend .ln{border-color:#a1a1aa;}.ym-topic-focus{background:#18181be6;border-color:#3f3f46;color:#e4e4e7;border-radius:6px;}.filters{gap:8px;}.filter{font-size:13px;}.filter input{accent-color:#dc2626;}.link-btn{color:#f87171;}.btn{border-radius:6px;}button:focus-visible,input:focus-visible{outline:2px solid #f87171;outline-offset:2px;}
