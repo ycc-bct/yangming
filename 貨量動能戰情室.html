@@ -1816,25 +1816,34 @@ html[data-theme="dark"]{
 })();
 </script>
 <style id="r21">
-/* Keep the four overview cards aligned through the third customer row. */
+/* Compact metrics with a complete five-customer momentum list. */
 .top-cards{align-items:stretch}
-.top-cards>.summary-card,.top-cards>.momentum-card{height:148px;min-height:148px;max-height:148px;box-sizing:border-box}
+.top-cards>.summary-card{height:112px;min-height:112px;max-height:112px;box-sizing:border-box}
 .top-cards>.summary-card{padding:12px 16px}
 .top-cards>.summary-card h3{margin-bottom:2px}
 .top-cards>.single-kpi{justify-content:initial;gap:0}
 .top-cards>.summary-card .summary-body{display:flex;align-items:flex-end;justify-content:flex-start;flex:1}
 .top-cards .duns-only{height:auto}
-.top-cards>.momentum-card{display:flex;flex-direction:column;padding:0 14px 5px;overflow:hidden}
+.top-cards>.momentum-card{display:flex;flex-direction:column;height:190px;min-height:190px;max-height:190px;box-sizing:border-box;padding:0 14px 2px;overflow:hidden}
 .top-cards>.momentum-card .momentum-head{min-height:38px;height:38px}
 .top-cards>.momentum-card .momentum-head h3{font-size:13px;font-weight:600;color:var(--ink)}
-.top-cards>.momentum-card .stock-list{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
-.top-cards>.momentum-card .stock-row{min-height:35px;height:35px;padding:0;gap:8px}
-.top-cards>.momentum-card .stock-name b{font-size:10.5px}
-.top-cards>.momentum-card .stock-name small{font-size:8px;line-height:1.1}
+.top-cards>.momentum-card .stock-list{flex:0 0 auto;min-height:0;overflow:visible}
+.top-cards>.momentum-card .stock-row{min-height:30px;height:30px;padding:0;gap:8px}
+.top-cards>.momentum-card .stock-name b{font-size:12px;line-height:1.15}
+.top-cards>.momentum-card .stock-name small{display:block;margin-top:0;font-size:8.5px;line-height:1}
 .top-cards>.momentum-card .stock-row{grid-template-columns:minmax(0,1fr) 90px 64px}
 .top-cards>.momentum-card .stock-chart{height:17px}
 .top-cards>.momentum-card .stock-change{font-size:14px}
-@media(max-width:720px){.top-cards>.summary-card,.top-cards>.momentum-card{height:148px;min-height:148px;max-height:148px}}
+@media(min-width:1181px){
+ .home{grid-template-columns:repeat(3,minmax(0,1fr)) 360px!important;grid-template-rows:112px 68px auto;gap:10px!important;align-items:start!important}
+ .home .progress-panel,.home .progress-panel .top-cards{display:contents!important}
+ .top-cards>.duns-card{grid-column:1!important;grid-row:1}
+ .top-cards>.single-kpi:nth-child(2){grid-column:2!important;grid-row:1}
+ .top-cards>.single-kpi:nth-child(3){grid-column:3!important;grid-row:1}
+ .top-cards>.momentum-card{grid-column:4!important;grid-row:1/3!important}
+ .home .analysis-panel{grid-column:1/4!important;grid-row:2/4!important}
+ .home .signal-panel{grid-column:4!important;grid-row:3!important}
+}
 .compare-numbers section.pos,[data-theme="dark"] .compare-numbers section.pos{background:var(--panel)!important;border-color:var(--line)!important}
 </style>
 </body>
