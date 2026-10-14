@@ -8,13 +8,13 @@ function renderIntelligence(){
  const countryAverageSRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[5],0)/COUNTRY_ROWS.length;
  const highRiskCountries=COUNTRY_ROWS.filter(row=>row[4]>countryAverageCRR&&row[5]>countryAverageSRR).length;
  const cards={
-  safety:{status:'優先關注',value:'荷莫茲封鎖機率上升',description:'荷莫茲與紅海風險，連動航程與備援需求。',chart:spark(HORMUZ_ODDS.map(p=>p[1]),'荷莫茲封鎖事件市場機率（%），2025/11–2026/3','#60a5fa'),caption:'封鎖事件市場機率 · % · 2025/11–2026/3'},
-  fuel:{status:'成本承壓',value:'燃油價格波動升高',description:'搭配波動率、油價與裂解價差判讀供給壓力。',chart:spark(OVX_WEEKS.ovx,'OVX 波動率指數，2025/11–2026/4','#60a5fa'),caption:'OVX · 指數 · 2025/11–2026/4'},
-  ports:{status:'分區追蹤',value:PORT_EVENTS.length+' 件港口與內陸事件',description:'依已發生、常態化與前瞻預警辨識交付中斷。',chart:intelligenceDistribution(['已發生','常態化','前瞻預警'].map((stage,i)=>[stage,PORT_EVENTS.filter(e=>e.status===stage).length,['#f87171','#fbbf24','#60a5fa'][i]])),caption:'追蹤議題分布 · 筆'},
-  countries:{status:'選擇布局',value:highRiskCountries+' 個高風險地區',description:'CRR 與 SRR 均高於七國平均；分開觀察國家與航運產業風險。',chart:intelligenceDistribution([4,5,6].map((level,i)=>['DB'+level,COUNTRY_ROWS.filter(c=>Math.floor(c[4])===level).length,['#fbbf24','#f87171','#ef4444'][i]])),caption:'CRR 國家風險級距 · 國'},
-  policy:{status:'觀察需求',value:'關稅變動影響出貨',description:'政策窗口改變貨流，需比對進口結構與船位需求。',chart:spark(TPU_MA7,'全球貿易政策不確定性 MA7 指數，2023/9–2026/5','#60a5fa'),caption:'貿易政策不確定性 MA7 · 指數 · 2023/9–2026/5'}
+  safety:{chart:spark(HORMUZ_ODDS.map(p=>p[1]),'荷莫茲封鎖事件市場機率（%），2025/11–2026/3','#60a5fa'),caption:'封鎖事件市場機率 · % · 2025/11–2026/3'},
+  fuel:{chart:spark(OVX_WEEKS.ovx,'OVX 波動率指數，2025/11–2026/4','#60a5fa'),caption:'OVX · 指數 · 2025/11–2026/4'},
+  ports:{chart:intelligenceDistribution(['已發生','常態化','前瞻預警'].map((stage,i)=>[stage,PORT_EVENTS.filter(e=>e.status===stage).length,['#f87171','#fbbf24','#60a5fa'][i]])),caption:'追蹤議題分布 · 筆'},
+  countries:{chart:intelligenceDistribution([4,5,6].map((level,i)=>['DB'+level,COUNTRY_ROWS.filter(c=>Math.floor(c[4])===level).length,['#fbbf24','#f87171','#ef4444'][i]])),caption:'CRR 國家風險級距 · 國'},
+  policy:{chart:spark(TPU_MA7,'全球貿易政策不確定性 MA7 指數，2023/9–2026/5','#60a5fa'),caption:'貿易政策不確定性 MA7 · 指數 · 2023/9–2026/5'}
  };
- return `<section class="intelligence-summary"><div><small>本期情報摘要</small><h2>航道衝擊正在傳導至成本與交付</h2><p>荷莫茲與紅海風險帶動繞行需求，航程與燃油成本需一併觀察。油價應搭配 OVX 與裂解價差，辨識供給壓力。政策窗口下的提前出貨、港口與內陸中斷，以及國家評級，則共同影響貨流與市場布局。</p></div></section><section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key];return `<article class="risk-overview-card" data-topic="${key}"><button class="risk-overview-focus" data-risk-focus="${key}" aria-pressed="false"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${STRATEGY[key].signal}</span></div><h2 class="risk-card-value">${c.value}</h2><p>${c.description}</p><div class="risk-card-chart">${c.chart}</div><small>${c.caption}</small><span class="risk-card-focus-label">聚焦關聯訊號 ↓</span></button><a href="#${key}">查看完整分析 </a></article>`}).join('')}</section>${signalNetworkPanel()}`;
+ return `${riskRouteHeatmap()}${riskStatusMatrix()}<section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key],model=riskTopicModel(key);return `<article class="risk-overview-card" data-topic="${key}"><div class="risk-overview-focus"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${model.signal}</span></div>${(st=>`<div class="risk-status-row">${riskStatusBadge(st.status)}</div>`)(riskTopicStatus(key))}<h2 class="risk-card-value">${model.headline}</h2><p>${model.description}</p><div class="risk-card-chart">${c.chart}</div><small>${c.caption}</small></div><a href="#${key}">查看主題分析</a></article>`}).join('')}</section>`;
 }
 const STRATEGY={
  policy:{signal:'政策尚未定案，貨主已提前出貨',impact:'貨流與船位需求在政策窗口前先行改變。',action:'提前保留船位、規劃加班船，評估替代樞紐。'},
@@ -37,14 +37,8 @@ renderPolicy=function(){return `
  ${panel('全球貿易政策不確定性',policyUncertaintyChart()+'<p class="micro-note">指標說明：貿易政策不確定性以指數呈現；MA7 為 7 日移動平均。</p>','指數 · 2023/9–2026/5')}
  ${panel('美國商品進口結構',importsChart()+'<p class="micro-note">指標說明：以 2024 年 12 月為基準 100，比較各類商品進口量的變化。</p>','2024/12＝100')}
 </div>
-<div class="page-grid equal policy-row">
- ${panel('關鍵訊號與管理動作',policyActions())}
- ${panel('策略判讀','<p class="reading">政策不確定本身就是商機。提前識別「貨主會提前出貨」的訊號，比等待政策明朗更有價值。</p>')}
-</div>
-<div class="page-grid equal policy-row">
- ${panel('替代樞紐',hubs())}
- ${panel('優先配置航線',nextRoute(3,'亞洲—美西')+nextRoute(4,'亞洲—美東')+nextRoute(0,'亞洲—北歐'))}
-</div>`};
+${riskAnalysis('policy')}
+`};
 const baseCountryUpdate=updateCountries;
 updateCountries=function(){baseCountryUpdate()};
 // Qualitative exposure mapping: source-based associations, not calculated risk scores.
@@ -66,12 +60,12 @@ bindPage=function(page){if(page!=='policy')oldBind(page);else bindRouteButtons()
 const originalReports=renderReports;
 renderReports=function(){return originalReports().replace('<legend>包含章節</legend>','<legend>包含章節</legend>'+TOPICS.map(k=>`<label><input type="checkbox" value="${k}" checked>${TOPIC_LABELS[k]}</label>`).join(''))};
 function countryReportGraph(){const x=v=>55+(v-3.5)*125,y=v=>255-(v-3.5)*80;return `<svg viewBox="0 0 460 310" role="img" aria-label="國家與產業風險四象限"><g fill="#abc7e8" font-size="13"><text x="20" y="18">SRR ↑</text><text x="385" y="300">CRR →</text><text x="65" y="40">審慎評估區</text><text x="315" y="40">高風險地區</text><text x="65" y="260">優先市場區</text><text x="315" y="260">機會管理區</text></g><path d="M${x(COUNTRY_ROWS.reduce((a,c)=>a+c[4],0)/7)} 50V245 M55 ${y(COUNTRY_ROWS.reduce((a,c)=>a+c[5],0)/7)}H430" stroke="#71717a" stroke-dasharray="4 5"/>${COUNTRY_ROWS.map(c=>{const label=COUNTRY_LABELS[c[0]];return `<g data-country="${escapeHTML(c[0])}"><circle cx="${x(c[4])}" cy="${y(c[5])}" r="4" fill="#ef4444"><title>${escapeHTML(c[0])}：CRR ${escapeHTML(c[1])}、SRR ${escapeHTML(c[2])}</title></circle><text x="${x(c[4])+label.dx}" y="${y(c[5])+label.dy}" text-anchor="${label.anchor||'start'}" fill="#d6e7fa" font-size="12">${escapeHTML(c[0])}</text></g>`}).join('')}</svg>`}
-function reportTopic(key){let content='';if(key==='policy')content=renderPolicy();if(key==='safety')content=renderSafety();if(key==='fuel')content=renderFuel().replace(/<section class="page-card"><div class="page-card-head"><h2>成本敏感度試算[\s\S]*?<\/section>/,'');if(key==='ports')content=table(['國家','階段','事件','影響與行動'],PORT_EVENTS.map(e=>[e.country,e.status,e.title,e.impact]));if(key==='countries')content=countryReportGraph()+table(['國家','CRR','SRR','策略'],COUNTRY_ROWS.map(c=>c.slice(0,4)))+'<p>四象限：優先市場區、審慎評估區、高風險地區、機會管理區。國家與航運產業風險分開判讀；阿根廷貨幣危機、巴西港口擁堵與政治不穩定為背景議題。</p>';content=content.replace(/<button class="page-button" data-open-route="\d+">(.*?) →<\/button>/g,'<span class="route-chip">$1</span>').replace('<div id="safetyRoutes"></div>',`<p class="reading">${[0,2].map(i=>routes[i].name+' · '+routes[i].via+'（'+routes[i].node+'）').join('、')}；備援：${routes[1].name} · ${routes[1].via}</p>`).replace(/<form[\s\S]*?<\/form>/g,'').replace(/<button[\s\S]*?<\/button>/g,'').replace(/<a href="#.*?<\/a>/g,'').replace(/<div id="(?:safetyRoutes|fuelResult)"><\/div>/g,'');content=content.replace(/<section class="page-card"><div class="page-card-head"><h2>[^<]*<\/h2>(?:<span>[^<]*<\/span>)?<\/div>\s*<\/section>/g,'');return `<section class="report-topic"><h2>${TOPIC_LABELS[key]}</h2>${summaryBlock(key)}${content}</section>`}
+function reportTopic(key){let content='';if(key==='policy')content=renderPolicy();if(key==='safety')content=renderSafety();if(key==='fuel')content=renderFuel();if(key==='ports')content=table(['國家','階段','事件','影響與行動'],PORT_EVENTS.map(e=>[e.country,e.status,e.title,e.impact]));if(key==='countries')content=countryReportGraph()+table(['國家','CRR','SRR','策略'],COUNTRY_ROWS.map(c=>c.slice(0,4)))+'<p>四象限：優先市場區、審慎評估區、高風險地區、機會管理區。國家與航運產業風險分開判讀；阿根廷貨幣危機、巴西港口擁堵與政治不穩定為背景議題。</p>';content=content.replace(/<button class="page-button" data-open-route="\d+">(.*?) →<\/button>/g,'<span class="route-chip">$1</span>').replace('<div id="safetyRoutes"></div>',`<p class="reading">${[0,2].map(i=>routes[i].name+' · '+routes[i].via+'（'+routes[i].node+'）').join('、')}；備援：${routes[1].name} · ${routes[1].via}</p>`).replace(/<form[\s\S]*?<\/form>/g,'').replace(/<button[\s\S]*?<\/button>/g,'').replace(/<a href="#.*?<\/a>/g,'').replace(/<div id="(?:safetyRoutes|fuelResult)"><\/div>/g,'');content=content.replace(/<section class="page-card"><div class="page-card-head"><h2>[^<]*<\/h2>(?:<span>[^<]*<\/span>)?<\/div>\s*<\/section>/g,'');return `<section class="report-topic"><h2>${TOPIC_LABELS[key]}</h2>${summaryBlock(key)}${content}</section>`}
 const baseMakeReport=makeReport;
 makeReport=function(){baseMakeReport();const selectedSections=[...document.querySelectorAll('.report-sections input:checked')].map(c=>c.value);const chapters=TOPICS.filter(k=>selectedSections.includes(k)).map(reportTopic).join('');const r=pageState.report;r.body+=chapters;r.html=r.html.replace('</body>','');r.html=r.html.replace(/<\/html>$/,'')+chapters+`<style>svg{width:100%;height:auto;max-height:360px;background:#101e32;padding:12px;box-sizing:border-box}.page-grid{display:block}.page-card{margin:20px 0;break-inside:avoid}h3{font-size:16px}.strategy-summary{background:#eef3fa;padding:14px}.strategy-summary small{font-weight:bold}.chart-legend{display:flex;gap:14px;flex-wrap:wrap;background:#101e32;padding:12px}.source-details{font-size:12px;color:#60718b;margin:20px 0}a{color:#22599b}.micro-note{font-size:12px}.report-topic{break-before:page}table{font-size:13px}.page-card-head span{font-size:12px}.odds-pair{display:flex;gap:20px}.odds-pair strong{margin-left:8px}.route-chip{display:inline-block;margin:0 8px 8px 0;padding:4px 12px;border:1px solid #9db4d1;border-radius:14px;font-size:13px;color:#25405f}</style></html>`;$('#reportPreview').innerHTML=r.body};
 PAGE_MAP.overview=['戰略總覽','掌握全球風險與優先決策'];PAGE_MAP.routes=['航線決策','把風險依據轉為航線與成本方案'];PAGE_MAP.reports=['決策報告','整合情報、策略與情境比較'];
 const baseRenderPage=renderPage;
-renderPage=function(page){signalNetworkCleanup?.();signalNetworkCleanup=null;baseRenderPage(page);const key=currentPage;document.querySelectorAll('.primary-nav a').forEach(a=>{const active=a.dataset.page===key||(a.dataset.page==='intelligence'&&TOPICS.includes(key));a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});if(TOPICS.includes(key)){$('#pageContent').insertAdjacentHTML('afterbegin',topicNav(key));$('.page-title').insertAdjacentHTML('afterend',summaryBlock(key))}if(key==='intelligence'){$('#pageContent').insertAdjacentHTML('afterbegin',topicNav(key));bindSignalNetwork()}};
+renderPage=function(page){baseRenderPage(page);const key=currentPage;document.querySelectorAll('.primary-nav a').forEach(a=>{const active=a.dataset.page===key||(a.dataset.page==='intelligence'&&TOPICS.includes(key));a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});if(TOPICS.includes(key)){$('#pageContent').insertAdjacentHTML('afterbegin',topicNav(key))}if(key==='intelligence'){$('#pageContent').insertAdjacentHTML('afterbegin',topicNav(key))}};
 // Homepage keeps the full-height globe and links each concern to its evidence page.
 const originalShowEvents=showEvents;
 showEvents=function(f){originalShowEvents(f);document.querySelectorAll('.attention-card').forEach(b=>{const e=events[+b.dataset.event],key=Object.keys(TOPIC_LABELS).find(k=>TOPIC_LABELS[k]===e.type);if(key){const a=document.createElement('a');a.href='#'+key;a.className='home-topic-link';a.textContent='查閱'+TOPIC_LABELS[key];b.insertAdjacentElement('afterend',a)}})};
@@ -79,3 +73,32 @@ showEvents('全部');
 // Initial render is handled by assessment.js.
 
 $('#overviewSummaryCount').innerHTML=events.length+' 則訊號<br>'+new Set(events.map(e=>e.route)).size+' 條航線';
+
+/* P1 prototype. Heatmap cells are presence only (a topic has advice for the route); colour = that topic's status.
+   Exposure weights are not available yet, so cells carry no intensity. */
+const RISK_TOPIC_SHORT={safety:'航道',policy:'政策',fuel:'燃油',ports:'港口',countries:'國家'};
+function riskRouteTopicMatrix(){
+ const scopes={ports:{entries:PORT_EVENTS,area:'全部',status:'全部'}},map=routes.map(()=>({}));
+ INTELLIGENCE_TOPICS.forEach(key=>riskTopicModel(key,scopes[key]||{}).routeIdeas.forEach(r=>{map[r.index][key]=r}));
+ return map;
+}
+function riskRouteHeatmap(){
+ const matrix=riskRouteTopicMatrix(),status=Object.fromEntries(INTELLIGENCE_TOPICS.map(k=>[k,riskTopicStatus(k).status])),max=INTELLIGENCE_TOPICS.length;
+ const head=`<div class="heat-corner">航線</div>${INTELLIGENCE_TOPICS.map(k=>`<a class="heat-col heat-${status[k]}" href="#${k}"><span>${RISK_TOPIC_SHORT[k]}</span><i aria-hidden="true"></i></a>`).join('')}<div class="heat-corner heat-count-head">合計</div>`;
+ const rows=routes.map((route,i)=>{const hits=INTELLIGENCE_TOPICS.filter(k=>matrix[i][k]).length,tone=riskLevelTone(route.level);
+  return `<div class="heat-route tone-${tone}"><strong>${escapeHTML(route.name)}</strong><small>${escapeHTML(route.via)}</small></div>${INTELLIGENCE_TOPICS.map(k=>{const r=matrix[i][k];return r?`<button type="button" class="heat-cell is-on heat-${status[k]}" data-heat-topic="${k}" data-heat-route="${i}" aria-label="${escapeHTML(route.name+route.via)}：${RISK_TOPIC_SHORT[k]}有建議「${escapeHTML(r.proposal)}」，主題狀態${RISK_STATUS[status[k]].label}" title="${escapeHTML(r.proposal)}"><span></span></button>`:`<span class="heat-cell" aria-label="${RISK_TOPIC_SHORT[k]}無建議"></span>`}).join('')}<div class="heat-count" aria-label="${hits} 個主題有建議"><b>${hits}</b><i style="--w:${hits/max*100}%"></i></div>`}).join('');
+ return `<section class="page-card risk-heatmap"><div class="page-card-head"><h2>航線 × 主題</h2><span>點格子查看建議</span></div><div class="heat-grid" role="group" aria-label="航線與風險主題對應">${head}${rows}</div><div class="heat-legend" aria-hidden="true"><span><i class="heat-act"></i>行動</span><span><i class="heat-watch"></i>觀察</span><span><i class="heat-normal"></i>正常</span><span><i class="heat-empty"></i>無建議</span></div></section>`;
+}
+function riskStatusMatrix(){
+ const rows=INTELLIGENCE_TOPICS.map(k=>{const st=riskTopicStatus(k),s=st.signals.find(x=>x.thresholds),d=s&&s.compare?s.value-s.compare.value:0,trend=!s||!s.compare||!d?['─','持平','flat']:d>0?['▲','上升','up']:['▼','下降','down'];
+  return `<a class="status-row" href="#${k}"><span class="status-topic">${TOPIC_LABELS[k]}</span>${riskStatusBadge(st.status)}<span class="status-signal"><span class="status-signal-name">${escapeHTML(s?s.name:'—')}</span>${s?riskBullet(s):''}</span><strong class="status-value">${s?escapeHTML(riskFormat(s.value,s.unit)):'—'}</strong><span class="status-trend trend-${trend[2]}" title="${s&&s.compare?'較'+escapeHTML(s.compare.label)+trend[1]:'無比較基準'}" aria-label="${trend[1]}">${trend[0]}</span></a>`}).join('');
+ return `<section class="page-card risk-status-matrix"><div class="page-card-head"><h2>主題狀態</h2><span>暫定門檻</span></div><div class="status-rows">${rows}</div></section>`;
+}
+document.addEventListener('click',e=>{
+ const cell=e.target.closest('[data-heat-topic]');if(!cell)return;
+ const index=cell.dataset.heatRoute,started=Date.now();location.hash=cell.dataset.heatTopic;
+ // Port and country filters re-render the analysis after the page renders, so re-query once it settles.
+ (function focus(){if(!document.querySelector(`.route-advice-card[data-route="${index}"]`)){if(Date.now()-started<1500)requestAnimationFrame(focus);return}
+  setTimeout(()=>{const card=document.querySelector(`.route-advice-card[data-route="${index}"]`);if(!card)return;
+  card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});card.classList.remove('is-spotlight');void card.offsetWidth;card.classList.add('is-spotlight')},200)})();
+});

@@ -62,15 +62,7 @@ function miniChart(values,color,label,id){const min=Math.floor(Math.min(...value
 function updateCharts(){const type=activeIssue?.type||'航道安全';const traffic=type==='航道安全'&&selected<3,fuel=type==='燃油成本';$('#trendData').hidden=!(traffic||fuel);$('#trendUnavailable').hidden=traffic||fuel;$('#trendUnavailable').textContent='綜合事件與相關航線，查看下方判讀依據。';$('#trendTitle').textContent=traffic?routes[selected].node+'通行趨勢':fuel?'原油與燃油價差':'綜合判讀';$('#chartExplanation').textContent=traffic?'通行指數，基準期＝100。':fuel?'紅線：原油；琥珀線：燃油價差。指數，基準期＝100。':'';if(traffic){const values=trafficSeries[selected].slice(0,step+3),last=values.at(-1),delta=last-values[0];$('#trendValue').textContent=last;$('#trendDelta').textContent=(delta>0?'+':'')+delta+'% 較期初';$('#trendDelta').className=delta<0?'red':'cyan';$('#trafficChart').innerHTML=miniChart(values,'#ef4444','通行指數','trafficFill');}else if(fuel){$('#trendValue').textContent='118.6';$('#trendDelta').textContent='價差指數';$('#trendDelta').className='amber';const crude=[100,102,101,100,99,100,100],spread=[100,103,108,106,113,115,118.6];const points=v=>v.map((n,i)=>`${28+i*232/6},${70-(n-90)/40*56}`).join(' ');$('#trafficChart').innerHTML=`<svg viewBox="0 0 278 94" role="img" aria-label="原油指數持平於100，燃油價差指數升至118.6">${[90,110,130].map(n=>`<text x="0" y="${73-(n-90)/40*56}" fill="#a1a1aa" font-size="11">${n}</text><line x1="28" x2="260" y1="${70-(n-90)/40*56}" y2="${70-(n-90)/40*56}" stroke="#27272a"/>`).join('')}<polyline points="${points(crude)}" stroke="#ef4444" fill="none" stroke-width="2"/><polyline points="${points(spread)}" stroke="#fbbf24" fill="none" stroke-width="2"/><text x="28" y="88" fill="#a1a1aa" font-size="11">期初</text><text x="239" y="88" fill="#a1a1aa" font-size="11">本期</text></svg>`;}}
 updateCharts();
 
-// Header uses today's Taiwan date; the replay date remains independent.
-function updateHeaderDate(){
- const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
- const value=type=>parts.find(part=>part.type===type).value;
- $('#dateTop').textContent=[value('year'),value('month'),value('day')].join('.');
-}
-updateHeaderDate();
-setInterval(updateHeaderDate,60000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateHeaderDate()});
+
 
 const mapReducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let mapAnimationFrame=0,mapLastFrame=0;

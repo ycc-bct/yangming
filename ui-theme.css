@@ -175,3 +175,10 @@ header .product{gap:8px;}
 .port-detail-dialog #portDetail .page-button{margin-top:16px;}
 
 .port-detail-dialog::backdrop{background:#0009;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none;}
+
+/* Overall risk status in the global header. */
+.header-alert{display:inline-flex;align-items:center;gap:12px;white-space:nowrap;font:500 13px var(--font-ui);}
+.header-alert-label{color:var(--muted-foreground);}
+.header-alert-level{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:#ef444426;color:var(--foreground);font-weight:600;line-height:1.3;}
+.header-alert-square{display:inline-block;width:9px;height:9px;flex:none;background:var(--destructive);}
+@media(max-width:600px){.header-alert-label{display:none;}.header-alert{gap:0;}.header-alert-level{font-size:11px;padding:6px 8px;}.header-alert-square{width:8px;height:8px;}}
