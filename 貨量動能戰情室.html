@@ -1513,8 +1513,9 @@ document.getElementById('refreshDemo').addEventListener('click',()=>{volumeGraph
   const map=vm.querySelector('.process-map');if(map)map.innerHTML=`<div class="process-map-head"><h2>資料處理流程</h2><span>提單資料 → 實體解析 → 決策訊號</span></div><ol class="process-list">${steps.map((s,i)=>`<li><span class="step-no">${i+1}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div></li>`).join('')}</ol>`;
   vm.querySelectorAll('.control.add,.cfg-foot,.modal,.modal-scrim').forEach(x=>x.remove());
   const panels=[...vm.querySelectorAll('.mv .p')],obj=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='物件類型'),rel=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='關聯類型');
-  if(obj){const body=obj.querySelector('.p-b');body.innerHTML=`<div class="x-scroll"><table class="model-list object-list"><thead><tr><th>物件</th><th>識別鍵</th><th>說明</th></tr></thead><tbody><tr><td class="name">貨載</td><td class="code">Shipment</td><td>B/L 號碼、裝卸港、開航日、TEU、HS code</td></tr><tr><td class="name">當事人</td><td class="code">Party</td><td>提單上的原始名稱、地址、角色（託運人／收貨人）</td></tr><tr><td class="name">法人實體</td><td class="code">LegalEntity</td><td>D-U-N-S、國家、產業別（SIC）、營運狀態</td></tr><tr><td class="name">企業家族</td><td class="code">CorporateFamily</td><td>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</td></tr></tbody></table></div>`}
-  if(rel){const body=rel.querySelector('.x-scroll');body.innerHTML=`<table class="model-list relation-list"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody><tr><td class="name">貨載</td><td><span class="code">shipper / consignee</span>　託運／收貨</td><td class="name">當事人</td></tr><tr><td class="name">當事人</td><td><span class="code">resolvesTo</span>　解析為</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">parent</span>　母公司</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">memberOf</span>　隸屬</td><td class="name">企業家族</td></tr><tr><td class="name">法人實體</td><td><span class="code">suppliesTo</span>　供貨給</td><td class="name">法人實體</td></tr></tbody></table>`}
+  [obj,rel].forEach(panel=>panel?.classList.add('ontology-list-card'));
+  if(obj){const body=obj.querySelector('.p-b');body.className='p-b model-table-body';body.innerHTML=`<div class="x-scroll"><table class="model-list object-list"><thead><tr><th>物件</th><th>識別鍵</th><th>說明</th></tr></thead><tbody><tr><td class="name">貨載</td><td class="code">Shipment</td><td>B/L 號碼、裝卸港、開航日、TEU、HS code</td></tr><tr><td class="name">當事人</td><td class="code">Party</td><td>提單上的原始名稱、地址、角色（託運人／收貨人）</td></tr><tr><td class="name">法人實體</td><td class="code">LegalEntity</td><td>D-U-N-S、國家、產業別（SIC）、營運狀態</td></tr><tr><td class="name">企業家族</td><td class="code">CorporateFamily</td><td>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</td></tr></tbody></table></div>`}
+  if(rel){const body=rel.querySelector('.x-scroll');body.className='p-b model-table-body';body.innerHTML=`<div class="x-scroll"><table class="model-list relation-list"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody><tr><td class="name">貨載</td><td><span class="code">shipper / consignee</span>　託運／收貨</td><td class="name">當事人</td></tr><tr><td class="name">當事人</td><td><span class="code">resolvesTo</span>　解析為</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">parent</span>　母公司</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">memberOf</span>　隸屬</td><td class="name">企業家族</td></tr><tr><td class="name">法人實體</td><td><span class="code">suppliesTo</span>　供貨給</td><td class="name">法人實體</td></tr></tbody></table></div>`}
  }
 
  const fv=document.getElementById('v-fam');
@@ -1715,14 +1716,16 @@ html[data-theme="dark"]{
 #v-fam .family-side-block+.family-side-block{margin-top:20px;padding-top:20px}
 #v-fam .family-side .member-slot{flex:1}
 
-#v-model .mv{align-items:stretch!important}
+#v-model .mv{--model-table-gutter:20px;align-items:stretch!important}
 #v-model .mv>.p{display:flex;flex-direction:column;height:100%;overflow:hidden}
-#v-model .mv>.p>.p-h{display:flex;align-items:center;min-height:52px;padding:16px 20px 10px}
+#v-model .mv>.p>.p-h{display:flex;align-items:center;min-height:52px;padding:16px var(--model-table-gutter) 10px}
 #v-model .mv>.p>.p-h h2{font-size:12px;font-weight:500;letter-spacing:0}
-#v-model .mv>.p>.p-b,#v-model .mv>.p>.x-scroll{flex:1}
-#v-model .mv>.p>.x-scroll{padding:0 0 14px}
+#v-model .mv>.ontology-list-card>.model-table-body{flex:1;min-width:0;padding:0 0 14px}
+#v-model .mv>.ontology-list-card>.model-table-body>.x-scroll{min-width:0;width:100%;padding:0}
 #v-model .mv .model-list th{height:38px;padding:10px 12px;font-size:10px;font-weight:500}
 #v-model .mv .model-list td{padding:11px 12px}
+#v-model .mv .model-list :is(th,td):first-child{padding-left:var(--model-table-gutter)}
+#v-model .mv .model-list :is(th,td):last-child{padding-right:var(--model-table-gutter)}
 
 @media(max-width:1180px){.top-cards{grid-template-columns:1fr 1fr}.momentum-card{grid-column:1/-1}}
 @media(max-width:900px){.ym-logo{width:154px}}
