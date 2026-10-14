@@ -1793,5 +1793,27 @@ html[data-theme="dark"]{
  const momentumTitle=momentum.querySelector('.momentum-head h3');if(momentumTitle)momentumTitle.textContent='重點客戶動能';
 })();
 </script>
+<style id="r20">
+/* r20: keep the first KPI card focused on the法人數量 and tighten the overview rhythm. */
+.top-cards>.summary-card,.top-cards>.momentum-card{min-height:164px}
+.top-cards>.summary-card{padding:14px 16px}
+.top-cards>.duns-card,.top-cards>.single-kpi{min-height:148px}
+.top-cards>.duns-card .summary-body,.top-cards>.single-kpi .summary-body{align-content:center}
+.top-cards .duns-only{display:flex;align-items:center;min-height:0;height:100%}
+.top-cards .duns-only .duns-value{font-family:var(--font-num);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.top-cards>.momentum-card{min-height:0}
+.top-cards>.momentum-card .momentum-head{min-height:34px}
+.top-cards>.momentum-card .stock-row{min-height:28px;padding:2px 0}
+.top-cards>.momentum-card .stock-chart{height:24px}
+@media(max-width:560px){.top-cards>.summary-card,.top-cards>.momentum-card{min-height:138px}.top-cards>.duns-card,.top-cards>.single-kpi{min-height:128px}}
+</style>
+<script>
+/* r20: remove法人比對率 from the D-U-N-S KPI and leave a compact count-only card. */
+(function r20(){
+ const duns=document.querySelector('.top-cards .duns-card');
+ if(!duns)return;
+ duns.innerHTML='<h3>D-U-N-S 法人</h3><div class="summary-body"><div class="duns-only"><div class="duns-value">6,315<small>個</small></div></div></div>';
+})();
+</script>
 </body>
 </html>
