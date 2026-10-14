@@ -1,0 +1,1797 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>貨量動能戰情室</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: a single dark operations console. Command bar with tabs on top; overview = KPI + family list | ontology graph + roll-up chart | signal feed. Family and model tabs drill down. Deliberately dark-only: it is a control room. */
+:root{
+  color-scheme:dark;
+  --bg:#071019; --panel:#0e1a24; --panel-2:#15242f; --line:#1d2e3b; --line-2:#344b5c;
+  --ink:#edf2f5; --ink-2:#a9b8c2; --ink-3:#71838f;
+  --accent:#4fc3c9; --c2:#e3a857; --c3:#a993e6; --c4:#7cc68a;
+  --good:#2fb35a; --warn:#f0b429; --serious:#e8794a; --crit:#d64545;
+  --font-body:"IBM Plex Sans","Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:13.5px;line-height:1.55;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;flex-direction:column;line-height:1.25}
+.brand small{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+.brand h1{font-size:17px;margin:0;letter-spacing:.06em;font-weight:700}
+.tabs{display:flex;gap:2px;flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none}
+.tabs button{all:unset;cursor:pointer;white-space:nowrap;padding:7px 12px;border-radius:6px;color:var(--ink-2);font-size:13px}
+.tabs button:hover{background:var(--panel-2);color:var(--ink)}
+.tabs button[aria-selected="true"]{background:var(--panel-2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.demo{font-size:11px;color:var(--ink-3);border:1px dashed var(--line-2);border-radius:999px;padding:1px 9px;white-space:nowrap;margin-left:auto}
+
+.stage{padding:12px 16px 20px}
+.home{display:grid;grid-template-columns:270px minmax(0,1fr) 320px;gap:12px;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (max-width:1180px){.home{grid-template-columns:minmax(0,1fr) 300px}.home .c-right{grid-column:1 / -1}}
+@media (max-width:820px){.home{grid-template-columns:minmax(0,1fr)}}
+
+.p{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.p-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px 8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.p-h h2{font-size:12.5px;font-weight:600;letter-spacing:.05em;margin:0;color:var(--ink-2)}
+.p-h small{font-size:11.5px;color:var(--ink-3)}
+.p-b{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.note{margin:0;font-size:12px;color:var(--ink-3)}
+
+.kpi{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:9px 12px;border-bottom:1px solid var(--line);align-items:end}
+.kpi:last-child{border-bottom:0}
+.kpi-l{grid-column:1 / -1;font-size:11.5px;color:var(--ink-3)}
+.kpi-v{font-size:21px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums}
+.kpi-v small{font-size:11.5px;font-weight:400;color:var(--ink-3);margin-left:4px}
+.kpi-d{grid-column:1 / -1;font-size:11.5px;color:var(--ink-2)}
+
+.st{--c:var(--ink-3);display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;background:color-mix(in srgb,var(--c) 22%,var(--panel));border-radius:5px;padding:1px 8px 1px 7px;white-space:nowrap}
+.st i{width:8px;height:8px;background:var(--c);display:inline-block}
+.st.up2{--c:var(--good)} .st.up2 i{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.st.up1{--c:var(--accent)} .st.up1 i{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.st.flat{--c:var(--line-2);color:var(--ink-2)} .st.flat i{border-radius:50%}
+.st.dn1{--c:var(--warn)} .st.dn1 i{clip-path:polygon(0 0,100% 0,50% 100%)}
+.st.dn2{--c:var(--crit)} .st.dn2 i{clip-path:polygon(0 0,100% 0,50% 100%)}
+
+.fams{list-style:none;margin:0;padding:0}
+.fam{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:9px 12px;border-bottom:1px solid var(--line);align-items:center}
+.fams li:last-child .fam{border-bottom:0}
+.fam:hover,.fam[aria-current="true"]{background:var(--panel-2)}
+.fam:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.fam b{font-weight:600;font-size:13.5px}
+.fam .sub{font-size:11.5px;color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.fam svg{display:block}
+.code{font-family:var(--font-mono);font-size:11.5px;white-space:nowrap}
+
+.graph svg{display:block;width:100%;height:auto}
+.gl{font-size:11px;fill:var(--ink-3);letter-spacing:.06em}
+.nd{cursor:pointer}
+.nd rect{fill:var(--panel-2);stroke:var(--line-2);stroke-width:1}
+.nd.raw rect{stroke-dasharray:3 3}
+.nd.fam rect{fill:color-mix(in srgb,var(--accent) 16%,var(--panel));stroke:var(--accent)}
+.nd.ext rect{fill:var(--panel);stroke:var(--c2)}
+.nd.on rect{stroke:var(--ink);stroke-width:1.6}
+.nd:focus-visible{outline:none}
+.nd:focus-visible rect{stroke:var(--accent);stroke-width:2}
+.n1{font-size:12px;font-weight:600;fill:var(--ink)}
+.n2{font-size:10.5px;fill:var(--ink-3);font-family:var(--font-mono)}
+.ed{stroke:var(--line-2);stroke-width:1.4;fill:none}
+.ed.res{stroke:var(--accent);stroke-opacity:.7}
+.ed.sc{stroke:var(--c2);stroke-dasharray:4 3}
+.el{font-size:10px;fill:var(--ink-2);stroke:var(--panel);stroke-width:3px;paint-order:stroke}
+.detail{border-top:1px solid var(--line);padding-top:10px;font-size:12.5px;color:var(--ink-2);min-height:3.2em}
+.detail b{color:var(--ink);font-weight:600}
+.key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-3)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:18px;border-top:2px solid var(--c)}
+.key i.dash{border-top-style:dashed}
+
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.ax{font-size:11px;fill:var(--ink-3);font-variant-numeric:tabular-nums}
+.endl{font-size:11.5px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
+.tip{position:absolute;pointer-events:none;background:var(--panel-2);border:1px solid var(--line-2);border-radius:6px;padding:6px 10px;font-size:12px;line-height:1.55;white-space:nowrap;color:var(--ink-2);z-index:2}
+.tip b{color:var(--ink);font-weight:600}
+.tip .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;border-top:2px solid var(--c);vertical-align:middle;margin-right:6px}
+.legend i.tot{border-top-width:3px}
+
+.feed{list-style:none;margin:0;padding:0}
+.fi{padding:9px 12px;border-bottom:1px solid var(--line);display:grid;gap:3px}
+.fi:last-child{border-bottom:0}
+.fi time{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.fi p{margin:0;font-size:13px}
+.kind{font-family:var(--font-body);font-size:10.5px;border-radius:3px;padding:0 5px;line-height:1.6;border:1px solid var(--line-2);color:var(--ink-2)}
+.kind.k-fam{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.kind.k-sc{border-color:var(--c2);color:var(--c2)}
+
+.fv{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.fv-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.fv-h h2{font-size:19px;margin:0;letter-spacing:.03em}
+.fv-h p{margin:2px 0 0;color:var(--ink-2);font-size:13px;max-width:80ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{all:unset;cursor:pointer;padding:4px 11px;border:1px solid var(--line-2);border-radius:999px;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.chips button:hover{background:var(--panel-2);color:var(--ink)}
+.chips button[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:var(--panel-2)}
+.chips button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fv-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;align-items:start}
+@media (max-width:980px){.fv-grid{grid-template-columns:minmax(0,1fr)}}
+.x-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-weight:500;color:var(--ink-3);font-size:11.5px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tree{list-style:none;margin:0;padding:0;font-size:13px}
+.tree li{position:relative;padding:5px 0 5px 18px}
+.tree li::before{content:"";position:absolute;left:5px;top:0;bottom:0;border-left:1px solid var(--line-2)}
+.tree li::after{content:"";position:absolute;left:5px;top:15px;width:9px;border-top:1px solid var(--line-2)}
+.tree li:last-child::before{bottom:auto;height:15px}
+.tree .gu{padding-left:0;font-weight:600}
+.tree .gu::before,.tree .gu::after{display:none}
+.tree small{color:var(--ink-3);margin-left:6px}
+.callout{border-left:3px solid var(--accent);background:var(--panel-2);padding:9px 12px;border-radius:0 6px 6px 0;font-size:13px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+
+.mv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:900px){.mv{grid-template-columns:minmax(0,1fr)}}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:s}
+.steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px 10px;padding:9px 0;border-bottom:1px solid var(--line);counter-increment:s}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink-2);color:var(--bg);font-size:11px;font-weight:600;grid-row:span 2}
+.steps b{font-weight:600}
+.steps span{font-size:12.5px;color:var(--ink-2)}
+.objs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.obj{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--panel-2)}
+.obj h3{margin:0 0 4px;font-size:13px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.obj h3 small{font-family:var(--font-mono);font-weight:400;font-size:11px;color:var(--ink-3)}
+.obj p{margin:0;font-size:12px;color:var(--ink-2)}
+.links td:nth-child(2){color:var(--accent);font-family:var(--font-mono);font-size:12px;white-space:nowrap}
+/* Light industrial command surface */
+:root{color-scheme:light;--bg:#f7f9fc;--panel:#fff;--panel-2:#eef3fa;--line:#dde4ed;--line-2:#aab9cc;--ink:#142138;--ink-2:#52617a;--ink-3:#697891;--accent:#386fe0;--c2:#bc7729;--c3:#7964ae;--c4:#398975;--good:#238166;--warn:#af701d;--crit:#bf4450;--font-body:"Noto Sans TC",sans-serif}
+body{background:radial-gradient(#cdd7e5 .65px,transparent .65px) 0 0/6px 6px var(--bg)}
+[hidden]{display:none!important}
+.bar{padding:16px 28px;background:#ffffffed;border-bottom:1px solid var(--line-2)}
+.brand h1{font-size:20px;letter-spacing:.08em}.brand small{color:var(--accent)}
+.stage{max-width:1680px;margin:auto;padding:20px 28px 36px}.p{border-radius:0;box-shadow:none;position:relative}.p:before{content:'+';position:absolute;top:-11px;left:-5px;color:var(--line-2);font:16px monospace;pointer-events:none}.p-h{padding:14px 18px}.p-h h2{font-size:13px;color:var(--ink);letter-spacing:.06em}.p-b{padding:16px 18px}.home{grid-template-columns:minmax(0,1.65fr) minmax(340px,1fr);gap:20px}.home>.col{display:contents}.home .progress-panel{grid-column:1;grid-row:1}.home .customer-panel{grid-column:2;grid-row:1}.home .analysis-panel{grid-column:1;grid-row:2}.home .signal-panel{grid-column:2;grid-row:2}.overview-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px;min-height:155px}.eyebrow{font-size:11px;letter-spacing:.12em;color:var(--accent)}.overview-head h2{font-size:32px;font-weight:500;margin:10px 0}.overview-head p{margin:0;color:var(--ink-2);font-size:12px}.route-globe{width:310px;height:155px}.route-globe svg{height:100%;width:100%}.control{border:1px solid var(--line-2);background:white;padding:7px 12px;cursor:pointer;font-size:12px}.control:hover{background:var(--panel-2)}.progress-hero{display:flex;align-items:end;gap:16px;padding:18px 24px 12px}.progress-value{font-size:72px;font-weight:500;line-height:1.1;letter-spacing:-.06em;font-variant-numeric:tabular-nums;color:var(--accent)}.progress-value small{font-size:28px;letter-spacing:0}.progress-label{padding-bottom:8px;color:var(--ink-2);font-size:12px}.coverage-track{margin:4px 24px 20px;height:6px;background:var(--panel-2)}.coverage-track span{display:block;height:100%;width:94.2%;background:var(--accent)}.metrics-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}.kpi{display:flex;flex-direction:column;align-items:start;padding:18px 20px;border-bottom:0;border-right:1px solid var(--line);gap:8px}.kpi:last-child{border-right:0}.kpi-v{font-size:28px;letter-spacing:-.03em}.kpi-v small{display:block;margin:4px 0 0}.kpi-d{font-size:11px}.fam{padding:11px 18px;grid-template-columns:minmax(0,1fr) 90px}.fam b{font-size:13px}.fam .sub{grid-column:1/-1}.fam svg{width:90px}.st{border-radius:0;background:transparent;padding:0;font-size:11px}.sort-controls{display:flex;gap:6px}.sort-controls button{font-size:11px;padding:4px 7px}.sort-controls button[aria-pressed=true]{background:var(--ink);color:white}.analysis-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.82fr);gap:16px}.comparison{border-left:1px solid var(--line);padding-left:16px;min-width:0}.comparison h3{font-size:12px;margin:0 0 12px}.callout{border-left:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:12px 0 0;font-size:12px}.detail{font-size:12px}.key{font-size:10px}.fi{padding:14px 18px;gap:6px}.fi p{font-size:12px}.kind{border-radius:0}.kind.k-fam{background:var(--panel-2);border-color:var(--line);color:var(--accent)}.nd.fam rect{fill:#e9f0ff}.nd.on rect{stroke:var(--accent);stroke-width:2.5}.nd rect{rx:0}.tip{background:white;border-radius:0;box-shadow:0 4px 16px #14213814}.demo{border-radius:0}.fv,.mv{gap:20px}.fv-grid{gap:20px}.obj{border-radius:0}.chips button{border-radius:0}.update-flash{animation:flash-number .6s ease-out}@keyframes flash-number{0%{color:#238166;background:#def3e8}100%{background:transparent}}.graph .ed.trace{stroke:var(--accent);stroke-width:2.6;stroke-dasharray:var(--path-length);stroke-dashoffset:var(--path-length);animation:draw-link .4s ease-out forwards;animation-delay:var(--delay)}@keyframes draw-link{to{stroke-dashoffset:0}}
+.progress-panel{align-self:stretch}.progress-panel .progress-hero{padding-top:30px;padding-bottom:20px}.progress-panel .coverage-track{margin-bottom:30px}.analysis-split{grid-template-columns:1fr}.comparison{border-left:0;border-top:1px solid var(--line);padding:16px 0 0}.graph{max-width:720px;margin:0 auto}.comparison .chart{max-width:720px;margin:auto}.overview-head{min-height:130px}.route-globe{height:130px}
+@media(max-width:1100px){.analysis-split{grid-template-columns:1fr}.comparison{border-left:0;border-top:1px solid var(--line);padding:16px 0 0}.progress-value{font-size:60px}.kpi{padding:16px 12px}.kpi-v{font-size:24px}}
+@media(max-width:820px){.stage{padding:16px}.bar{padding:12px 16px}.home{display:flex;flex-direction:column}.home>.col{display:contents}.progress-panel{order:0}.customer-panel{order:1}.analysis-panel{order:2}.signal-panel{order:3}.home .p{width:100%}.overview-head h2{font-size:25px}.route-globe{width:180px;height:130px}.overview-head{gap:8px}.kpi-v{font-size:22px}.metrics-row{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi-l{font-size:10px}.kpi-d{font-size:10px}.progress-value{font-size:58px}}
+@media(max-width:480px){.route-globe{width:105px}.overview-head h2{font-size:23px}.overview-head p{max-width:230px}.metrics-row{grid-template-columns:1fr}.kpi{display:grid;grid-template-columns:1fr 1fr;border-right:0;border-bottom:1px solid var(--line);padding:12px 20px}.kpi-l{grid-column:auto;font-size:12px}.kpi-v{grid-column:2;grid-row:1/3}.kpi-d{grid-column:1}.kpi-v small{font-size:10px}.p-h{padding:12px}.sort-controls{gap:4px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.graph .ed.trace{stroke-dashoffset:0}}
+/* Chart-first executive workspace */
+.analysis-split>div{min-width:0}.graph{max-width:100%}.volume-overview{min-width:0}
+:root{--bg:#eff0f3;--panel:#fafbfd;--panel-2:#e9edf5;--ink:#202532;--ink-2:#626c7e;--ink-3:#737e91;--accent:#647cc4;--line:#e0e3ea;--line-2:#bac4d5}
+body{background:var(--bg)}.app{max-width:1740px;margin:auto}.bar{background:transparent;padding:18px 32px;border:0;gap:16px}.brand{display:none}.tabs{flex:0 1 auto;background:#e5e8ee;padding:4px;border-radius:8px}.tabs button{font-size:12px;padding:7px 16px}.tabs button[aria-selected="true"]{background:#252a33;color:#fff;box-shadow:none}.demo{border:0;font-size:11px}.stage{padding:8px 32px 32px}.overview-head{display:none!important}.home{grid-template-columns:minmax(0,1.8fr) minmax(330px,1fr);gap:20px;align-items:stretch}.p{border:0;border-radius:12px;background:var(--panel)}.p:before{display:none}.p-h{border:0;padding:18px 22px 6px}.p-h h2{font-size:12px;font-weight:500;letter-spacing:0}.p-h small{font-size:10px}.p-b{padding:14px 22px}.control{border:0;border-radius:5px;background:#e9edf4;color:var(--ink-2);font-size:10px;padding:6px 9px}.progress-panel{background:transparent}.progress-panel .p-h{padding:8px 0}.progress-panel .metrics-row{order:0;border:0;padding:12px 0 8px;gap:18px}.progress-panel .kpi{border:0;padding:0;display:flex;gap:6px}.progress-panel .kpi-l{font-size:11px;color:var(--ink-2)}.progress-panel .kpi-v{font-size:44px;font-weight:400;letter-spacing:-.045em;line-height:1.1}.progress-panel .kpi-v small{font-size:10px;letter-spacing:0;color:var(--ink-3)}.progress-panel .kpi-d{display:none}.progress-panel .progress-hero{padding:0;gap:10px}.progress-panel .progress-value{font-size:28px;color:var(--ink);letter-spacing:-.04em}.progress-panel .progress-value small{font-size:16px}.progress-panel .progress-label{padding:0;font-size:10px}.progress-panel .coverage-track{display:none}.coverage-inline{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px;border-top:1px solid var(--line);padding-top:12px}.coverage-inline .coverage-ticks{width:130px;height:25px;background:repeating-linear-gradient(to right,var(--accent) 0 1px,transparent 1px 4px);opacity:.55;clip-path:polygon(0 0,94.2% 0,94.2% 100%,0 100%)}.volume-overview{padding-top:16px}.volume-meta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.volume-meta strong{font-size:24px;font-weight:400;letter-spacing:-.03em}.volume-meta small,.volume-caption{font-size:10px;color:var(--ink-3)}.volume-chart{width:100%;display:block;overflow:visible}.volume-caption{display:flex;justify-content:space-between;margin:3px 0 0}.volume-bar{transform-box:fill-box;transform-origin:bottom;animation:bar-rise .9s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--stagger)}.volume-line{stroke-dasharray:1200;stroke-dashoffset:1200;animation:line-reveal 1.3s .2s ease-out forwards}@keyframes bar-rise{from{transform:scaleY(.02);opacity:0}to{transform:scaleY(1);opacity:1}}@keyframes line-reveal{to{stroke-dashoffset:0}}.customer-panel{background:#e8eaf3}.customer-panel>.note{font-size:10px;padding:4px 22px!important}.fam{padding:10px 22px;grid-template-columns:1fr auto;gap:4px 12px;border-bottom:1px solid #d8dce7}.fam:hover{background:#f7f8fc}.fam b{font-weight:400;font-size:12px}.fam .sub{grid-column:2;grid-row:1;justify-content:end}.fam .sub>span:last-child{display:none}.fam>.customer-chart{grid-column:1/-1;width:100%;height:36px}.fam .st{font-size:16px;font-weight:400}.fam .st i{width:6px;height:6px}.fam .st .status-word{display:none}.customer-chart .micro-bar{transform-box:fill-box;transform-origin:bottom;animation:bar-rise .75s both;animation-delay:var(--stagger)}.analysis-panel .p-b{padding-top:4px}.graph{max-width:none;background:radial-gradient(#d0d6e0 .6px,transparent .6px) 0 0/8px 8px;border-radius:8px}.graph svg{min-width:560px}.graph{overflow-x:auto}.graph .n1{font-size:12px;font-weight:500}.graph .n2{font-size:10px;fill:#6e798d}.graph .nd rect{fill:#fff;stroke:#d1d8e5;rx:7}.graph .nd.raw rect{stroke-dasharray:none}.graph .nd.fam rect{fill:#eef0fb;stroke:#8e9ac9}.graph .nd.on rect{stroke:#647cc4;stroke-width:2}.graph .ed{stroke:#b2bdd0;stroke-width:1.3}.graph .gl{font-size:10px;letter-spacing:1px}.key{margin:8px 0}.detail{min-height:0;padding:8px 0;font-size:11px;border-top:0}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding-top:12px}.comparison h3{grid-column:1/-1;margin-bottom:8px;font-size:11px;font-weight:400}.comparison .legend{grid-column:1;font-size:10px}.comparison .chart{grid-column:1;grid-row:3;width:100%}.comparison .callout{grid-column:2;grid-row:2/4;align-self:center;border:0;margin:0;font-size:11px;padding:0}.signal-panel .fi{padding:12px 22px;gap:4px}.signal-panel .fi p{font-size:11px;line-height:1.7}.signal-panel .fi time{font-size:10px}.signal-panel .kind{font-size:9px}.signal-panel{background:#f6f7fa}.route-mini{width:80px;height:45px;flex:none}.route-mini svg{width:100%;height:100%}.workspace-meta{display:flex;align-items:center;gap:12px;margin-left:auto;font-size:10px;color:var(--ink-3)}
+@media(min-width:1350px){.progress-panel .kpi-v{font-size:52px}.home{grid-template-columns:minmax(0,1.85fr) minmax(370px,1fr)}.volume-chart{max-height:230px}}
+@media(max-width:820px){.bar{padding:12px 16px;gap:8px}.stage{padding:8px 16px 24px}.home{gap:16px}.demo{display:none}.workspace-meta{font-size:9px}.route-mini{display:none}.progress-panel .metrics-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.progress-panel .kpi-v{font-size:34px}.progress-panel .kpi-l{font-size:10px}.customer-panel .fam{padding:12px 20px}.comparison{grid-template-columns:1fr}.comparison .legend,.comparison .chart,.comparison .callout{grid-column:1;grid-row:auto}.comparison .callout{padding-top:10px}.p-h{padding:16px 16px 8px}.p-b{padding:12px 16px}.graph svg{min-width:580px}.coverage-inline .coverage-ticks{width:65px}.progress-panel .kpi-v small{font-size:9px}.progress-panel .kpi-v{grid-row:auto;grid-column:auto}.workspace-meta{width:100%;margin:0}.tabs{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.volume-bar,.micro-bar{animation:none!important;transform:none!important}.volume-line{animation:none!important;stroke-dashoffset:0}}
+</style>
+<style id="v2-layout">
+/* v2: compact progress strip, narrow customer column, large dark-stage analysis graph */
+.home{grid-template-columns:minmax(0,1fr) 312px!important;align-items:start}
+.home .progress-panel{grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-self:auto}
+.home .analysis-panel{grid-column:1;grid-row:2/4}
+.home .customer-panel{grid-column:2;grid-row:2}
+.home .signal-panel{grid-column:2;grid-row:3}
+.progress-panel>.p-h{grid-column:1/-1;order:-2;padding:0 2px!important}
+.progress-panel .metrics-row{display:contents}
+.progress-panel .kpi,.progress-panel .coverage-inline,.progress-panel .volume-overview{background:var(--panel);border-radius:10px!important;padding:12px 16px!important;margin:0;border:0;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;min-height:96px}
+.progress-panel .kpi-v{font-size:30px!important;line-height:1.1}
+.progress-panel .kpi-v small{display:inline;margin-left:6px}
+.progress-panel .kpi-d{display:block;font-size:10px;color:var(--ink-3)}
+.progress-panel .coverage-inline{order:-1;align-items:stretch}
+.progress-panel .coverage-inline>div:first-child{display:flex;flex-direction:column;gap:4px}
+.progress-panel .progress-hero{flex-direction:column-reverse;align-items:start;gap:2px}
+.progress-panel .progress-value{font-size:30px!important;color:var(--accent)!important}
+.progress-panel .progress-label{font-size:11px!important;color:var(--ink-2)}
+.progress-panel .coverage-inline .coverage-ticks{width:100%;height:8px}
+.progress-panel .volume-overview{padding-top:12px}
+.progress-panel .volume-meta{gap:6px}.progress-panel .volume-meta strong{font-size:20px}
+.progress-panel .volume-chart{max-height:48px;width:100%}
+.progress-panel .volume-chart text{display:none}
+.progress-panel .volume-caption{display:none}
+.customer-panel .fam{padding:9px 16px}.customer-panel>.note{padding:4px 16px!important}
+.customer-panel .p-h{padding:16px 16px 6px}
+/* dark stage for the flow graph */
+.analysis-panel .graph{position:relative;overflow:hidden;border-radius:10px;padding:18px 14px 10px;background:
+ radial-gradient(ellipse at 50% 120%,#13234455 0%,transparent 60%),
+ radial-gradient(#5c7bb055 .8px,transparent 1px) 0 0/18px 18px,#05080f;box-shadow:inset 0 0 60px #000a}
+.analysis-panel .graph:after{content:"";position:absolute;left:-20%;right:-20%;bottom:0;height:45%;pointer-events:none;
+ background:radial-gradient(#9fc3ff 1px,transparent 1.4px) 0 0/22px 22px;transform:perspective(300px) rotateX(58deg);transform-origin:bottom;opacity:.35;
+ -webkit-mask:linear-gradient(transparent,#000);mask:linear-gradient(transparent,#000)}
+.analysis-panel .graph svg{position:relative;z-index:1;min-width:560px;width:100%;height:auto}
+.graph .gl{fill:#7f93b8}
+.graph .nd rect{fill:#0c1424e6;stroke:#ffffff40;stroke-width:1}
+.graph .nd.fam rect{fill:#101c36;stroke:#8fb0ff99}
+.graph .nd.on rect{stroke:#cfe0ff;stroke-width:1.6}
+.graph .nd:hover rect{stroke:#ffffffaa}
+.graph .n1{fill:#eef3ff}.graph .n2{fill:#8a9bbb}
+.graph .ed{stroke:#9fb8e8;stroke-opacity:.35;stroke-width:1.2;stroke-dasharray:2 4;stroke-linecap:round}
+.graph .ed.trace{stroke:#8fb0ff;stroke-opacity:.8;stroke-width:1.8}
+.graph .flow-dots{pointer-events:none}
+.analysis-panel .key{color:var(--ink-3)}
+@media(max-width:1180px){.home .progress-panel{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){.home .progress-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.graph .flow-dots{display:none}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Archivo:wdth,wght@125,800&display=swap">
+<style id="r2">
+:root{--font-num:"Space Grotesk","Archivo","Segoe UI","Helvetica Neue",Arial,sans-serif}
+.progress-panel .kpi-v,.progress-panel .progress-value,.progress-panel .volume-meta strong,.fam .st,.endl,.comparison .callout b,.volume-chart text{font-family:var(--font-num)!important;font-weight:700!important;font-variant-numeric:tabular-nums;letter-spacing:-.02em!important}
+/* progress cards: number, visual, then small label */
+.progress-panel .kpi-v{order:0;font-size:34px!important;color:var(--ink)}
+.progress-panel .kpi-l{order:2;font-size:11px!important;color:var(--ink-3)!important}
+.progress-panel .kpi-d,.progress-panel .kpi-v small,.progress-panel .volume-caption{display:none!important}
+.progress-panel .progress-hero{flex-direction:column!important;gap:6px!important}
+.progress-panel .progress-value{font-size:34px!important}
+.progress-panel .progress-value small{font-size:20px!important}
+.progress-panel .coverage-inline{gap:8px}
+.progress-panel .coverage-inline .coverage-ticks{order:1;height:12px}
+.progress-panel .coverage-inline>div:first-child{order:0}
+.progress-panel .progress-label{order:2;font-size:11px!important;color:var(--ink-3)!important}
+.progress-panel .coverage-inline{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important}.progress-panel .coverage-inline .progress-hero{align-items:start!important}.progress-panel .coverage-inline .coverage-ticks{width:100%!important}.progress-panel .volume-meta .st{font-family:var(--font-num);font-size:14px;font-weight:700}
+.progress-panel .volume-meta{order:0;align-items:baseline}
+.progress-panel .volume-meta strong{font-size:34px!important}
+.progress-panel .volume-meta strong small{font-family:var(--font-body);font-size:11px;font-weight:400;color:var(--ink-3)}
+.progress-panel #volumeGraphic{order:1}.progress-panel .volume-chart{max-height:40px}
+.progress-panel .vol-label{order:2;font-size:11px;color:var(--ink-3);margin:0}
+/* customer rows: % + sparkline dominate, name small below */
+.customer-panel .fam{grid-template-columns:1fr!important;gap:2px!important;padding:10px 16px}
+.customer-panel .fam .sub{grid-column:1;grid-row:1;justify-content:start}
+.customer-panel .fam>.customer-chart{grid-row:2;height:40px}
+.customer-panel .fam b{grid-row:3;font-size:11px;color:var(--ink-3)}
+.customer-panel .fam .st{font-size:24px!important}
+/* light stage graph */
+.analysis-panel .graph{background:radial-gradient(#c9d3e3 .8px,transparent 1px) 0 0/18px 18px,#f7f9fc!important;box-shadow:inset 0 0 0 1px #e3e8f0!important}
+.analysis-panel .graph:after{background:radial-gradient(#9fb2d0 1px,transparent 1.4px) 0 0/22px 22px!important;opacity:.4!important}
+.graph .gl{fill:#7a869a}
+.graph .nd rect{fill:#fff;stroke:#c9d3e3}
+.graph .nd.fam rect{fill:#eef3ff;stroke:#a9b9e0}
+.graph .nd.on rect{stroke:var(--accent);stroke-width:2}
+.graph .nd:hover rect{stroke:#8ea0c8}
+.graph .n1{fill:#202532}.graph .n2{fill:#6e798d}
+.graph .ed{stroke:#9fb0cc;stroke-opacity:.7}
+.graph .ed.trace{stroke:var(--accent);stroke-opacity:.9}
+.graph .flow-dots circle{fill:#4aa3ff}.graph .nd:focus{outline:none}.graph .nd:focus-visible rect{stroke:var(--accent);stroke-width:2}
+</style>
+<style id="r4">
+.graph .n1{font-size:13.5px!important}.graph .nd.raw .n1{font-size:12.5px!important}.graph .n2{font-size:11.5px!important}
+.graph .ico{color:#7d8aa3}.graph .nd.fam .ico{color:#5b74c4}.graph .nd.ext .ico{color:#c98a2e}.graph .nd.ent .ico{color:#5b6b88}
+.graph .tag rect{fill:#fff;stroke:#c9d3e3;stroke-width:1}.graph .tag text{font-size:9.5px;fill:#5b6578;font-weight:500}
+.graph .tag.cty rect{fill:#eef2f8}.graph .tag.conf rect{fill:#e8f5ee;stroke:#a9d6bd}.graph .tag.conf text{fill:#23794f}
+.graph .nd.fam .tag rect{fill:#eaf0ff;stroke:#a9b9e0}.graph .nd.fam .tag text{fill:#3f58a8}
+.graph .nd.ext .tag rect{fill:#fff6e8;stroke:#ecc58a}.graph .nd.ext .tag text{fill:#9a6417}
+.graph .el{font-size:11px!important}
+.progress-panel .progress-value{color:var(--ink)!important}
+.progress-panel .coverage-ticks{display:none!important}
+.gauge{width:110px;height:72px;justify-self:end}
+.volume-chart,.volume-meta .st{display:none!important}
+.vol2{display:block;width:100%;overflow:visible}
+.vol2 .badge rect{fill:#e6f4ee}.vol2 .badge text{font-family:var(--font-num);font-weight:700;font-size:11px;fill:#23794f}
+#refreshDemo,.route-mini{display:none!important}
+.customer-panel .fam .st{color:var(--ink)!important}
+.comparison .mini-report{display:grid;gap:12px;align-self:center;grid-column:2;grid-row:2/4}
+.mini-report section{border-left:2px solid var(--line-2);padding:2px 0 2px 12px}
+.mini-report section.pos{border-color:var(--accent)}
+.mini-report h4{margin:0 0 2px;font-size:11px;font-weight:700;color:var(--ink);letter-spacing:.04em}
+.mini-report .big{font-family:var(--font-num);font-weight:700;font-size:26px;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.mini-report p{margin:2px 0 0;font-size:11.5px;color:var(--ink-2);line-height:1.6}
+.signal-panel{display:flex;flex-direction:column;overflow:hidden}
+.signal-panel .feed{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#c3cbd9 transparent}
+.signal-panel .feed::-webkit-scrollbar{width:6px}.signal-panel .feed::-webkit-scrollbar-thumb{background:#c3cbd9;border-radius:3px}
+</style><style>.graph .nd .tag rect{stroke-dasharray:none!important;stroke-width:1!important}.graph .nd.on .tag rect{stroke:#c9d3e3!important}.graph .nd.on.ext .tag rect{stroke:#ecc58a!important}.graph .nd.on.fam .tag rect{stroke:#a9b9e0!important}</style><style id="r5">
+.progress-panel .kpi,.progress-panel .coverage-inline,.progress-panel .volume-overview{min-height:160px!important}
+.gauge{display:none!important}
+.cbars{width:100%;height:110px;display:block;overflow:visible}
+.cbars text{font-size:9.5px;fill:var(--ink-3)}
+.progress-panel .volume-overview .vol-delta{position:absolute;top:12px;right:16px;font-family:var(--font-num);font-weight:700;font-size:15px;color:#23794f}
+.progress-panel #volumeGraphic{min-width:0}
+</style><style id="r10">
+/* r10: 企業家族 & Ontology 模型 tabs in overview design system */
+#v-fam .chips{background:#e5e8ee;padding:4px;border-radius:8px;display:inline-flex;gap:2px;width:max-content;max-width:100%;overflow-x:auto}
+#v-fam .chips button{border:0!important;border-radius:6px!important;padding:7px 14px;font-size:12px;color:var(--ink-2);background:transparent}
+#v-fam .chips button[aria-pressed="true"]{background:#252a33!important;color:#fff!important}
+#v-fam .fv-h{align-items:flex-end}
+#v-fam .fv-h h2{font-size:20px;font-weight:600;letter-spacing:.02em}
+#v-fam .fv-h p{font-size:11px;color:var(--ink-3)}
+#v-fam #fStatus{display:none}
+.kstrip{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px}
+.kcard{background:var(--panel);border-radius:10px;padding:26px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;align-items:center;min-width:0}
+.kcard .kn{font-family:var(--font-num);font-weight:700;font-size:42px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kcard .kl{font-size:11px;color:var(--ink-3);margin-top:4px}
+.kcard .kc{min-width:0}.kcard .kc svg{display:block;width:100%;height:52px}
+.kcard .ki{display:inline-block;width:8px;height:8px;margin-right:8px;vertical-align:middle}
+#v-fam .p,#v-model .p{border-radius:12px}
+#v-fam .p-h small,#v-model .p-h small{display:none}
+#v-fam #fRead{border:0;border-left:2px solid var(--accent);padding:2px 0 2px 12px;background:transparent;font-size:12px;line-height:1.7;color:var(--ink-2);margin:0}
+#v-fam .tree{font-size:12px}#v-fam .tree .code{font-size:10.5px}
+#v-fam table{font-size:12px}#v-fam th{font-size:11px;color:var(--ink-3);font-weight:500}
+#v-fam td.r{font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums}
+#v-fam td.r .st{font-family:var(--font-num);color:var(--ink);font-size:12px}
+#v-fam td.r .st .status-word{display:none}
+#v-fam td.tr svg{display:block;width:120px;height:24px}
+#v-fam .code{font-size:11px}
+#v-model{display:grid;gap:20px}
+#v-model .steps li::before{background:var(--panel-2);color:var(--accent);font-family:var(--font-num);font-weight:700}
+#v-model .steps b{font-size:13px}#v-model .steps span{font-size:11.5px}
+#v-model .obj{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+#v-model .obj h3{font-size:13px;justify-content:space-between}
+#v-model .obj h3 small{font-family:var(--font-mono);font-size:9.5px;color:#5b6578;background:#eef2f8;border:1px solid #c9d3e3;border-radius:8px;padding:0 7px;line-height:15px}
+#v-model .obj p{font-size:11.5px}
+#v-model .links td:nth-child(2) span{font-family:var(--font-mono);font-size:10.5px;color:#3f58a8;background:#eaf0ff;border:1px solid #a9b9e0;border-radius:8px;padding:0 7px}
+#v-model .links td{font-size:12px}
+#graphM{margin:0;width:100%}.model-graph .detail{font-size:11px;min-height:1.6em}
+</style><style id="r11">
+/* r11: 資料處理流程 → vertical pipeline stepper (icon rail + connector + step card with metric) */
+:is(#v-model,.drawer) .pipe{list-style:none;margin:0;padding:0;display:grid}
+:is(#v-model,.drawer) .pipe li{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:14px;cursor:pointer;outline:none}
+:is(#v-model,.drawer) .pipe .rail{position:relative;display:flex;flex-direction:column;align-items:center}
+:is(#v-model,.drawer) .pipe .ic{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid #c9d3e3;display:grid;place-items:center;color:#5b6b88;flex:none;position:relative;z-index:1;transition:border-color .25s,color .25s}
+:is(#v-model,.drawer) .pipe .ln{flex:1 1 auto;width:0;border-left:1.5px dashed #c3cde0;margin:4px 0;position:relative;min-height:18px}
+:is(#v-model,.drawer) .pipe li:last-child .ln{display:none}
+:is(#v-model,.drawer) .pipe .card{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:10px;transition:border-color .25s,opacity .25s}
+:is(#v-model,.drawer) .pipe .hd{display:flex;align-items:baseline;gap:8px}
+:is(#v-model,.drawer) .pipe .no{font-family:var(--font-num);font-weight:700;font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+:is(#v-model,.drawer) .pipe .tt{font-size:13px;font-weight:600;color:var(--ink)}
+:is(#v-model,.drawer) .pipe .ds{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin-top:2px}
+:is(#v-model,.drawer) .pipe .mt{text-align:right;min-width:72px}
+:is(#v-model,.drawer) .pipe .mn{font-family:var(--font-num);font-weight:700;font-size:22px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+:is(#v-model,.drawer) .pipe .ml{font-size:10.5px;color:var(--ink-3);margin-top:3px;white-space:nowrap}
+:is(#v-model,.drawer) .pipe .tg{display:inline-block;font-size:9.5px;line-height:15px;padding:0 7px;border-radius:8px;border:1px solid #c9d3e3;background:#eef2f8;color:#5b6578;margin-top:4px}
+:is(#v-model,.drawer) .pipe .tg.warn{background:#fff6e8;border-color:#ecc58a;color:#9a6417}
+:is(#v-model,.drawer) .pipe li:hover .card{border-color:#c9d3e3}
+:is(#v-model,.drawer) .pipe li.on .card{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+:is(#v-model,.drawer) .pipe li.on .ic{border-color:var(--accent);color:var(--accent)}
+:is(#v-model,.drawer) .pipe.sel li:not(.on):not(.nx) .card{opacity:.55}
+:is(#v-model,.drawer) .pipe li.on .ln{border-left:1.5px solid var(--accent)}
+:is(#v-model,.drawer) .pipe li.on .ln::after{content:"";position:absolute;left:-4.75px;top:0;width:8px;height:8px;border-radius:50%;background:#4aa3ff;box-shadow:0 0 6px 2px #4aa3ff99,0 0 14px 4px #4aa3ff44;animation:pipe-dot 2.2s linear infinite}
+@keyframes pipe-dot{0%{top:0;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:calc(100% - 8px);opacity:0}}
+@media(prefers-reduced-motion:reduce){:is(#v-model,.drawer) .pipe li.on .ln::after{display:none}}
+</style><style id="r12">
+/* r12: info drawer + configurable ontology lists */
+#v-model .mv{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+#v-model .mv>.col{display:contents}
+.info-btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:5px;background:#e9edf4;color:var(--ink-2);font-size:11px;padding:6px 10px;cursor:pointer}
+.info-btn:hover{background:var(--panel-2);color:var(--ink)}
+.info-btn .ii{width:14px;height:14px;border-radius:50%;border:1.3px solid currentColor;display:grid;place-items:center;font:700 9px/1 var(--font-num)}
+.scrim{position:fixed;inset:0;background:#20253233;opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--panel);box-shadow:-12px 0 32px #2025321f;transform:translateX(100%);transition:transform .32s cubic-bezier(.22,1,.36,1);z-index:41;display:flex;flex-direction:column;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.drawer-h{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 10px}
+.drawer-h h2{margin:0;font-size:13px;font-weight:600}
+.drawer-b{flex:1 1 auto;overflow-y:auto;padding:8px 22px 22px;scrollbar-width:thin}
+.icon-btn{border:0;background:transparent;color:var(--ink-3);width:28px;height:28px;border-radius:6px;display:inline-grid;place-items:center;cursor:pointer}
+.icon-btn:hover{background:var(--panel-2);color:var(--ink)}
+.icon-btn.danger:hover{color:var(--crit);background:#fbecee}
+.p-h .control.add{font-size:11px}
+/* object type cards */
+.otype-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.otype{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:32px minmax(0,1fr) auto;column-gap:10px;align-items:start}
+.otype .oi{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--bc);background:var(--bg2);color:var(--fc)}
+.otype .on{font-size:13px;font-weight:600;color:var(--ink);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.otype .od{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin-top:2px}
+.otype .acts,.rtab .acts{display:flex;gap:2px;opacity:.6}.otype:hover .acts,.rtab tr:hover .acts{opacity:1}
+.ktag{font-family:var(--font-mono);font-size:9.5px;line-height:15px;padding:0 7px;border-radius:8px;border:1px solid var(--bc,#c9d3e3);background:var(--bg2,#eef2f8);color:var(--fc,#5b6578);white-space:nowrap}
+.c-blue{--bc:#a9b9e0;--bg2:#eaf0ff;--fc:#3f58a8;--ln:#7d95d6}
+.c-amber{--bc:#ecc58a;--bg2:#fff6e8;--fc:#9a6417;--ln:#e0a24a}
+.c-gray{--bc:#c9d3e3;--bg2:#eef2f8;--fc:#5b6578;--ln:#aab6c9}
+/* relationship table */
+.rtab td{font-size:12px;vertical-align:middle}
+.rtab .sw{display:inline-block;width:24px;border-top:2px solid var(--ln);vertical-align:middle}
+.rtab .sw.dash{border-top-style:dashed}
+.rtab .rd{font-size:11px;color:var(--ink-3)}
+.empty{border:1px dashed var(--line-2);border-radius:10px;padding:18px;text-align:center;font-size:11.5px;color:var(--ink-3)}
+.cfg-foot{display:flex;justify-content:flex-end;padding:0 22px 14px}
+.linkish{border:0;background:none;color:var(--ink-3);font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.linkish:hover{color:var(--ink)}
+/* modal form */
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%);opacity:0;pointer-events:none;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;background:var(--panel);border-radius:12px;box-shadow:0 18px 48px #20253229;z-index:43;transition:opacity .2s,transform .2s}
+.modal.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+.modal-scrim{z-index:42}
+.modal form{padding:6px 22px 18px;display:grid;gap:12px}
+.fld{display:grid;gap:4px}.fld>span{font-size:11px;color:var(--ink-3)}
+.fld input,.fld select,.fld textarea{font:inherit;font-size:12px;color:var(--ink);background:#fff;border:1px solid var(--line-2);border-radius:6px;padding:7px 9px;outline:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px #647cc433}
+.fld input.mono{font-family:var(--font-mono)}
+.fld .err{font-size:10.5px;color:var(--crit);min-height:0}
+.fld.bad input,.fld.bad select{border-color:var(--crit)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.fld{min-width:0}.fld input,.fld select,.fld textarea{width:100%;min-width:0;box-sizing:border-box}.pick .dot{display:inline-block}.pick .opt>span{display:inline-flex}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.pick label{cursor:pointer}.pick input{position:absolute;opacity:0;pointer-events:none}
+.pick .opt{display:inline-grid;place-items:center;min-width:32px;height:32px;padding:0 10px;border:1px solid var(--line-2);border-radius:8px;background:#fff;color:var(--ink-2);font-size:11px;gap:6px;grid-auto-flow:column}
+.pick input:checked+.opt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);color:var(--ink)}
+.pick input:focus-visible+.opt{outline:2px solid var(--accent);outline-offset:2px}
+.pick .dot{width:10px;height:10px;border-radius:50%;background:var(--ln)}
+.pick .lsw{width:22px;border-top:2px solid var(--ink-2)}.pick .lsw.dash{border-top-style:dashed}
+.form-acts{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
+.btn{font-size:12px;border-radius:6px;padding:7px 14px;cursor:pointer;border:1px solid var(--line-2);background:#fff;color:var(--ink)}
+.btn.primary{background:#252a33;border-color:#252a33;color:#fff}
+.btn.danger{background:var(--crit);border-color:var(--crit);color:#fff}
+.warnbox{font-size:11.5px;color:#9a6417;background:#fff6e8;border:1px solid #ecc58a;border-radius:8px;padding:8px 10px;line-height:1.6}
+.confirm-msg{font-size:12px;color:var(--ink-2);line-height:1.7;margin:0}
+@media(prefers-reduced-motion:reduce){.drawer,.scrim,.modal{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><small>Shipping Data × Ontology</small><h1>貨量動能戰情室</h1></div>
+    <nav class="tabs" role="tablist" aria-label="檢視">
+      <button role="tab" id="tab-home" aria-selected="true" data-v="home">總覽</button>
+      <button role="tab" id="tab-fam" aria-selected="false" data-v="fam">企業家族</button>
+      <button role="tab" id="tab-model" aria-selected="false" data-v="model">Ontology 模型</button>
+    </nav>
+    <span class="demo">概念示意 · 公司與數據皆為虛構</span>
+  </header>
+
+  <main class="stage">
+    <!-- overview -->
+    <section class="view home" id="v-home">
+      <div class="col">
+        <div class="p">
+          <div class="p-h"><h2>歸戶進度</h2><small>截至 2026-09</small></div>
+          <div class="kpi"><span class="kpi-l">提單上的託運人／收貨人名稱</span><span class="kpi-v">18,420<small>筆原始名稱</small></span></div>
+          <div class="kpi"><span class="kpi-l">比對到 D-U-N-S 法人</span><span class="kpi-v">6,315<small>個法人</small></span><span class="kpi-d">比對率 94.2%，另 312 筆待人工確認</span></div>
+          <div class="kpi"><span class="kpi-l">歸入企業家族</span><span class="kpi-v">1,204<small>個家族</small></span><span class="kpi-d">近 3 月貨量成長的家族 <b id="k-up"></b> 個</span></div>
+        </div>
+        <div class="p">
+          <div class="p-h"><h2>重點客戶家族</h2><small>近 3 月 vs 前 3 月</small></div>
+          <ul class="fams" id="famList"></ul>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="p">
+          <div class="p-h"><h2>Ontology 關聯圖 · 宏遠電子集團</h2><small>點選節點看說明</small></div>
+          <div class="p-b">
+            <div class="graph" id="graph"></div>
+            <div class="key">
+              <span><i style="--c:var(--line-2)" class="dash"></i>提單原始名稱</span>
+              <span><i style="--c:var(--accent)"></i>實體解析／家族歸戶</span>
+              <span><i style="--c:var(--c2)" class="dash"></i>供應鏈上下游（由貨載推導）</span>
+            </div>
+            <div class="detail" id="detail"></div>
+          </div>
+        </div>
+        <div class="p">
+          <div class="p-h"><h2>只看單一託運人 vs 家族歸戶</h2><small>TEU／月</small></div>
+          <div class="p-b">
+            <div class="legend" id="cmpLegend"></div>
+            <div class="chart" id="cmpChart"></div>
+            <p class="callout" id="cmpNote"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col c-right">
+        <div class="p">
+          <div class="p-h"><h2>訊號</h2><small>最近 30 天</small></div>
+          <ul class="feed" id="feed"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- family drill-down -->
+    <section class="view fv" id="v-fam" hidden>
+      <div class="chips" id="famChips" role="group" aria-label="選擇企業家族"></div>
+      <div class="fv-h">
+        <div><h2 id="fTitle"></h2><p id="fSub"></p></div>
+        <span id="fStatus"></span>
+      </div>
+      <div class="fv-grid">
+        <div class="p">
+          <div class="p-h"><h2>家族成員貨量</h2><small>TEU／月，2025-10 至 2026-09</small></div>
+          <div class="p-b">
+            <div class="legend" id="fLegend"></div>
+            <div class="chart" id="fChart"></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="p">
+            <div class="p-h"><h2>D&amp;B 家族樹</h2><small>Global Ultimate 為根</small></div>
+            <div class="p-b"><ul class="tree" id="fTree"></ul></div>
+          </div>
+          <div class="p">
+            <div class="p-h"><h2>解讀</h2></div>
+            <div class="p-b"><p class="callout" id="fRead"></p></div>
+          </div>
+        </div>
+      </div>
+      <div class="p">
+        <div class="p-h"><h2>成員明細</h2></div>
+        <div class="x-scroll">
+          <table id="fTable"><thead><tr><th>法人</th><th>D-U-N-S</th><th>國家</th><th>角色</th><th class="r">近 12 月 TEU</th><th class="r">近 3 月變化</th><th class="r">家族占比</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- model -->
+    <section class="view" id="v-model" hidden>
+      <div class="mv">
+        <div class="p">
+          <div class="p-h"><h2>資料處理流程</h2></div>
+          <div class="p-b">
+            <ol class="steps">
+              <li><b>匯入提單與艙單</b><span>每筆貨載帶有 B/L 號碼、裝卸港、TEU、品項 HS code，以及託運人、收貨人、通知人的原始名稱與地址。</span></li>
+              <li><b>名稱與地址清洗</b><span>統一大小寫、公司型態字尾（CO LTD、SA DE CV、Sdn Bhd）與地址格式，減少同一家公司的寫法差異。</span></li>
+              <li><b>比對 D-U-N-S 編碼</b><span>以鄧白氏比對服務取得 D-U-N-S 與信心分數；低於門檻的名稱進入人工確認清單。</span></li>
+              <li><b>掛上企業家族樹</b><span>依鄧白氏家族樹（Parent、Domestic Ultimate、Global Ultimate）把各地子公司歸到同一家族。</span></li>
+              <li><b>推導上下游關係</b><span>同一批貨的託運人與收貨人形成「供貨給」關係，串出供應商、工廠、買方的鏈條。</span></li>
+              <li><b>家族層級趨勢偵測</b><span>以家族為單位比較近 3 月與前 3 月 TEU，並偵測貨量在成員之間的移轉（例如產線外移）。</span></li>
+            </ol>
+          </div>
+        </div>
+        <div class="col">
+          <div class="p">
+            <div class="p-h"><h2>物件類型</h2></div>
+            <div class="p-b objs">
+              <div class="obj"><h3>貨載<small>Shipment</small></h3><p>B/L 號碼、裝卸港、開航日、TEU、HS code</p></div>
+              <div class="obj"><h3>當事人<small>Party</small></h3><p>提單上的原始名稱、地址、角色（託運人／收貨人）</p></div>
+              <div class="obj"><h3>法人實體<small>LegalEntity</small></h3><p>D-U-N-S、國家、產業別（SIC）、營運狀態</p></div>
+              <div class="obj"><h3>企業家族<small>CorporateFamily</small></h3><p>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</p></div>
+            </div>
+          </div>
+          <div class="p">
+            <div class="p-h"><h2>關聯類型</h2></div>
+            <div class="x-scroll">
+              <table class="links"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody>
+                <tr><td>貨載</td><td>shipper / consignee</td><td>當事人</td></tr>
+                <tr><td>當事人</td><td>resolvesTo</td><td>法人實體</td></tr>
+                <tr><td>法人實體</td><td>parent</td><td>法人實體</td></tr>
+                <tr><td>法人實體</td><td>memberOf</td><td>企業家族</td></tr>
+                <tr><td>法人實體</td><td>suppliesTo</td><td>法人實體</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const MONTHS=['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09'];
+const PAL=['var(--accent)','var(--c2)','var(--c3)','var(--c4)'];
+const FAMS=[
+ {id:'hy',name:'宏遠電子集團',ind:'電子零組件',gu:'65-482-1937',members:[
+   {n:'宏遠電子股份有限公司',d:'65-482-1937',c:'台灣',role:'Global Ultimate・桃園廠',v:[420,410,405,398,380,372,360,355,348,340,335,330]},
+   {n:'Hong Yuan Electronics Vietnam Co., Ltd.',d:'66-103-5528',c:'越南',role:'子公司・海防廠',v:[80,92,105,118,140,158,175,192,210,228,245,262]},
+   {n:'HY Electrónica de México, S.A. de C.V.',d:'81-277-4405',c:'墨西哥',role:'子公司・蒙特雷廠',v:[20,24,30,35,44,52,60,70,80,92,100,112]}],
+  read:'台灣母公司貨量逐月下滑，越南與墨西哥子公司同步成長，家族整體仍在擴張。這是產線外移，不是客戶流失；業務應把資源跟著轉到海防與蒙特雷的航線。'},
+ {id:'hs',name:'海晟家具集團',ind:'家具',gu:'65-778-3390',members:[
+   {n:'海晟國際股份有限公司',d:'65-778-3390',c:'台灣',role:'Global Ultimate・總部',v:[0,0,0,0,0,0,0,0,0,0,0,0]},
+   {n:'Haisheng Furniture (Binh Duong) Co., Ltd.',d:'55-904-1186',c:'越南',role:'子公司・平陽廠',v:[110,118,125,135,150,160,172,185,198,214,228,245]},
+   {n:'Haisheng Furniture (M) Sdn. Bhd.',d:'65-551-7023',c:'馬來西亞',role:'子公司・巴生廠',v:[40,42,44,48,50,55,58,62,66,70,75,80]}],
+  read:'台北總部本身不出貨，若只看提單會完全看不到這個客戶的規模。歸戶後家族兩座工廠皆在成長，適合以總部為窗口洽談長約。'},
+ {id:'oa',name:'綠洲食品集團',ind:'食品加工',gu:'65-207-8841',members:[
+   {n:'綠洲食品工業股份有限公司',d:'65-207-8841',c:'台灣',role:'Global Ultimate・台南廠',v:[180,182,185,188,190,195,198,200,205,210,214,220]},
+   {n:'Oasis Foods (Thailand) Co., Ltd.',d:'65-889-3417',c:'泰國',role:'子公司・春武里廠',v:[60,62,63,66,70,72,76,80,84,88,92,98]}],
+  read:'兩地工廠穩定成長，泰國廠成長較快。冷凍櫃需求可能隨之增加，可提前確認冷凍櫃配置。'},
+ {id:'dr',name:'東瑞化纖集團',ind:'紡織化纖',gu:'65-910-2264',members:[
+   {n:'東瑞化纖股份有限公司',d:'65-910-2264',c:'台灣',role:'Global Ultimate・彰化廠',v:[300,305,298,310,302,296,305,300,298,304,300,297]},
+   {n:'PT Dongrui Fiber Indonesia',d:'85-334-0912',c:'印尼',role:'子公司・萬丹廠',v:[150,148,155,150,152,158,150,149,155,151,153,150]}],
+  read:'家族貨量持平，成員之間沒有明顯移轉。屬於穩定的基本盤客戶。'},
+ {id:'bc',name:'北辰機械集團',ind:'工具機',gu:'65-631-0057',members:[
+   {n:'北辰機械股份有限公司',d:'65-631-0057',c:'台灣',role:'Global Ultimate・台中廠',v:[260,258,250,245,240,232,225,220,214,206,200,192]},
+   {n:'寧波北辰精機有限公司',d:'54-718-2290',c:'中國',role:'子公司・寧波廠',v:[140,138,135,130,128,124,120,116,112,110,105,100]}],
+  read:'兩地工廠同時下滑，且沒有其他成員接手貨量，代表家族整體需求轉弱或轉向其他航商。建議業務優先拜訪。'}
+];
+const sum=a=>a.reduce((x,y)=>x+y,0);
+FAMS.forEach(f=>{f.total=MONTHS.map((_,i)=>sum(f.members.map(m=>m.v[i])));});
+const chg=v=>{const r=sum(v.slice(-3)),p=sum(v.slice(-6,-3));return p?((r-p)/p*100):0};
+function status(p){
+  if(p>=10)return['up2','強勁成長'];if(p>=3)return['up1','成長'];
+  if(p>-3)return['flat','持平'];if(p>-10)return['dn1','衰退'];return['dn2','明顯衰退'];
+}
+const pct=p=>(p>0?'+':p<0?'−':'')+Math.abs(p).toFixed(1)+'%';
+const stTag=p=>{const[s,l]=status(p);return `<span class="st ${s}"><i></i>${l} ${pct(p)}</span>`};
+const fmt=n=>n.toLocaleString('en-US');
+const NS='http://www.w3.org/2000/svg';
+
+function spark(v,w=70,h=20){
+  const mx=Math.max(...v),mn=Math.min(...v),r=mx-mn||1;
+  const pts=v.map((x,i)=>`${(i/(v.length-1)*(w-4)+2).toFixed(1)},${(h-2-(x-mn)/r*(h-4)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--ink-2)" stroke-width="1.4"/><circle cx="${pts.split(' ').pop().split(',')[0]}" cy="${pts.split(' ').pop().split(',')[1]}" r="2.2" fill="var(--ink)"/></svg>`;
+}
+
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,1.5,2,2.5,3,4,5,6,8,10])if(m*p>=v)return m*p;return 10*p}
+
+function lineChart(el,series,{H=280}={}){
+  const W=640,L=44,R=64,T=14,B=28;
+  const mx=niceMax(Math.max(...series.flatMap(s=>s.v))*1.05);
+  const x=i=>L+i*(W-L-R)/(MONTHS.length-1), y=v=>T+(1-v/mx)*(H-T-B);
+  let g='';
+  for(let k=0;k<=4;k++){const val=mx*k/4,yy=y(val);g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/><text class="ax" x="${L-8}" y="${yy+4}" text-anchor="end">${fmt(val)}</text>`}
+  MONTHS.forEach((m,i)=>{if(i%2===0)g+=`<text class="ax" x="${x(i)}" y="${H-8}" text-anchor="middle">${m.slice(2).replace('-','/')}</text>`});
+  series.forEach(s=>{
+    const d=s.v.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+    if(s.area)g+=`<path d="${d}L${x(MONTHS.length-1)},${y(0)}L${x(0)},${y(0)}Z" fill="${s.c}" fill-opacity=".09"/>`;
+    g+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="${s.w||1.8}" stroke-linejoin="round"${s.dash?' stroke-dasharray="5 4"':''}/>`;
+  });
+  // end labels, de-overlapped
+  const ends=series.map(s=>({s,yy:y(s.v.at(-1))})).sort((a,b)=>a.yy-b.yy);
+  for(let i=1;i<ends.length;i++)if(ends[i].yy-ends[i-1].yy<14)ends[i].yy=ends[i-1].yy+14;
+  ends.forEach(({s,yy})=>{g+=`<circle cx="${x(MONTHS.length-1)}" cy="${y(s.v.at(-1))}" r="3" fill="${s.c}"/><text class="endl" x="${W-R+8}" y="${yy+4}">${fmt(s.v.at(-1))}</text>`});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="月度 TEU 折線圖">${g}<line class="hl" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="var(--ink-3)" stroke-width="1" visibility="hidden"/><rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/></svg><div class="tip" hidden></div>`;
+  const svg=el.querySelector('svg'),hl=svg.querySelector('.hl'),tip=el.querySelector('.tip');
+  const move=e=>{
+    const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;
+    const i=Math.max(0,Math.min(MONTHS.length-1,Math.round((px-L)/(W-L-R)*(MONTHS.length-1))));
+    hl.setAttribute('x1',x(i));hl.setAttribute('x2',x(i));hl.setAttribute('visibility','visible');
+    tip.innerHTML=`<b>${MONTHS[i]}</b><br>`+series.map(s=>`<span class="sw" style="background:${s.c}"></span>${s.n}　<b>${fmt(s.v[i])}</b>`).join('<br>');
+    tip.hidden=false;
+    const lx=x(i)/W*r.width;
+    tip.style.top='8px';
+    tip.style.left=(lx>r.width/2? lx-tip.offsetWidth-12 : lx+12)+'px';
+  };
+  svg.addEventListener('pointermove',move);
+  svg.addEventListener('pointerleave',()=>{tip.hidden=true;hl.setAttribute('visibility','hidden')});
+}
+
+/* overview: family list */
+let curFam='hy';
+const famList=document.getElementById('famList');
+famList.innerHTML=FAMS.map(f=>{const p=chg(f.total);return `<li><button class="fam" data-f="${f.id}"><b>${f.name}</b>${spark(f.total)}<span class="sub">${stTag(p)}<span>${f.members.length} 個法人</span></span></button></li>`}).join('');
+famList.addEventListener('click',e=>{const b=e.target.closest('.fam');if(b){curFam=b.dataset.f;show('fam')}});
+document.getElementById('k-up').textContent=FAMS.filter(f=>chg(f.total)>=3).length+' / '+FAMS.length+' 重點';
+
+/* overview: ontology graph */
+const G={
+  nodes:[
+    {id:'r1',k:'raw',x:10,y:88,w:150,t:'HONG YUAN ELEC CO LTD',s:'託運人・B/L 1,284 筆',info:'提單上的原始寫法之一。同一家公司在不同提單上可能有十幾種寫法，系統先清洗再比對。'},
+    {id:'r2',k:'raw',x:10,y:178,w:150,t:'HONGYUAN ELECTRONICS VN',s:'託運人・B/L 962 筆',info:'越南工廠出貨時使用的英文名稱，表面上看不出與台灣宏遠的關係。'},
+    {id:'r3',k:'raw',x:10,y:268,w:150,t:'HY ELECTRONICA MX SA',s:'託運人・B/L 418 筆',info:'墨西哥子公司的西文名稱縮寫，以地址與鄧白氏比對服務確認身分，信心分數 0.97。'},
+    {id:'e1',k:'ent',x:222,y:85,w:160,t:'宏遠電子（台灣）',s:'D-U-N-S 65-482-1937',info:'<b>法人實體</b>：宏遠電子股份有限公司，同時是家族的 Global Ultimate。近 3 月貨量 '+pct(chg(FAMS[0].members[0].v))+'。'},
+    {id:'e2',k:'ent',x:222,y:175,w:160,t:'宏遠越南・海防廠',s:'D-U-N-S 66-103-5528',info:'<b>法人實體</b>：Hong Yuan Electronics Vietnam。近 3 月貨量 '+pct(chg(FAMS[0].members[1].v))+'。'},
+    {id:'e3',k:'ent',x:222,y:265,w:160,t:'宏遠墨西哥・蒙特雷廠',s:'D-U-N-S 81-277-4405',info:'<b>法人實體</b>：HY Electrónica de México。近 3 月貨量 '+pct(chg(FAMS[0].members[2].v))+'。'},
+    {id:'f',k:'fam',x:448,y:172,w:178,h:56,t:'宏遠電子集團',s:'Global Ultimate 65-482-1937',info:'<b>企業家族</b>：三個法人歸到同一家族後，家族近 3 月貨量 '+pct(chg(FAMS[0].total))+'，與只看台灣母公司的結論相反。'},
+    {id:'up',k:'ext',x:448,y:40,w:178,t:'晶采材料（供應商）',s:'D-U-N-S 65-319-6610',info:'<b>上游</b>：由「晶采為託運人、宏遠為收貨人」的進口貨載推導出供貨關係。原料進口量通常領先成品出口數週，可當作預警。'},
+    {id:'dn',k:'ext',x:448,y:310,w:178,t:'Northbay Retail Inc.（買方）',s:'D-U-N-S 04-882-3315',info:'<b>下游</b>：家族三座工廠的主要收貨人。買方的訂單變化會沿供應鏈影響宏遠的出貨量。'}
+  ],
+  edges:[['r1','e1','解析為','res'],['r2','e2','解析為','res'],['r3','e3','解析為','res'],['e1','f','隸屬','res'],['e2','f','隸屬','res'],['e3','f','隸屬','res'],['up','e1','供貨給','sc'],['f','dn','出貨給','sc']]
+};
+(function drawGraph(){
+  const N={};G.nodes.forEach(n=>{n.h=n.h||44;N[n.id]=n});
+  let s=`<text class="gl" x="85" y="22" text-anchor="middle">提單原始名稱</text><text class="gl" x="302" y="22" text-anchor="middle">D-U-N-S 法人</text>`;
+  G.edges.forEach(([a,b,l,k])=>{
+    const A=N[a],Bn=N[b];let x1,y1,x2,y2;
+    if(k==='sc'&&a==='f'){x1=A.x+A.w/2;y1=A.y+A.h;x2=Bn.x+Bn.w/2;y2=Bn.y}
+    else if(a==='up'){x1=A.x;y1=A.y+A.h/2;x2=Bn.x+Bn.w;y2=Bn.y+Bn.h/2}
+    else{x1=A.x+A.w;y1=A.y+A.h/2;x2=Bn.x;y2=Bn.y+Bn.h/2}
+    s+=`<path class="ed ${k}" d="M${x1},${y1}L${x2},${y2}" marker-end="url(#ar-${k})"/>`;
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    if(!(b==='f'&&a!=='e2'))s+=`<text class="el" x="${mx+(a==='f'?6:0)}" y="${my-4}" text-anchor="${a==='f'?'start':'middle'}">${l}</text>`;
+  });
+  G.nodes.forEach(n=>{
+    s+=`<g class="nd ${n.k}" data-n="${n.id}" tabindex="0" role="button" aria-label="${n.t}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="5"/><text class="n1" x="${n.x+10}" y="${n.y+(n.h/2)-3}">${n.t}</text><text class="n2" x="${n.x+10}" y="${n.y+n.h/2+12}">${n.s}</text></g>`;
+  });
+  const defs=`<defs>${[['res','var(--accent)'],['sc','var(--c2)']].map(([k,c])=>`<marker id="ar-${k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8Z" fill="${c}"/></marker>`).join('')}</defs>`;
+  const el=document.getElementById('graph');
+  el.innerHTML=`<svg viewBox="0 0 640 366" role="img" aria-label="宏遠電子集團的實體解析與上下游關聯圖">${defs}${s}</svg>`;
+  const det=document.getElementById('detail');
+  const pick=id=>{el.querySelectorAll('.nd').forEach(g=>g.classList.toggle('on',g.dataset.n===id));det.innerHTML=N[id].info};
+  el.addEventListener('click',e=>{const g=e.target.closest('.nd');if(g)pick(g.dataset.n)});
+  el.addEventListener('keydown',e=>{const g=e.target.closest('.nd');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(g.dataset.n)}});
+  pick('f');
+})();
+
+/* overview: compare chart */
+(function(){
+  const f=FAMS[0],tw=f.members[0];
+  const ser=[{n:'家族歸戶（3 個法人）',v:f.total,c:'var(--accent)',w:2.6,area:true},{n:'只看台灣母公司',v:tw.v,c:'var(--ink-3)',w:1.8,dash:true}];
+  document.getElementById('cmpLegend').innerHTML=ser.map(s=>`<span><i style="--c:${s.c}"></i>${s.n}</span>`).join('');
+  lineChart(document.getElementById('cmpChart'),ser,{H:240});
+  document.getElementById('cmpNote').innerHTML=`只看提單上的「宏遠電子」，近 3 月貨量 <b>${pct(chg(tw.v))}</b>，會被判為流失風險；歸戶到企業家族後是 <b>${pct(chg(f.total))}</b>，實際在成長，只是出貨地移到越南與墨西哥。`;
+})();
+
+/* overview: feed */
+(function(){
+  const hy=FAMS[0],bc=FAMS.find(f=>f.id==='bc'),hs=FAMS.find(f=>f.id==='hs');
+  const items=[
+    ['2026-10-06','k-fam','家族趨勢',`宏遠電子集團近 3 月 ${pct(chg(hy.total))}，台灣母公司 ${pct(chg(hy.members[0].v))}，貨量移往越南海防廠。`],
+    ['2026-10-03','','實體解析','「HY ELECTRONICA MX SA」比對到 D-U-N-S 81-277-4405，信心 0.97，已歸入宏遠電子集團。'],
+    ['2026-09-28','k-sc','上游訊號','晶采材料出貨給宏遠的原料櫃量近 2 月 +22%，成品出口可能在 6 週後跟進。'],
+    ['2026-09-21','k-fam','家族趨勢',`北辰機械集團近 3 月 ${pct(chg(bc.total))}，台灣與寧波兩廠同步下滑。`],
+    ['2026-09-15','k-fam','家族趨勢',`海晟家具集團近 3 月 ${pct(chg(hs.total))}；台北總部不出貨，貨量全部來自越南與馬來西亞工廠。`],
+    ['2026-09-08','','待確認','「OASIS FOOD THAI」有 2 個 D-U-N-S 候選，已送人工確認。']
+  ];
+  document.getElementById('feed').innerHTML=items.map(([d,k,l,t])=>`<li class="fi"><time>${d}<span class="kind ${k}">${l}</span></time><p>${t}</p></li>`).join('');
+})();
+
+/* family view */
+const chips=document.getElementById('famChips');
+chips.innerHTML=FAMS.map(f=>`<button data-f="${f.id}" aria-pressed="false">${f.name}</button>`).join('');
+chips.addEventListener('click',e=>{const b=e.target.closest('button');if(b){curFam=b.dataset.f;renderFam()}});
+function renderFam(){
+  const f=FAMS.find(x=>x.id===curFam);
+  chips.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===curFam));
+  famList.querySelectorAll('.fam').forEach(b=>b.setAttribute('aria-current',b.dataset.f===curFam));
+  document.getElementById('fTitle').textContent=f.name;
+  document.getElementById('fSub').textContent=`${f.ind}・Global Ultimate D-U-N-S ${f.gu}・${f.members.length} 個法人・近 12 月 ${fmt(sum(f.total))} TEU`;
+  document.getElementById('fStatus').innerHTML=stTag(chg(f.total));
+  const active=f.members.filter(m=>sum(m.v)>0);
+  const ser=[{n:'家族合計',v:f.total,c:'var(--ink)',w:2.6}].concat(active.map((m,i)=>({n:m.n.replace(/,? (Co\.|S\.A\.|Sdn\.).*$/,''),v:m.v,c:PAL[i%PAL.length]})));
+  document.getElementById('fLegend').innerHTML=ser.map((s,i)=>`<span><i class="${i?'':'tot'}" style="--c:${s.c}"></i>${s.n}</span>`).join('');
+  lineChart(document.getElementById('fChart'),ser);
+  const [gu,...subs]=f.members;
+  document.getElementById('fTree').innerHTML=`<li class="gu">${gu.n}<small class="code">${gu.d}</small></li>`+subs.map(m=>`<li>${m.n}<small>${m.c}</small><small class="code">${m.d}</small></li>`).join('');
+  document.getElementById('fRead').textContent=f.read;
+  const tot=sum(f.total);
+  document.querySelector('#fTable tbody').innerHTML=f.members.map(m=>{const s=sum(m.v);return `<tr><td>${m.n}</td><td class="code">${m.d}</td><td>${m.c}</td><td>${m.role}</td><td class="r">${s?fmt(s):'—'}</td><td class="r">${s?stTag(chg(m.v)):'<span class="note">無直接出貨</span>'}</td><td class="r">${s?(s/tot*100).toFixed(0)+'%':'—'}</td></tr>`}).join('');
+}
+
+/* tabs */
+function show(v){
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));
+  ['home','fam','model'].forEach(k=>document.getElementById('v-'+k).hidden=k!==v);
+  if(v==='fam')renderFam();
+  try{localStorage.setItem('tab',v)}catch(e){}
+  window.scrollTo(0,0);
+}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)show(b.dataset.v)});
+const h=location.hash.slice(1);
+if(['home','fam','model'].includes(h))show(h);
+
+/* Executive overview: layout, motion and explicit demo refresh. */
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const home=document.getElementById('v-home');
+const progressPanel=home.querySelector('.col:first-child .p');
+const customerPanel=famList.closest('.p');
+const analysisPanel=document.getElementById('graph').closest('.p');
+const comparePanel=document.getElementById('cmpChart').closest('.p');
+const signalPanel=document.getElementById('feed').closest('.p');
+progressPanel.classList.add('progress-panel');customerPanel.classList.add('customer-panel');analysisPanel.classList.add('analysis-panel');signalPanel.classList.add('signal-panel');
+const header=document.createElement('div');header.className='overview-head';
+header.innerHTML=`<div><div class="eyebrow">OPERATIONS INTELLIGENCE / 01</div><h2>從全球貨流，看見集團動能。</h2><p>資料期間 2025.10 — 2026.09 · 概念展示，尚未串接 API</p></div><div class="route-globe" id="routeGlobe"></div>`;
+home.before(header);
+const oldShow=show;show=function(v){oldShow(v);header.hidden=v!=='home'};header.hidden=document.getElementById('v-home').hidden;
+const metrics=document.createElement('div');metrics.className='metrics-row';
+[...progressPanel.querySelectorAll('.kpi')].forEach(k=>metrics.append(k));
+progressPanel.querySelector('.p-h').innerHTML='<h2>01 / 歸戶進度</h2><button class="control" id="refreshDemo">重播更新示範 ↻</button>';
+const hero=document.createElement('div');hero.innerHTML='<div class="progress-hero"><div class="progress-value"><span data-count="94.2" data-decimals="1">94.2</span><small>%</small></div><div class="progress-label">法人比對率<br>312 筆待人工確認</div></div><div class="coverage-track" aria-hidden="true"><span></span></div>';
+progressPanel.append(hero,metrics);
+metrics.querySelectorAll('.kpi-v').forEach(el=>{const n=el.firstChild;const span=document.createElement('span');span.dataset.count=n.textContent.replace(/,/g,'').trim();span.textContent=n.textContent;el.replaceChild(span,n)});
+metrics.querySelectorAll('.kpi-d')[0].textContent='依名稱與地址比對法人';
+metrics.querySelectorAll('.kpi-d')[1].textContent='5 個重點家族中，3 個成長';
+customerPanel.querySelector('.p-h').innerHTML='<h2>02 / 重點客戶動能</h2><div class="sort-controls"><button class="control" data-sort="growth" aria-pressed="false">成長優先 ↓</button><button class="control" data-sort="risk" aria-pressed="false">風險優先 ↑</button></div>';
+customerPanel.querySelector('.p-h').insertAdjacentHTML('afterend','<p class="note" style="padding:8px 18px 0">近 3 月 vs 前 3 月 · 曲線為近 12 月家族 TEU</p>');
+const split=document.createElement('div');split.className='analysis-split';
+const graphBody=analysisPanel.querySelector('.p-b');
+const graphSide=document.createElement('div');while(graphBody.firstChild)graphSide.append(graphBody.firstChild);
+const comp=document.createElement('div');comp.className='comparison';comp.innerHTML='<h3>單一託運人 vs 家族歸戶 · TEU／月</h3>';
+while(comparePanel.querySelector('.p-b').firstChild)comp.append(comparePanel.querySelector('.p-b').firstChild);
+split.append(graphSide,comp);graphBody.append(split);comparePanel.remove();
+analysisPanel.querySelector('.p-h').innerHTML='<h2>03 / 歸戶判讀 · 宏遠電子集團</h2><small>點選節點，追溯歸戶路徑</small>';
+signalPanel.querySelector('.p-h').innerHTML='<h2>04 / 動態訊號</h2><small>示範事件 · 非即時推送</small>';
+let countFrame=0;
+function replayCounts(){cancelAnimationFrame(countFrame);const els=[...progressPanel.querySelectorAll('[data-count]')];const start=performance.now();els.forEach(e=>e.classList.remove('update-flash'));
+ const tick=now=>{const p=reducedMotion.matches?1:Math.min(1,(now-start)/900);const eased=1-Math.pow(1-p,4);els.forEach(e=>{const target=Number(e.dataset.count);e.textContent=(target*eased).toLocaleString('en-US',{minimumFractionDigits:Number(e.dataset.decimals||0),maximumFractionDigits:Number(e.dataset.decimals||0)})});if(p<1)countFrame=requestAnimationFrame(tick);else els.forEach(e=>e.classList.add('update-flash'))};countFrame=requestAnimationFrame(tick)}
+document.getElementById('refreshDemo').addEventListener('click',replayCounts);replayCounts();
+customerPanel.querySelectorAll('[data-sort]').forEach(button=>button.addEventListener('click',()=>{
+ const rows=[...famList.children];rows.forEach(row=>row.getAnimations().forEach(a=>a.finish()));const positions=new Map(rows.map(row=>[row,row.getBoundingClientRect().top]));
+ const ordered=[...FAMS].sort((a,b)=>button.dataset.sort==='growth'?chg(b.total)-chg(a.total):chg(a.total)-chg(b.total));
+ ordered.forEach(f=>{const row=rows.find(r=>r.querySelector('button').dataset.f===f.id);famList.append(row)});
+ if(!reducedMotion.matches)rows.forEach(row=>{const dy=positions.get(row)-row.getBoundingClientRect().top;if(dy)row.animate([{transform:`translateY(${dy}px)`},{transform:'translateY(0)'}],{duration:460,easing:'cubic-bezier(.22,1,.36,1)'})});
+ customerPanel.querySelectorAll('[data-sort]').forEach(b=>b.setAttribute('aria-pressed',b===button));
+}));
+const graph=document.getElementById('graph');
+function traceGraph(id){const pathEls=[...graph.querySelectorAll('.ed')];pathEls.forEach(p=>p.classList.remove('trace'));let indexes;
+ const member={r1:0,e1:0,r2:1,e2:1,r3:2,e3:2}[id];
+ if(member!==undefined)indexes=[member,member+3];else if(id==='up')indexes=[6,3,7];else indexes=[0,1,2,3,4,5,...(id==='dn'?[7]:[])];
+ void graph.getBoundingClientRect();indexes.forEach((i,j)=>{const p=pathEls[i];if(!p)return;p.style.setProperty('--path-length',p.getTotalLength());p.style.setProperty('--delay',`${(member!==undefined?j:i<3?0:1)*320}ms`);p.classList.add('trace')});
+}
+graph.addEventListener('click',e=>{const node=e.target.closest('.nd');if(node)traceGraph(node.dataset.n)});
+graph.addEventListener('keydown',e=>{const node=e.target.closest('.nd');if(node&&(e.key==='Enter'||e.key===' '))traceGraph(node.dataset.n)});
+/* Geometric dot globe: schematic routes, not live shipping positions. */
+let dots='';for(let y=-70;y<=70;y+=5)for(let x=-70;x<=70;x+=5)if(x*x+y*y<4900){const edge=Math.sqrt(1-(x*x+y*y)/4900);dots+=`<circle cx="${x+160}" cy="${y+77}" r="${.6+edge*.35}" fill="#386fe0" opacity="${.16+edge*.38}"/>`}
+document.getElementById('routeGlobe').innerHTML=`<svg viewBox="0 0 310 155" role="img" aria-label="全球航線點陣示意，非即時航線資料"><defs><clipPath id="globeClip"><circle cx="160" cy="77" r="70"/></clipPath></defs>${dots}<g fill="none" stroke="#386fe0" opacity=".22"><circle cx="160" cy="77" r="70"/><ellipse cx="160" cy="77" rx="36" ry="70"/><ellipse cx="160" cy="77" rx="70" ry="27"/><path d="M90 77H230M160 7V147"/></g><g fill="none" stroke="#386fe0" stroke-width="1.3"><path d="M104 98 Q155 -5 218 58"/><path d="M120 48 Q227 12 199 121"/><path d="M104 98 Q160 140 199 121" stroke-dasharray="3 3"/></g><g fill="#386fe0"><circle cx="104" cy="98" r="3"/><circle cx="218" cy="58" r="3"/><circle cx="120" cy="48" r="3"/><circle cx="199" cy="121" r="3"/></g><g fill="#697891" font-size="8"><text x="16" y="110">GLOBAL ROUTES</text><text x="235" y="56">SCHEMATIC</text></g></svg>`;
+/* Chart-first layout: the supplied monthly series is the only chart source. */
+document.querySelector('.brand').remove();
+const workspaceMeta=document.createElement('div');workspaceMeta.className='workspace-meta';workspaceMeta.innerHTML='<span>2025.10 — 2026.09</span><span>示範資料 · 尚未串接 API</span>';
+const globe=document.getElementById('routeGlobe');globe.className='route-mini';workspaceMeta.append(globe);document.querySelector('.bar').append(workspaceMeta);document.querySelector('.demo').remove();header.remove();
+progressPanel.querySelector('.p-h h2').textContent='歸戶進度';
+customerPanel.querySelector('.p-h h2').textContent='重點客戶動能';
+analysisPanel.querySelector('.p-h h2').textContent='歸戶判讀';
+analysisPanel.querySelector('.p-h small').textContent='宏遠電子集團 · 點選節點追溯關係';
+signalPanel.querySelector('.p-h h2').textContent='動態訊號';
+progressPanel.append(metrics);
+const inline=document.createElement('div');inline.className='coverage-inline';inline.append(hero);inline.insertAdjacentHTML('beforeend','<div class="coverage-ticks" aria-hidden="true"></div>');progressPanel.append(inline);
+const totals=MONTHS.map((_,i)=>sum(FAMS.map(f=>f.total[i])));
+const volume=document.createElement('div');volume.className='volume-overview';
+volume.innerHTML=`<div class="volume-meta"><span class="note">5 個重點家族 / 9 月貨量</span><strong>${fmt(totals.at(-1))}<small> TEU</small></strong><span class="st ${status(chg(totals))[0]}">${pct(chg(totals))}</span></div><div id="volumeGraphic"></div><div class="volume-caption"><span>直條與曲線：各月家族總貨量</span><span>變化率：近 3 月 vs 前 3 月</span></div>`;
+progressPanel.append(volume);
+function volumeGraphic(){
+ const W=720,H=225,L=12,R=22,T=24,B=30,max=Math.max(...totals)*1.12;
+ const x=i=>L+i*(W-L-R)/11,y=v=>H-B-v/max*(H-T-B);
+ let bars='',labels='',grid='';
+ for(let k=0;k<3;k++){const yy=T+k*(H-T-B)/2;grid+=`<path d="M${L} ${yy}H${W-R}" stroke="#d8dde7" stroke-dasharray="2 5" fill="none"/>`}
+ totals.forEach((v,i)=>{for(let j=0;j<10;j++){const bx=x(i)-13+j*2.8;bars+=`<line class="volume-bar" style="--stagger:${i*45+j*5}ms" x1="${bx}" x2="${bx}" y1="${H-B}" y2="${y(v)}" stroke="${i>=9?'#8094c9':'#b3bfd6'}" stroke-width="1.1"><title>${MONTHS[i]}：${fmt(v)} TEU</title></line>`}labels+=`<text x="${x(i)}" y="${H-7}" text-anchor="middle" font-size="10" fill="#7a8494">${MONTHS[i].slice(5)}月</text>`});
+ const d=totals.map((v,i)=>`${i?'L':'M'}${x(i)},${y(v)}`).join(' ');
+ document.getElementById('volumeGraphic').innerHTML=`<svg class="volume-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="五個重點家族月度合計貨量，${MONTHS.map((m,i)=>m+' '+totals[i]+' TEU').join('，')}">${grid}${bars}<path class="volume-line" d="${d}" fill="none" stroke="#536baf" stroke-width="2" stroke-linejoin="round"/><circle cx="${x(11)}" cy="${y(totals[11])}" r="3" fill="#536baf"/><text x="${x(11)-4}" y="${y(totals[11])-10}" text-anchor="end" font-size="12" fill="#536baf">${fmt(totals[11])}</text>${labels}</svg>`;
+}
+volumeGraphic();
+famList.querySelectorAll('.fam').forEach((b,index)=>{
+ const f=FAMS.find(f=>f.id===b.dataset.f),values=f.total,max=Math.max(...values)*1.1,min=0;
+ b.querySelector('svg').remove();
+ const label=b.querySelector('.st');label.innerHTML=`<i></i>${pct(chg(values))}`;
+ const W=350,H=36,x=i=>3+i*344/11,y=v=>H-2-v/max*30;let bars='';
+ values.forEach((v,i)=>{for(let j=0;j<7;j++)bars+=`<line class="micro-bar" style="--stagger:${index*65+i*20+j*4}ms" x1="${x(i)+j*2}" x2="${x(i)+j*2}" y1="34" y2="${y(v)}" stroke="${chg(values)<-3?'#c1a99c':'#a3afd0'}" stroke-width="1"/>`});
+ const d=values.map((v,i)=>`${i?'L':'M'}${x(i)+6},${y(v)}`).join(' ');
+ b.insertAdjacentHTML('beforeend',`<svg class="customer-chart" viewBox="0 0 365 36" preserveAspectRatio="none" role="img" aria-label="${f.name}近十二月貨量趨勢，${values.join('、')} TEU">${bars}<path class="volume-line" d="${d}" stroke="${chg(values)<-3?'#a97556':'#6b80b6'}" stroke-width="1.6" fill="none"/></svg>`);
+});
+document.getElementById('refreshDemo').textContent='重播動畫 ↻';
+document.getElementById('refreshDemo').addEventListener('click',()=>{volumeGraphic();famList.querySelectorAll('.micro-bar,.volume-line').forEach(el=>{el.style.animation='none'});void famList.offsetHeight;famList.querySelectorAll('.micro-bar,.volume-line').forEach(el=>{el.style.animation=''});traceGraph('f')});
+/* Three aligned stages and orthogonal connectors, all labels within nodes. */
+(function organizationFlow(){
+ const positions={r1:[16,54,194,54],r2:[16,134,194,54],r3:[16,214,194,54],e1:[270,54,190,54],e2:[270,134,190,54],e3:[270,214,190,54],f:[526,124,208,76]};
+ const titles={r1:'台灣託運人原始名稱',r2:'越南託運人原始名稱',r3:'墨西哥託運人原始名稱'};
+ const subtitles={r1:'HONG YUAN ELEC CO LTD',r2:'HONGYUAN ELECTRONICS VN',r3:'HY ELECTRONICA MX SA',f:'3 個法人 · 貨量 +10.5%'};
+ let s='<defs><marker id="flowArrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#9ba9bf"/></marker></defs>';
+ [[16,'01  提單原始名稱'],[270,'02  D-U-N-S 法人'],[526,'03  企業家族']].forEach(([x,t])=>{s+=`<text class="gl" x="${x}" y="26">${t}</text>`});
+ G.edges.slice(0,6).forEach(([a,b])=>{const A=positions[a],B=positions[b],x1=A[0]+A[2],y1=A[1]+A[3]/2,x2=B[0],y2=B[1]+B[3]/2,mid=(x1+x2)/2;
+ s+=`<path class="ed res" d="M${x1} ${y1}H${mid}V${y2}H${x2}" marker-end="url(#flowArrow)"/>`});
+ G.nodes.filter(n=>positions[n.id]).forEach(n=>{const [x,y,w,h]=positions[n.id];s+=`<g class="nd ${n.k}${n.id==='f'?' on':''}" data-n="${n.id}" role="button" tabindex="0" aria-label="${n.t}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7"/><text class="n1" x="${x+13}" y="${y+22}">${titles[n.id]||n.t}</text><text class="n2" x="${x+13}" y="${y+40}">${subtitles[n.id]||n.s}</text>${n.id==='f'?`<text class="n2" x="${x+13}" y="${y+59}">Global Ultimate 65-482-1937</text>`:''}</g>`});
+ graph.innerHTML=`<svg viewBox="0 0 752 292" role="group" aria-label="宏遠電子三階段歸戶流程圖">${s}</svg>`;
+ graphSide.querySelector('.key').innerHTML='<span>名稱解析 → 法人確認 → 家族彙總</span><span>供應鏈關係另見 Ontology 模型說明</span>';
+ traceGraph('f');
+})();
+</script>
+<script>
+/* v2: streamline light dots, only on the selected node's trace path (SVG animateMotion + mpath). */
+(function streamline(){
+ const svg=graph.querySelector('svg');if(!svg)return;
+ const paths=[...svg.querySelectorAll('.ed')];
+ paths.forEach((p,i)=>p.id='flow-edge-'+i);
+ svg.querySelector('defs').insertAdjacentHTML('beforeend','<filter id="dotGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+ const DUR=2.2,tail=[[0,3,1],[.05,2.2,.55],[.1,1.6,.32],[.15,1.1,.18]];
+ const det=document.getElementById('detail');let sel=null;
+ const stagesFor=id=>{const m={r1:0,e1:0,r2:1,e2:1,r3:2,e3:2}[id];
+  if(m!==undefined)return[[m],[m+3]];if(id==='f')return[[0,1,2],[3,4,5]];return[]};
+ function clearDots(){svg.querySelector('.flow-dots')?.remove()}
+ function drawDots(id){clearDots();if(reducedMotion.matches||!id)return;
+  const st=stagesFor(id),n=st.length;if(!n)return;const P=DUR*n,t0=svg.getCurrentTime();
+  let g='<g class="flow-dots" aria-hidden="true" filter="url(#dotGlow)">';
+  st.forEach((edges,s)=>edges.forEach(ei=>{const a=s/n,b=(s+1)/n,f=.12/n;
+   for(let k=0;k<2;k++)tail.forEach(([lag,r,op])=>{const begin=(t0+k*P/2+lag).toFixed(3)+'s';
+    g+=`<circle r="${r}" fill="#fff" opacity="0"><animateMotion dur="${P}s" begin="${begin}" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;${a};${b};1"><mpath href="#${paths[ei].id}"/></animateMotion><animate attributeName="opacity" dur="${P}s" begin="${begin}" repeatCount="indefinite" values="0;0;${op};${op};0;0" keyTimes="0;${a};${a+f};${b-f};${b};1"/></circle>`});}));
+  svg.insertAdjacentHTML('beforeend',g+'</g>')}
+ function deselect(){sel=null;graph.querySelectorAll('.nd').forEach(n=>n.classList.remove('on'));paths.forEach(p=>p.classList.remove('trace'));det.textContent='';clearDots()}
+ function onPick(id,wasSel){if(wasSel===id){deselect();return}sel=id;drawDots(id)}
+ let before=null;
+ graph.addEventListener('pointerdown',()=>{before=sel},true);
+ graph.addEventListener('click',e=>{const n=e.target.closest('.nd');if(n)onPick(n.dataset.n,before)});
+ graph.addEventListener('keydown',e=>{const n=e.target.closest('.nd');if(n&&(e.key==='Enter'||e.key===' '))onPick(n.dataset.n,sel)});
+ reducedMotion.addEventListener?.('change',()=>drawDots(sel));
+ deselect(); /* start idle: nothing selected, no dots */
+})();
+</script>
+<script>
+/* r2: strip helper/demo text, restructure cards number-first */
+(function(){
+ const q=(s,r=document)=>r.querySelector(s),rm=s=>document.querySelectorAll(s).forEach(e=>e.remove());
+ document.querySelectorAll('.workspace-meta>span').forEach(e=>e.remove());
+ rm('.customer-panel>.note');rm('.analysis-panel>.p-h small');rm('.signal-panel>.p-h small');rm('.analysis-panel .key');
+ q('.progress-panel .progress-label').textContent='法人比對率';
+ const L=['提單原始名稱（筆）','D-U-N-S 法人（個）','企業家族（個）'];
+ document.querySelectorAll('.progress-panel .kpi-l').forEach((e,i)=>e.textContent=L[i]);
+ const note=q('.progress-panel .volume-meta .note');note.className='vol-label';note.textContent='5 個重點家族 · 9 月 TEU';q('.progress-panel .volume-overview').append(note);
+ q('.progress-panel .volume-meta strong small').textContent=' TEU';
+})();
+</script>
+<style id="r3">
+/* progress cards: chart cards first, number left / chart right */
+.home .progress-panel{grid-template-columns:1.4fr 1.4fr 1fr 1fr 1fr!important}
+.progress-panel .coverage-inline{order:-1!important}.progress-panel .volume-overview{order:0}
+.progress-panel .metrics-row>.kpi{order:1}
+.progress-panel .kpi-v{font-size:42px!important;line-height:1!important}
+.progress-panel .coverage-inline{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:center!important;gap:16px!important}
+.progress-panel .coverage-inline .progress-hero{gap:6px!important}
+.progress-panel .progress-value{font-size:54px!important;line-height:1!important}
+.progress-panel .progress-value small{font-size:26px!important}
+.progress-panel .coverage-inline .coverage-ticks{order:0!important;height:40px!important;align-self:center}
+.progress-panel .volume-overview{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:16px!important;row-gap:6px!important;align-content:center}
+.progress-panel .volume-meta{grid-column:1;grid-row:1;flex-direction:column;align-items:start!important;gap:2px!important}
+.progress-panel .volume-meta strong{font-size:54px!important;line-height:1!important}
+.progress-panel .volume-meta strong small{display:none}
+.progress-panel .vol-label{grid-column:1;grid-row:2}
+.progress-panel #volumeGraphic{grid-column:2;grid-row:1/3;align-self:center}
+.progress-panel .volume-chart{max-height:56px!important}
+.progress-panel .volume-meta .st{position:absolute;top:10px;right:12px;font-size:12px!important;background:#e6f4ee;padding:1px 6px}
+.progress-panel .volume-overview{position:relative}
+/* customer rows: number left, sparkline right */
+.customer-panel .fam{grid-template-columns:96px minmax(0,1fr)!important;column-gap:10px!important;row-gap:0!important;padding:8px 16px!important;align-items:center}
+.customer-panel .fam .sub{grid-column:1;grid-row:1}
+.customer-panel .fam b{grid-column:1;grid-row:2}
+.customer-panel .fam>.customer-chart{grid-column:2;grid-row:1/3;height:34px}
+.customer-panel .fam .st{font-size:22px!important}
+/* graph r3 */
+.analysis-panel .graph svg{min-width:0;width:100%;height:auto}
+.graph .n1{font-size:12px;font-weight:600;fill:#202532}
+.graph .n2{font-size:10.5px;fill:#6e798d;font-family:var(--font-mono)}
+.graph .nd.raw rect{fill:#f9fafc;stroke:#aab6c9;stroke-dasharray:4 3}
+.graph .nd.raw .n1{fill:#4a5468;font-family:var(--font-mono);font-size:11.5px}
+.graph .nd.ent rect{fill:#fff;stroke:#b9c5d8}
+.graph .nd.fam rect{fill:#eaf0ff;stroke:#7d95d6}
+.graph .nd.ext rect{fill:#fffaf2;stroke:#e0a24a}
+.graph .nd.on rect{stroke:var(--accent)!important;stroke-width:2.5!important;stroke-dasharray:none!important}
+.graph .ed{fill:none;stroke-dasharray:none;stroke-linecap:round;transition:opacity .25s}
+.graph .ed.res{stroke:#7d95d6;stroke-opacity:.75;stroke-width:1.4}
+.graph .ed.sc{stroke:#e0a24a;stroke-opacity:.9;stroke-width:1.4;stroke-dasharray:5 4}
+.graph .ed.act{stroke-width:2.2;stroke-opacity:1}
+.graph .el{font-size:10.5px;fill:#6e798d;stroke:#f7f9fc;stroke-width:3px;paint-order:stroke}
+.graph .nd,.graph .el{transition:opacity .25s}
+.graph .dim{opacity:.35}
+.graph .flow-dots circle.amb{fill:#f5a524}
+.gkey{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11px;color:var(--ink-3);margin-top:8px}
+.gkey i{display:inline-block;width:18px;border-top:2px solid var(--c);vertical-align:middle;margin-right:6px}.gkey i.d{border-top-style:dashed}
+</style>
+<script>
+/* r3: redraw 歸戶判讀 graph at 1:1 pixel scale with node types, supply chain, dimming, path-only dots */
+(function r3Graph(){
+ const old=document.getElementById('graph'),el=old.cloneNode(false);old.replaceWith(el);
+ const N={};G.nodes.forEach(n=>N[n.id]=n);
+ const det=document.getElementById('detail');
+ el.insertAdjacentHTML('afterend','<div class="gkey"><span><i class="d" style="--c:#aab6c9"></i>提單原始名稱</span><span><i style="--c:#7d95d6"></i>實體解析／家族歸戶</span><span><i class="d" style="--c:#e0a24a"></i>供應鏈上下游（由貨載推導）</span></div>');
+ const E={r1e1:['r1','e1','解析為','res'],r2e2:['r2','e2','解析為','res'],r3e3:['r3','e3','解析為','res'],e1f:['e1','f','隸屬','res'],e2f:['e2','f','隸屬','res'],e3f:['e3','f','隸屬','res'],upe1:['up','e1','供貨給','sc'],fdn:['f','dn','出貨給','sc']};
+ const ALL=[['r1e1','r2e2','r3e3','upe1'],['e1f','e2f','e3f'],['fdn']];
+ const ST={r1:[['r1e1'],['e1f']],r2:[['r2e2'],['e2f']],r3:[['r3e3'],['e3f']],e2:[['r2e2'],['e2f']],e3:[['r3e3'],['e3f']],
+  e1:[['r1e1','upe1'],['e1f'],['fdn']],up:[['upe1'],['e1f'],['fdn']],f:ALL,dn:ALL};
+ let sel=null,P={};
+ const sv=p=>`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+ const ICON={raw:sv('<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/>'),
+  ent:sv('<path d="M2.5 14.5v-12h7v12M9.5 6.5h4v8M1.5 14.5h13"/><path d="M4.5 5h2M4.5 8h2M4.5 11h2M11.5 9h0M11.5 11.5h0"/>'),
+  fam:sv('<path d="M2 12.5l-.5-8 3.5 3 3-5 3 5 3.5-3-.5 8z"/><path d="M2.5 14.5h11"/>'),
+  ext:''};
+ const ICX={up:sv('<path d="M1 4h8.5v7H1zM9.5 6.5h3l2.5 2.5v2h-5.5"/><circle cx="4" cy="12.5" r="1.4"/><circle cx="12" cy="12.5" r="1.4"/>'),
+  dn:sv('<path d="M1 2h2l1.8 8h8l1.7-6H4.2"/><circle cx="6" cy="13" r="1.2"/><circle cx="12" cy="13" r="1.2"/>')};
+ const TAGS={r1:['TW'],r2:['VN'],r3:['MX','信心 0.97'],e1:['TW'],e2:['VN'],e3:['MX'],f:['集團母公司'],up:['供應商'],dn:['買方']};
+ function draw(){
+  const W=Math.max(640,el.clientWidth-28),LW=Math.min(W,1120),ox=(W-LW)/2,H=470;
+  const wR=272,wE=222,wF=262,xR=ox+8,xE=ox+Math.max(336,LW*.37),xF=ox+LW-wF-8;
+  const pos={r1:[xR,100,wR,60],r2:[xR,206,wR,60],r3:[xR,312,wR,60],e1:[xE,100,wE,60],e2:[xE,206,wE,60],e3:[xE,312,wE,60],up:[xF,30,wF,60],f:[xF,196,wF,80],dn:[xF,390,wF,60]};
+  P=pos;const R=(id,s)=>{const[x,y,w,h]=pos[id];return s==='r'?[x+w,y+h/2]:s==='l'?[x,y+h/2]:s==='b'?[x+w/2,y+h]:[x+w/2,y]};
+  let s=`<defs>${[['res','#7d95d6'],['sc','#e0a24a']].map(([k,c])=>`<marker id="r3ar-${k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L8,4L0,8Z" fill="${c}"/></marker>`).join('')}<filter id="dotGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  s+=`<text class="gl" x="${xR}" y="78">01  提單原始名稱</text><text class="gl" x="${xE}" y="78">02  D-U-N-S 法人</text><text class="gl" x="${xF}" y="176">03  企業家族</text>`;
+  Object.entries(E).forEach(([id,[a,b,l,k]])=>{let p1,p2,d,lx,ly,anc='middle';
+   if(id==='fdn'){p1=R(a,'b');p2=R(b,'t');d=`M${p1[0]} ${p1[1]}V${p2[1]}`;lx=p1[0]+8;ly=(p1[1]+p2[1])/2+4;anc='start'}
+   else if(id==='upe1'){p1=R(a,'l');p2=[pos.e1[0]+wE,pos.e1[1]+14];const mx=(p1[0]+p2[0])/2;d=`M${p1[0]} ${p1[1]}C${mx} ${p1[1]} ${mx} ${p2[1]} ${p2[0]} ${p2[1]}`;lx=mx;ly=(p1[1]+p2[1])/2-6}
+   else if(b==='f'){p1=R(a,'r');const fy=pos.f[1]+pos.f[3]/2+({e1f:-14,e2f:0,e3f:14})[id];p2=[xF,fy];const mx=(p1[0]+p2[0])/2;d=`M${p1[0]} ${p1[1]}C${mx} ${p1[1]} ${mx} ${p2[1]} ${p2[0]} ${p2[1]}`;lx=mx;ly=id==='e2f'?p1[1]-6:null}
+   else{p1=R(a,'r');p2=R(b,'l');d=`M${p1[0]} ${p1[1]}H${p2[0]}`;lx=(p1[0]+p2[0])/2;ly=p1[1]-6}
+   s+=`<path id="fe-${id}" data-e="${id}" class="ed ${k}" d="${d}" marker-end="url(#r3ar-${k})"/>`;
+   if(ly!==null)s+=`<text class="el" data-e="${id}" x="${lx}" y="${ly}" text-anchor="${anc}">${l}</text>`;});
+  Object.entries(pos).forEach(([id,[x,y,w,h]])=>{const n=N[id];
+   const ic=ICX[id]||ICON[n.k],tg=TAGS[id]||[];let tx=x+w-10,tags='';const ty=y+(id==='f'?65:46);
+   [...tg].reverse().forEach(t=>{const tw=[...t].reduce((q,c)=>q+(c.charCodeAt(0)>255?10:6),0)+12;tx-=tw;tags+=`<g class="tag ${/^[A-Z]{2}$/.test(t)?'cty':/信心/.test(t)?'conf':''}"><rect x="${tx}" y="${ty-11.5}" width="${tw}" height="16" rx="8"/><text x="${tx+tw/2}" y="${ty}" text-anchor="middle">${t}</text></g>`;tx-=4});
+   s+=`<g class="nd ${n.k}" data-n="${id}" tabindex="0" role="button" aria-label="${n.t}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><g class="ico" transform="translate(${x+12},${y+12})">${ic}</g><text class="n1" x="${x+36}" y="${y+26}">${n.t}</text><text class="n2" x="${x+36}" y="${y+46}">${n.s}</text>${id==='f'?`<text class="n2" x="${x+36}" y="${y+65}">3 個法人 · 貨量 ${pct(chg(FAMS[0].total))}</text>`:''}${tags}</g>`});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="宏遠電子集團的實體解析與上下游關聯圖">${s}</svg>`;
+  apply();
+ }
+ const DUR=2.2,tail=[[0,3,1],[.05,2.2,.55],[.1,1.6,.32],[.15,1.1,.18]];
+ function apply(){
+  const svg=el.querySelector('svg');svg.querySelector('.flow-dots')?.remove();
+  const st=sel?ST[sel]:null,act=new Set(st?st.flat():[]),rel=new Set(sel?[sel]:[]);
+  act.forEach(e=>{rel.add(E[e][0]);rel.add(E[e][1])});
+  el.querySelectorAll('.nd').forEach(g=>{g.classList.toggle('on',g.dataset.n===sel);g.classList.toggle('dim',!!sel&&!rel.has(g.dataset.n))});
+  el.querySelectorAll('[data-e]').forEach(p=>{p.classList.toggle('act',act.has(p.dataset.e));p.classList.toggle('dim',!!sel&&!act.has(p.dataset.e))});
+  det.innerHTML=sel?N[sel].info:'';
+  if(!st||reducedMotion.matches)return;
+  const n=st.length,Pd=DUR*n,t0=svg.getCurrentTime();let g='<g class="flow-dots" aria-hidden="true" filter="url(#dotGlow)" pointer-events="none">';
+  st.forEach((es,i)=>es.forEach(id=>{const a=i/n,b=(i+1)/n,f=.12/n,amb=E[id][3]==='sc'?' class="amb"':'';
+   for(let k=0;k<2;k++)tail.forEach(([lag,r,op])=>{const bg=(t0+k*Pd/2+lag).toFixed(3)+'s';
+    g+=`<circle${amb} r="${r}" opacity="0"><animateMotion dur="${Pd}s" begin="${bg}" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;${a};${b};1"><mpath href="#fe-${id}"/></animateMotion><animate attributeName="opacity" dur="${Pd}s" begin="${bg}" repeatCount="indefinite" values="0;0;${op};${op};0;0" keyTimes="0;${a};${a+f};${b-f};${b};1"/></circle>`})}));
+  svg.insertAdjacentHTML('beforeend',g+'</g>');
+ }
+ const choose=id=>{sel=sel===id?null:id;apply()};
+ el.addEventListener('click',e=>{const g=e.target.closest('.nd');if(g)choose(g.dataset.n)});
+ el.addEventListener('keydown',e=>{const g=e.target.closest('.nd');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();choose(g.dataset.n)}});
+ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,150)});
+ reducedMotion.addEventListener?.('change',apply);
+ draw();
+})();
+</script>
+<script>
+/* r4: gauge, curved volume chart, mini report, signal height, remove replay/globe */
+(function(){
+ document.getElementById('refreshDemo')?.remove();document.querySelector('.route-mini')?.remove();document.querySelector('.workspace-meta')?.remove();
+ const cov=document.querySelector('.progress-panel .coverage-inline');
+ const r=40,c=Math.PI*r,v=.942;
+ cov.insertAdjacentHTML('beforeend',`<svg class="gauge" viewBox="0 0 110 66" role="img" aria-label="法人比對率 94.2%"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#b9c8ef"/><stop offset="1" stop-color="#4f6cc4"/></linearGradient></defs><path d="M15 58A40 40 0 0 1 95 58" fill="none" stroke="#e4e9f2" stroke-width="9" stroke-linecap="round"/><path d="M15 58A40 40 0 0 1 95 58" fill="none" stroke="url(#gg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(c*v).toFixed(1)} ${c.toFixed(1)}"/></svg>`);
+ function mono(pts){const n=pts.length,dx=[],m=[],t=[];for(let i=0;i<n-1;i++){dx[i]=pts[i+1][0]-pts[i][0];m[i]=(pts[i+1][1]-pts[i][1])/dx[i]}
+  t[0]=m[0];t[n-1]=m[n-2];for(let i=1;i<n-1;i++)t[i]=m[i-1]*m[i]<=0?0:3*(dx[i-1]+dx[i])/((2*dx[i]+dx[i-1])/m[i-1]+(dx[i]+2*dx[i-1])/m[i]);
+  let d=`M${pts[0][0]},${pts[0][1]}`;for(let i=0;i<n-1;i++){const h=dx[i]/3;d+=`C${pts[i][0]+h},${pts[i][1]+t[i]*h} ${pts[i+1][0]-h},${pts[i+1][1]-t[i+1]*h} ${pts[i+1][0]},${pts[i+1][1]}`}return d}
+ const host=document.getElementById('volumeGraphic');
+ function vol(){const W=Math.max(120,host.clientWidth),H=64,T=22,B=4,R=6,mn=Math.min(...totals)*.95,mx=Math.max(...totals);
+  const pts=totals.map((v,i)=>[(i*(W-R-2)/11+2).toFixed(1)*1,(T+(1-(v-mn)/(mx-mn))*(H-T-B)).toFixed(1)*1]);
+  const d=mono(pts),e=pts.at(-1),lab=pct(chg(totals)),bw=lab.length*7+10;
+  host.innerHTML=`<svg class="vol2" viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="五個重點家族月度合計貨量，${MONTHS.map((m,i)=>m+' '+totals[i]+' TEU').join('，')}"><defs><linearGradient id="vg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#647cc4" stop-opacity=".28"/><stop offset="1" stop-color="#647cc4" stop-opacity="0"/></linearGradient></defs><path d="${d}L${e[0]},${H}L${pts[0][0]},${H}Z" fill="url(#vg)"/><path d="${d}" fill="none" stroke="#536baf" stroke-width="2"/><circle cx="${e[0]}" cy="${e[1]}" r="3.5" fill="#fff" stroke="#536baf" stroke-width="2"/><g class="badge"><rect x="${e[0]-bw+4}" y="${e[1]-21}" width="${bw}" height="15" rx="7.5"/><text x="${e[0]-bw/2+4}" y="${e[1]-10}" text-anchor="middle">${lab}</text></g></svg>`}
+ vol();
+ const f=FAMS[0],tw=f.members[0],note=document.getElementById('cmpNote');
+ note.outerHTML=`<div class="mini-report" id="cmpNote"><section><h4>單看提單</h4><div class="big">${pct(chg(tw.v))}</div><p>只看提單上的「宏遠電子」，近 3 月貨量下滑，會被判為流失風險。</p></section><section class="pos"><h4>歸戶後</h4><div class="big">${pct(chg(f.total))}</div><p>歸戶到企業家族後實際在成長，只是出貨地移到越南與墨西哥。</p></section><section><h4>建議</h4><p>${f.read}</p></section></div>`;
+ const sig=document.querySelector('.signal-panel'),ana=document.querySelector('.analysis-panel');
+ function fit(){sig.style.height='';if(innerWidth<=1180)return;const hgt=ana.getBoundingClientRect().bottom-sig.getBoundingClientRect().top;sig.style.height=Math.max(280,hgt)+'px'}
+ let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>{fit()},160)});
+ fit();document.fonts?.ready.then(fit);
+})();
+</script><script>
+/* r5: bar charts in the two chart cards */
+(function(){
+ const cov=document.querySelector('.progress-panel .coverage-inline'),vh=document.getElementById('volumeGraphic');
+ const cw=document.createElement('div');cw.className='cov-bars';cw.style.minWidth='0';cov.append(cw);
+ vh.closest('.volume-overview').insertAdjacentHTML('beforeend',`<span class="vol-delta">${pct(chg(totals))}</span>`);
+ const bar=(x,y,w,h,f)=>`<path d="M${x},${y+h}V${y+Math.min(3,w/2)}a${Math.min(3,w/2)},${Math.min(3,w/2)} 0 0 1 ${w},0V${y+h}Z" fill="${f}"/>`;
+ function draw(){
+  /* funnel from the progress KPIs: names -> D-U-N-S entities -> families, plus 312 pending review */
+  const F=[['名稱',18420,'#9fb2e3'],['法人',6315,'#6f88d2'],['家族',1204,'#4f6cc4'],['待確認',312,'#c3cbd9']];
+  let W=Math.max(110,cw.clientWidth),H=110,B=16,T=6,bw=Math.min(28,(W-8)/F.length*.55),gap=(W-bw*F.length)/(F.length);
+  let g='';F.forEach(([l,v,c],i)=>{const h=Math.max(3,v/18420*(H-B-T)),x=gap/2+i*(bw+gap);g+=`<g><title>${l} ${fmt(v)}</title>${bar(x,H-B-h,bw,h,c)}</g><text x="${x+bw/2}" y="${H-3}" text-anchor="middle">${l}</text>`});
+  cw.innerHTML=`<svg class="cbars" viewBox="0 0 ${W} ${H}" role="img" aria-label="歸戶漏斗：提單名稱 18,420、法人 6,315、家族 1,204、待人工確認 312">${g}</svg>`;
+  W=Math.max(120,vh.clientWidth);const mn=Math.min(...totals)*.8,mx=Math.max(...totals),n=totals.length,w2=(W-4)/n*.62,g2=(W-4)/n;g='';
+  totals.forEach((v,i)=>{const h=(v-mn)/(mx-mn)*(H-B-T-30)+10,x=2+i*g2+(g2-w2)/2;g+=`<g><title>${MONTHS[i]} ${fmt(v)} TEU</title>${bar(x,H-B-h,w2,h,i>=n-3?'#4f6cc4':'#c3cde6')}</g>`;if(i%3===2)g+=`<text x="${x+w2/2}" y="${H-3}" text-anchor="middle">${+MONTHS[i].slice(5)}月</text>`});
+  vh.innerHTML=`<svg class="cbars" viewBox="0 0 ${W} ${H}" role="img" aria-label="五個重點家族月度合計貨量，${MONTHS.map((m,i)=>m+' '+totals[i]+' TEU').join('，')}">${g}</svg>`;
+ }
+ /* r6: drawing moved to r6 micro-chart renderer */
+})();
+</script><script>
+/* r6: top chart cards reuse the 重點客戶動能 micro-bar + line style */
+(function(){
+ const cw=document.querySelector('.progress-panel .cov-bars'),vh=document.getElementById('volumeGraphic');
+ function micro(host,values,labels,aria,warn){
+  const W=Math.max(120,host.clientWidth),H=52,B=labels?16:2,T=8,n=values.length,max=Math.max(...values)*1.1;
+  const gw=(W-6)/n,x=i=>3+i*gw,y=v=>H-B-v/max*(H-B-T),per=Math.max(3,Math.floor(gw*.6/2));
+  let bars='',lab='';
+  values.forEach((v,i)=>{for(let j=0;j<per;j++)bars+=`<line class="micro-bar" style="--stagger:${i*20+j*4}ms" x1="${x(i)+j*2}" x2="${x(i)+j*2}" y1="${H-B}" y2="${y(v)}" stroke="${warn?'#c1a99c':'#a3afd0'}" stroke-width="1"/>`;
+   if(labels&&labels[i])lab+=`<text x="${x(i)+per}" y="${H-3}" text-anchor="middle" font-size="9.5" fill="#737e91">${labels[i]}</text>`});
+  const d=values.map((v,i)=>`${i?'L':'M'}${x(i)+per},${y(v)}`).join(' ');
+  host.innerHTML=`<svg class="customer-chart cbars" viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">${bars}<path class="volume-line" d="${d}" stroke="${warn?'#a97556':'#6b80b6'}" stroke-width="1.6" fill="none"/>${lab}</svg>`;
+ }
+ function draw(){
+  micro(cw,[18420,6315,1204,312],null,'歸戶漏斗：提單名稱 18,420、法人 6,315、家族 1,204、待人工確認 312');
+  micro(vh,totals,null,'五個重點家族月度合計貨量，'+MONTHS.map((m,i)=>m+' '+totals[i]+' TEU').join('，'));
+ }
+ draw();let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(draw,260)});
+})();
+</script><style id="r7">
+.home .progress-panel .kpi,.home .progress-panel .coverage-inline,.home .progress-panel .volume-overview{min-height:0!important;padding-top:26px!important;padding-bottom:26px!important}
+.home .progress-panel .kpi-v,.home .progress-panel .progress-value,.home .progress-panel .volume-meta strong{font-size:42px!important;line-height:1!important;font-weight:700!important}
+.home .progress-panel .progress-value small{font-size:20px!important;line-height:1!important}
+.home .progress-panel .cbars{height:52px!important}.home .progress-panel .progress-hero{gap:4px!important}.home .progress-panel .volume-overview{row-gap:4px!important}
+.home .progress-panel .volume-overview .vol-delta{top:10px}
+</style><style id="r7b">.graph .nd.on .tag rect,.graph .nd .tag rect{stroke:#c9d3e3!important;stroke-width:1!important;stroke-dasharray:none!important}.graph .nd.ext .tag rect{stroke:#ecc58a!important}.graph .nd.fam .tag rect{stroke:#a9b9e0!important}.graph .nd .tag.conf rect{stroke:#a9d6bd!important}</style><style id="r8">.home .progress-panel .cov-bars .volume-line{display:none}</style><script>
+/* r10: model tab ontology graph (same renderer as 歸戶判讀) */
+(function(){
+ const mv=document.getElementById('v-model');
+ mv.insertAdjacentHTML('afterbegin','<div class="p analysis-panel model-graph"><div class="p-h"><h2>Ontology 關聯圖 · 宏遠電子集團</h2></div><div class="p-b"><div class="graph" id="graphM"></div><div class="detail" id="detailM"></div></div></div>');
+ document.querySelectorAll('#v-model .links td:nth-child(2)').forEach(td=>td.innerHTML=`<span>${td.textContent}</span>`);
+})();
+(function modelGraph(){
+ const old=document.getElementById('graphM'),el=old.cloneNode(false);old.replaceWith(el);
+ const N={};G.nodes.forEach(n=>N[n.id]=n);
+ const det=document.getElementById('detailM');
+ el.insertAdjacentHTML('afterend','<div class="gkey"><span><i class="d" style="--c:#aab6c9"></i>提單原始名稱</span><span><i style="--c:#7d95d6"></i>實體解析／家族歸戶</span><span><i class="d" style="--c:#e0a24a"></i>供應鏈上下游（由貨載推導）</span></div>');
+ const E={r1e1:['r1','e1','解析為','res'],r2e2:['r2','e2','解析為','res'],r3e3:['r3','e3','解析為','res'],e1f:['e1','f','隸屬','res'],e2f:['e2','f','隸屬','res'],e3f:['e3','f','隸屬','res'],upe1:['up','e1','供貨給','sc'],fdn:['f','dn','出貨給','sc']};
+ const ALL=[['r1e1','r2e2','r3e3','upe1'],['e1f','e2f','e3f'],['fdn']];
+ const ST={r1:[['r1e1'],['e1f']],r2:[['r2e2'],['e2f']],r3:[['r3e3'],['e3f']],e2:[['r2e2'],['e2f']],e3:[['r3e3'],['e3f']],
+  e1:[['r1e1','upe1'],['e1f'],['fdn']],up:[['upe1'],['e1f'],['fdn']],f:ALL,dn:ALL};
+ let sel=null,P={};
+ const sv=p=>`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+ const ICON={raw:sv('<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/>'),
+  ent:sv('<path d="M2.5 14.5v-12h7v12M9.5 6.5h4v8M1.5 14.5h13"/><path d="M4.5 5h2M4.5 8h2M4.5 11h2M11.5 9h0M11.5 11.5h0"/>'),
+  fam:sv('<path d="M2 12.5l-.5-8 3.5 3 3-5 3 5 3.5-3-.5 8z"/><path d="M2.5 14.5h11"/>'),
+  ext:''};
+ const ICX={up:sv('<path d="M1 4h8.5v7H1zM9.5 6.5h3l2.5 2.5v2h-5.5"/><circle cx="4" cy="12.5" r="1.4"/><circle cx="12" cy="12.5" r="1.4"/>'),
+  dn:sv('<path d="M1 2h2l1.8 8h8l1.7-6H4.2"/><circle cx="6" cy="13" r="1.2"/><circle cx="12" cy="13" r="1.2"/>')};
+ const TAGS={r1:['TW'],r2:['VN'],r3:['MX','信心 0.97'],e1:['TW'],e2:['VN'],e3:['MX'],f:['集團母公司'],up:['供應商'],dn:['買方']};
+ function draw(){
+  const W=Math.max(640,el.clientWidth-28),LW=Math.min(W,1120),ox=(W-LW)/2,H=470;
+  const wR=272,wE=222,wF=262,xR=ox+8,xE=ox+Math.max(336,LW*.37),xF=ox+LW-wF-8;
+  const pos={r1:[xR,100,wR,60],r2:[xR,206,wR,60],r3:[xR,312,wR,60],e1:[xE,100,wE,60],e2:[xE,206,wE,60],e3:[xE,312,wE,60],up:[xF,30,wF,60],f:[xF,196,wF,80],dn:[xF,390,wF,60]};
+  P=pos;const R=(id,s)=>{const[x,y,w,h]=pos[id];return s==='r'?[x+w,y+h/2]:s==='l'?[x,y+h/2]:s==='b'?[x+w/2,y+h]:[x+w/2,y]};
+  let s=`<defs>${[['res','#7d95d6'],['sc','#e0a24a']].map(([k,c])=>`<marker id="m3ar-${k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L8,4L0,8Z" fill="${c}"/></marker>`).join('')}<filter id="mGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  s+=`<text class="gl" x="${xR}" y="78">01  提單原始名稱</text><text class="gl" x="${xE}" y="78">02  D-U-N-S 法人</text><text class="gl" x="${xF}" y="176">03  企業家族</text>`;
+  Object.entries(E).forEach(([id,[a,b,l,k]])=>{let p1,p2,d,lx,ly,anc='middle';
+   if(id==='fdn'){p1=R(a,'b');p2=R(b,'t');d=`M${p1[0]} ${p1[1]}V${p2[1]}`;lx=p1[0]+8;ly=(p1[1]+p2[1])/2+4;anc='start'}
+   else if(id==='upe1'){p1=R(a,'l');p2=[pos.e1[0]+wE,pos.e1[1]+14];const mx=(p1[0]+p2[0])/2;d=`M${p1[0]} ${p1[1]}C${mx} ${p1[1]} ${mx} ${p2[1]} ${p2[0]} ${p2[1]}`;lx=mx;ly=(p1[1]+p2[1])/2-6}
+   else if(b==='f'){p1=R(a,'r');const fy=pos.f[1]+pos.f[3]/2+({e1f:-14,e2f:0,e3f:14})[id];p2=[xF,fy];const mx=(p1[0]+p2[0])/2;d=`M${p1[0]} ${p1[1]}C${mx} ${p1[1]} ${mx} ${p2[1]} ${p2[0]} ${p2[1]}`;lx=mx;ly=id==='e2f'?p1[1]-6:null}
+   else{p1=R(a,'r');p2=R(b,'l');d=`M${p1[0]} ${p1[1]}H${p2[0]}`;lx=(p1[0]+p2[0])/2;ly=p1[1]-6}
+   s+=`<path id="mfe-${id}" data-e="${id}" class="ed ${k}" d="${d}" marker-end="url(#m3ar-${k})"/>`;
+   if(ly!==null)s+=`<text class="el" data-e="${id}" x="${lx}" y="${ly}" text-anchor="${anc}">${l}</text>`;});
+  Object.entries(pos).forEach(([id,[x,y,w,h]])=>{const n=N[id];
+   const ic=ICX[id]||ICON[n.k],tg=TAGS[id]||[];let tx=x+w-10,tags='';const ty=y+(id==='f'?65:46);
+   [...tg].reverse().forEach(t=>{const tw=[...t].reduce((q,c)=>q+(c.charCodeAt(0)>255?10:6),0)+12;tx-=tw;tags+=`<g class="tag ${/^[A-Z]{2}$/.test(t)?'cty':/信心/.test(t)?'conf':''}"><rect x="${tx}" y="${ty-11.5}" width="${tw}" height="16" rx="8"/><text x="${tx+tw/2}" y="${ty}" text-anchor="middle">${t}</text></g>`;tx-=4});
+   s+=`<g class="nd ${n.k}" data-n="${id}" tabindex="0" role="button" aria-label="${n.t}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><g class="ico" transform="translate(${x+12},${y+12})">${ic}</g><text class="n1" x="${x+36}" y="${y+26}">${n.t}</text><text class="n2" x="${x+36}" y="${y+46}">${n.s}</text>${id==='f'?`<text class="n2" x="${x+36}" y="${y+65}">3 個法人 · 貨量 ${pct(chg(FAMS[0].total))}</text>`:''}${tags}</g>`});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="宏遠電子集團的實體解析與上下游關聯圖">${s}</svg>`;
+  apply();
+ }
+ const DUR=2.2,tail=[[0,3,1],[.05,2.2,.55],[.1,1.6,.32],[.15,1.1,.18]];
+ function apply(){
+  const svg=el.querySelector('svg');svg.querySelector('.flow-dots')?.remove();
+  const st=sel?ST[sel]:null,act=new Set(st?st.flat():[]),rel=new Set(sel?[sel]:[]);
+  act.forEach(e=>{rel.add(E[e][0]);rel.add(E[e][1])});
+  el.querySelectorAll('.nd').forEach(g=>{g.classList.toggle('on',g.dataset.n===sel);g.classList.toggle('dim',!!sel&&!rel.has(g.dataset.n))});
+  el.querySelectorAll('[data-e]').forEach(p=>{p.classList.toggle('act',act.has(p.dataset.e));p.classList.toggle('dim',!!sel&&!act.has(p.dataset.e))});
+  det.innerHTML=sel?N[sel].info:'';
+  if(!st||reducedMotion.matches)return;
+  const n=st.length,Pd=DUR*n,t0=svg.getCurrentTime();let g='<g class="flow-dots" aria-hidden="true" filter="url(#mGlow)" pointer-events="none">';
+  st.forEach((es,i)=>es.forEach(id=>{const a=i/n,b=(i+1)/n,f=.12/n,amb=E[id][3]==='sc'?' class="amb"':'';
+   for(let k=0;k<2;k++)tail.forEach(([lag,r,op])=>{const bg=(t0+k*Pd/2+lag).toFixed(3)+'s';
+    g+=`<circle${amb} r="${r}" opacity="0"><animateMotion dur="${Pd}s" begin="${bg}" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;${a};${b};1"><mpath href="#mfe-${id}"/></animateMotion><animate attributeName="opacity" dur="${Pd}s" begin="${bg}" repeatCount="indefinite" values="0;0;${op};${op};0;0" keyTimes="0;${a};${a+f};${b-f};${b};1"/></circle>`})}));
+  svg.insertAdjacentHTML('beforeend',g+'</g>');
+ }
+ const choose=id=>{sel=sel===id?null:id;apply()};
+ el.addEventListener('click',e=>{const g=e.target.closest('.nd');if(g)choose(g.dataset.n)});
+ el.addEventListener('keydown',e=>{const g=e.target.closest('.nd');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();choose(g.dataset.n)}});
+ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,150)});
+ reducedMotion.addEventListener?.('change',apply);
+ draw();
+})();
+/* r10: family tab — KPI strip, micro charts, trend column */
+(function(){
+ function micro(values,W,H,warn){const n=values.length,max=Math.max(...values,1)*1.1,gw=(W-6)/n,per=Math.max(2,Math.floor(gw*.6/2)),x=i=>3+i*gw,y=v=>H-2-v/max*(H-8);
+  let bars='';values.forEach((v,i)=>{for(let j=0;j<per;j++)bars+=`<line class="micro-bar" style="--stagger:${i*20+j*4}ms" x1="${x(i)+j*2}" x2="${x(i)+j*2}" y1="${H-2}" y2="${y(v)}" stroke="${warn?'#c1a99c':'#a3afd0'}" stroke-width="1"/>`});
+  const d=values.map((v,i)=>`${i?'L':'M'}${x(i)+per},${y(v)}`).join(' ');
+  return `<svg class="customer-chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${bars}<path class="volume-line" d="${d}" stroke="${warn?'#a97556':'#6b80b6'}" stroke-width="1.6" fill="none" vector-effect="non-scaling-stroke"/></svg>`}
+ const fv=document.getElementById('v-fam'),strip=document.createElement('div');strip.className='kstrip';fv.querySelector('.fv-h').after(strip);
+ const IC={up2:'var(--good)',up1:'var(--accent)',flat:'var(--line-2)',dn1:'var(--warn)',dn2:'var(--crit)'};
+ const orig=renderFam;
+ renderFam=function(){orig();
+  const f=FAMS.find(x=>x.id===curFam),p=chg(f.total),[st]=status(p),warn=p<-3,active=f.members.filter(m=>sum(m.v)>0).length;
+  document.getElementById('fSub').textContent=`${f.ind} · Global Ultimate ${f.gu}`;
+  strip.innerHTML=`<div class="kcard"><div><div class="kn">${fmt(sum(f.total))}</div><div class="kl">近 12 月 TEU</div></div><div class="kc">${micro(f.total,240,52,warn)}</div></div>
+  <div class="kcard"><div><div class="kn"><i class="ki" style="background:${IC[st]}"></i>${pct(p)}</div><div class="kl">近 3 月 vs 前 3 月</div></div></div>
+  <div class="kcard"><div><div class="kn">${f.members.length}</div><div class="kl">家族法人（個）</div></div></div>
+  <div class="kcard"><div><div class="kn">${fmt(f.total.at(-1))}</div><div class="kl">${MONTHS.at(-1).replace('-','.')} TEU</div></div></div>`;
+  const tb=document.querySelector('#fTable');const hr=tb.querySelector('thead tr');if(!hr.querySelector('.th-tr'))hr.children[4].insertAdjacentHTML('afterend','<th class="th-tr">近 12 月趨勢</th>');
+  [...tb.querySelectorAll('tbody tr')].forEach((tr,i)=>{const m=f.members[i];tr.children[4].insertAdjacentHTML('afterend',`<td class="tr">${sum(m.v)?micro(m.v,120,24,chg(m.v)<-3):'<span class="note">—</span>'}</td>`)});
+ };
+ const p=document.querySelector('#v-fam .fv-grid .p .p-h h2');if(p)p.textContent='家族成員貨量 · TEU／月';
+ const oldShow=show;show=function(v){oldShow(v);requestAnimationFrame(()=>dispatchEvent(new Event('resize')))};
+ if(!fv.hidden)renderFam();
+})();
+</script><script>
+/* r11: data-processing pipeline stepper */
+(function(){
+ const ol=document.querySelector('#v-model .steps');if(!ol)return;
+ const items=[...ol.children].map(li=>[li.querySelector('b').textContent,li.querySelector('span').textContent]);
+ const sv=p=>`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+ const IC=[sv('<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/>'),
+  sv('<path d="M2 3h12l-4.5 5.5V13l-3 1.5v-6z"/>'),
+  sv('<path d="M2.5 14.5v-12h7v12M9.5 6.5h4v8M1.5 14.5h13"/><path d="M4.5 5h2M4.5 8h2M4.5 11h2"/>'),
+  sv('<path d="M2 12.5l-.5-8 3.5 3 3-5 3 5 3.5-3-.5 8z"/><path d="M2.5 14.5h11"/>'),
+  sv('<circle cx="3" cy="8" r="1.8"/><circle cx="13" cy="3.5" r="1.8"/><circle cx="13" cy="12.5" r="1.8"/><path d="M4.7 7.2l6.6-3M4.7 8.8l6.6 3"/>'),
+  sv('<path d="M1.5 12.5l4-4 3 3 6-6.5"/><path d="M10.5 5h4v4"/>')];
+ const up=FAMS.filter(f=>chg(f.total)>=3).length;
+ /* metrics: only values already in the file */
+ const M=[[fmt(18420),'提單原始名稱',''],null,[fmt(6315),'D-U-N-S 法人','<span class="tg">比對率 94.2%</span> <span class="tg warn">312 待確認</span>'],[fmt(1204),'企業家族',''],null,[`${up} / ${FAMS.length}`,'重點家族成長','']];
+ const trim=t=>t.replace(/，以及.*$/,'。');
+ ol.className='pipe';ol.setAttribute('role','list');
+ ol.innerHTML=items.map(([t,d],i)=>{const m=M[i];return `<li tabindex="0" data-i="${i}"><div class="rail"><span class="ic">${IC[i]}</span><span class="ln"></span></div><div class="card"><div><div class="hd"><span class="no">${String(i+1).padStart(2,'0')}</span><span class="tt">${t}</span></div><div class="ds">${i===0?trim(d):d}</div>${m&&m[2]?`<div>${m[2]}</div>`:''}</div>${m?`<div class="mt"><div class="mn">${m[0]}</div><div class="ml">${m[1]}</div></div>`:'<div></div>'}</div></li>`}).join('');
+ const lis=[...ol.children];
+ const pick=li=>{const on=li.classList.contains('on');lis.forEach(x=>x.classList.remove('on','nx'));ol.classList.toggle('sel',!on);if(!on){li.classList.add('on');li.nextElementSibling?.classList.add('nx')}};
+ ol.addEventListener('click',e=>{const li=e.target.closest('li');if(li)pick(li)});
+ ol.addEventListener('keydown',e=>{const li=e.target.closest('li');if(li&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(li)}});
+})();
+</script><script>
+/* r12: 資料處理流程 info drawer + configurable object / relationship types */
+(function(){
+ const vm=document.getElementById('v-model'),mv=vm.querySelector('.mv');
+ const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const sv=p=>`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+ const ICONS={document:['文件','<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3"/>'],
+  party:['當事人','<circle cx="8" cy="5" r="2.6"/><path d="M2.8 14.5c.6-3 2.6-4.5 5.2-4.5s4.6 1.5 5.2 4.5"/>'],
+  building:['建築','<path d="M2.5 14.5v-12h7v12M9.5 6.5h4v8M1.5 14.5h13"/><path d="M4.5 5h2M4.5 8h2M4.5 11h2"/>'],
+  crown:['皇冠','<path d="M2 12.5l-.5-8 3.5 3 3-5 3 5 3.5-3-.5 8z"/><path d="M2.5 14.5h11"/>'],
+  truck:['卡車','<path d="M1 4h8.5v7H1zM9.5 6.5h3l2.5 2.5v2h-5.5"/><circle cx="4" cy="12.5" r="1.4"/><circle cx="12" cy="12.5" r="1.4"/>'],
+  cart:['購物車','<path d="M1 2h2l1.8 8h8l1.7-6H4.2"/><circle cx="6" cy="13" r="1.2"/><circle cx="12" cy="13" r="1.2"/>'],
+  network:['網絡','<circle cx="3" cy="8" r="1.8"/><circle cx="13" cy="3.5" r="1.8"/><circle cx="13" cy="12.5" r="1.8"/><path d="M4.7 7.2l6.6-3M4.7 8.8l6.6 3"/>'],
+  trend:['趨勢','<path d="M1.5 12.5l4-4 3 3 6-6.5"/><path d="M10.5 5h4v4"/>']};
+ const COLORS={blue:'藍',amber:'琥珀',gray:'灰'};
+ /* ---------- 1) drawer ---------- */
+ const stepsPanel=mv.querySelector('.pipe').closest('.p'),pipe=stepsPanel.querySelector('.pipe');
+ const scrim=document.createElement('div');scrim.className='scrim';
+ const drawer=document.createElement('aside');drawer.className='drawer';drawer.id='pipeDrawer';drawer.setAttribute('role','dialog');drawer.setAttribute('aria-modal','true');drawer.setAttribute('aria-labelledby','pipeDrawerT');drawer.setAttribute('aria-hidden','true');
+ drawer.innerHTML=`<div class="drawer-h"><h2 id="pipeDrawerT">資料處理流程</h2><button class="icon-btn" data-close aria-label="關閉">${sv('<path d="M4 4l8 8M12 4l-8 8"/>')}</button></div><div class="drawer-b"></div>`;
+ drawer.querySelector('.drawer-b').append(pipe);stepsPanel.remove();document.body.append(scrim,drawer);
+ const gh=vm.querySelector('.model-graph .p-h');
+ gh.insertAdjacentHTML('beforeend',`<button class="info-btn" id="pipeInfo" aria-haspopup="dialog" aria-controls="pipeDrawer"><span class="ii">i</span>資料處理流程</button>`);
+ const FOC='button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+ function trap(root,e){if(e.key!=='Tab')return;const f=[...root.querySelectorAll(FOC)].filter(x=>!x.disabled&&x.offsetParent!==null);if(!f.length)return;const a=f[0],z=f.at(-1);
+  if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+ let lastFocus=null;
+ const openDrawer=()=>{lastFocus=document.activeElement;scrim.classList.add('open');drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');setTimeout(()=>drawer.querySelector('[data-close]').focus(),30)};
+ const closeDrawer=()=>{if(!drawer.classList.contains('open'))return;scrim.classList.remove('open');drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');lastFocus?.focus?.()};
+ document.getElementById('pipeInfo').addEventListener('click',openDrawer);
+ drawer.querySelector('[data-close]').addEventListener('click',closeDrawer);scrim.addEventListener('click',closeDrawer);
+ drawer.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();else trap(drawer,e)});
+ /* ---------- 2) configurable types ---------- */
+ const SKEY='warroom.ontology.v1';
+ const DEF={objects:[
+  {key:'Shipment',name:'貨載',desc:'B/L 號碼、裝卸港、開航日、TEU、HS code',icon:'document',color:'gray'},
+  {key:'Party',name:'當事人',desc:'提單上的原始名稱、地址、角色（託運人／收貨人）',icon:'party',color:'gray'},
+  {key:'LegalEntity',name:'法人實體',desc:'D-U-N-S、國家、產業別（SIC）、營運狀態',icon:'building',color:'blue'},
+  {key:'CorporateFamily',name:'企業家族',desc:'以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量',icon:'crown',color:'blue'}],
+ rels:[
+  {key:'shipper / consignee',name:'託運／收貨',from:'Shipment',to:'Party',line:'solid',color:'gray',desc:''},
+  {key:'resolvesTo',name:'解析為',from:'Party',to:'LegalEntity',line:'solid',color:'blue',desc:''},
+  {key:'parent',name:'母公司',from:'LegalEntity',to:'LegalEntity',line:'solid',color:'blue',desc:''},
+  {key:'memberOf',name:'隸屬',from:'LegalEntity',to:'CorporateFamily',line:'solid',color:'blue',desc:''},
+  {key:'suppliesTo',name:'供貨給',from:'LegalEntity',to:'LegalEntity',line:'dashed',color:'amber',desc:''}]};
+ let S;try{S=JSON.parse(localStorage.getItem(SKEY))}catch(e){}
+ if(!S||!Array.isArray(S.objects)||!Array.isArray(S.rels))S=structuredClone(DEF);
+ const save=()=>{try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}};
+ const objPanel=[...mv.querySelectorAll('.p')].find(p=>p.querySelector('.p-h h2')?.textContent==='物件類型');
+ const relPanel=[...mv.querySelectorAll('.p')].find(p=>p.querySelector('.p-h h2')?.textContent==='關聯類型');
+ objPanel.querySelector('.p-h').insertAdjacentHTML('beforeend','<button class="control add" data-add="obj">+ 新增</button>');
+ relPanel.querySelector('.p-h').insertAdjacentHTML('beforeend','<button class="control add" data-add="rel">+ 新增</button>');
+ const objBody=objPanel.querySelector('.p-b');objBody.className='p-b';objBody.innerHTML='<div class="otype-list"></div>';
+ const relBody=relPanel.querySelector('.x-scroll');
+ mv.insertAdjacentHTML('afterend','<div class="cfg-foot"><button class="linkish" id="cfgReset">重設為預設</button></div>');
+ const oName=k=>S.objects.find(o=>o.key===k)?.name||k;
+ const PEN=sv('<path d="M10.5 2.5l3 3L6 13H3v-3z"/>'),BIN=sv('<path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 10h6.6L12 4"/>');
+ function render(){
+  const ol=objBody.firstElementChild;
+  ol.innerHTML=S.objects.length?S.objects.map((o,i)=>`<div class="otype c-${o.color}"><span class="oi">${sv(ICONS[o.icon]?.[1]||ICONS.document[1])}</span><div><div class="on">${esc(o.name)}<span class="ktag">${esc(o.key)}</span></div><div class="od">${esc(o.desc)}</div></div><div class="acts"><button class="icon-btn" data-edit="obj" data-i="${i}" aria-label="編輯 ${esc(o.name)}">${PEN}</button><button class="icon-btn danger" data-del="obj" data-i="${i}" aria-label="刪除 ${esc(o.name)}">${BIN}</button></div></div>`).join(''):'<div class="empty">尚無物件類型，按「+ 新增」建立。</div>';
+  relBody.innerHTML=S.rels.length?`<table class="rtab"><thead><tr><th>從</th><th>關聯</th><th>到</th><th>線型</th><th></th></tr></thead><tbody>${S.rels.map((r,i)=>`<tr class="c-${r.color}"><td>${esc(oName(r.from))}</td><td><span class="ktag">${esc(r.key)}</span> <span class="rd">${esc(r.name)}</span>${r.desc?`<div class="rd">${esc(r.desc)}</div>`:''}</td><td>${esc(oName(r.to))}</td><td><span class="sw ${r.line==='dashed'?'dash':''}"></span></td><td><div class="acts"><button class="icon-btn" data-edit="rel" data-i="${i}" aria-label="編輯 ${esc(r.key)}">${PEN}</button><button class="icon-btn danger" data-del="rel" data-i="${i}" aria-label="刪除 ${esc(r.key)}">${BIN}</button></div></td></tr>`).join('')}</tbody></table>`:'<div class="p-b"><div class="empty">尚無關聯類型，按「+ 新增」建立。</div></div>';
+  syncGraph();
+ }
+ /* graph: legend + edge styles follow config for known keys */
+ const LN={blue:'#7d95d6',amber:'#e0a24a',gray:'#aab6c9'};
+ const EDGE={resolvesTo:['r1e1','r2e2','r3e3'],memberOf:['e1f','e2f','e3f'],suppliesTo:['upe1']};
+ function syncGraph(){
+  const g=document.getElementById('graphM');if(!g)return;const key=g.parentElement.querySelector('.gkey');
+  Object.entries(EDGE).forEach(([k,ids])=>{const r=S.rels.find(x=>x.key===k);ids.forEach(id=>{const p=g.querySelector(`path[data-e="${id}"]`);if(!p)return;
+   if(r){p.style.stroke=LN[r.color];p.style.strokeDasharray=r.line==='dashed'?'5 4':'none'}else{p.style.stroke='';p.style.strokeDasharray=''}})});
+  if(key){const used=S.rels.filter(r=>EDGE[r.key]);key.innerHTML=`<span><i class="d" style="--c:#aab6c9"></i>提單原始名稱</span>`+used.map(r=>`<span><i class="${r.line==='dashed'?'d':''}" style="--c:${LN[r.color]}"></i>${esc(r.name)}（${esc(r.key)}）</span>`).join('')}
+ }
+ const gm=document.getElementById('graphM');if(gm)new MutationObserver(()=>syncGraph()).observe(gm,{childList:true});
+ /* modal */
+ const mscrim=document.createElement('div');mscrim.className='scrim modal-scrim';
+ const modal=document.createElement('div');modal.className='modal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','cfgT');
+ document.body.append(mscrim,modal);let mLast=null;
+ const closeModal=()=>{modal.classList.remove('open');mscrim.classList.remove('open');setTimeout(()=>{if(!modal.classList.contains('open'))modal.innerHTML=''},220);mLast?.focus?.()};
+ const openModal=(title,body,onSubmit)=>{mLast=document.activeElement;
+  modal.innerHTML=`<div class="drawer-h"><h2 id="cfgT">${title}</h2><button class="icon-btn" type="button" data-mclose aria-label="關閉">${sv('<path d="M4 4l8 8M12 4l-8 8"/>')}</button></div><form novalidate>${body}</form>`;
+  modal.classList.add('open');mscrim.classList.add('open');
+  const f=modal.querySelector('form');f.addEventListener('submit',e=>{e.preventDefault();if(onSubmit(f)!==false)closeModal()});
+  modal.querySelectorAll('[data-mclose]').forEach(b=>b.addEventListener('click',closeModal));
+  setTimeout(()=>(modal.querySelector('input,select,button.primary,button.danger')||modal).focus(),30)};
+ mscrim.addEventListener('click',closeModal);
+ modal.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeModal()}else trap(modal,e)});
+ const fld=(lab,inner,name)=>`<label class="fld" data-f="${name}"><span>${lab}</span>${inner}<span class="err" aria-live="polite"></span></label>`;
+ const acts=(ok='儲存',cls='primary')=>`<div class="form-acts"><button type="button" class="btn" data-mclose>取消</button><button type="submit" class="btn ${cls}">${ok}</button></div>`;
+ const radios=(name,opts,val)=>`<div class="pick" role="radiogroup">${opts.map(([v,html,lab])=>`<label title="${lab}"><input type="radio" name="${name}" value="${v}" ${v===val?'checked':''} aria-label="${lab}"><span class="opt">${html}</span></label>`).join('')}</div>`;
+ const colorPick=v=>radios('color',Object.entries(COLORS).map(([k,l])=>[k,`<span class="c-${k}"><span class="dot"></span></span>${l}`,l]),v);
+ function check(f,rules){let ok=true;f.querySelectorAll('.fld').forEach(x=>{x.classList.remove('bad');const e=x.querySelector('.err');if(e)e.textContent=''});
+  rules.forEach(([n,msg,bad])=>{if(bad){ok=false;const x=f.querySelector(`[data-f="${n}"]`);x.classList.add('bad');if(!x.querySelector('.err').textContent)x.querySelector('.err').textContent=msg}});
+  if(!ok)f.querySelector('.bad input,.bad select')?.focus();return ok}
+ function editObj(i){const o=i==null?{key:'',name:'',desc:'',icon:'document',color:'gray'}:S.objects[i];
+  openModal(i==null?'新增物件類型':'編輯物件類型',
+   fld('中文名稱 *',`<input name="name" value="${esc(o.name)}" maxlength="20">`,'name')+
+   fld('English key *',`<input name="key" class="mono" value="${esc(o.key)}" maxlength="40" placeholder="e.g. Vessel">`,'key')+
+   fld('說明',`<textarea name="desc" rows="2" maxlength="120">${esc(o.desc)}</textarea>`,'desc')+
+   `<div class="fld"><span>圖示</span>${radios('icon',Object.entries(ICONS).map(([k,[l,p]])=>[k,sv(p),l]),o.icon)}</div>`+
+   `<div class="fld"><span>顏色</span>${colorPick(o.color)}</div>`+acts(),
+   f=>{const d=Object.fromEntries(new FormData(f));d.name=d.name.trim();d.key=d.key.trim();
+    const dup=S.objects.some((x,j)=>j!==i&&x.key.toLowerCase()===d.key.toLowerCase());
+    if(!check(f,[['name','請輸入中文名稱',!d.name],['key','請輸入 key',!d.key],['key','僅限英文字母、數字、底線',d.key&&!/^[A-Za-z][A-Za-z0-9_]*$/.test(d.key)],['key','key 已存在',dup]]))return false;
+    if(i!=null&&o.key!==d.key)S.rels.forEach(r=>{if(r.from===o.key)r.from=d.key;if(r.to===o.key)r.to=d.key});
+    const v={key:d.key,name:d.name,desc:d.desc.trim(),icon:d.icon||'document',color:d.color||'gray'};
+    if(i==null)S.objects.push(v);else S.objects[i]=v;save();render()})}
+ function editRel(i){if(!S.objects.length){openModal('無法新增關聯',`<p class="confirm-msg">請先建立至少一個物件類型。</p>`+`<div class="form-acts"><button type="button" class="btn primary" data-mclose>知道了</button></div>`,()=>{});return}
+  const r=i==null?{key:'',name:'',from:S.objects[0].key,to:S.objects[0].key,line:'solid',color:'blue',desc:''}:S.rels[i];
+  const opts=v=>S.objects.map(o=>`<option value="${esc(o.key)}" ${o.key===v?'selected':''}>${esc(o.name)}（${esc(o.key)}）</option>`).join('');
+  openModal(i==null?'新增關聯類型':'編輯關聯類型',
+   `<div class="row2">${fld('名稱 *',`<input name="name" value="${esc(r.name)}" maxlength="20">`,'name')}${fld('Key *',`<input name="key" class="mono" value="${esc(r.key)}" maxlength="40" placeholder="e.g. shipsTo">`,'key')}</div>`+
+   `<div class="row2">${fld('來源物件類型 *',`<select name="from">${opts(r.from)}</select>`,'from')}${fld('目標物件類型 *',`<select name="to">${opts(r.to)}</select>`,'to')}</div>`+
+   `<div class="fld"><span>線型</span>${radios('line',[['solid','<span class="lsw"></span>實線','實線'],['dashed','<span class="lsw dash"></span>虛線','虛線']],r.line)}</div>`+
+   `<div class="fld"><span>顏色</span>${colorPick(r.color)}</div>`+
+   fld('說明',`<textarea name="desc" rows="2" maxlength="120">${esc(r.desc)}</textarea>`,'desc')+acts(),
+   f=>{const d=Object.fromEntries(new FormData(f));d.name=d.name.trim();d.key=d.key.trim();
+    const dup=S.rels.some((x,j)=>j!==i&&x.key.toLowerCase()===d.key.toLowerCase());
+    if(!check(f,[['name','請輸入名稱',!d.name],['key','請輸入 key',!d.key],['key','key 已存在',dup],['from','請選擇來源',!d.from],['to','請選擇目標',!d.to]]))return false;
+    const v={key:d.key,name:d.name,from:d.from,to:d.to,line:d.line||'solid',color:d.color||'blue',desc:d.desc.trim()};
+    if(i==null)S.rels.push(v);else S.rels[i]=v;save();render()})}
+ function del(kind,i){
+  if(kind==='obj'){const o=S.objects[i],refs=S.rels.filter(r=>r.from===o.key||r.to===o.key);
+   openModal('刪除物件類型',`<p class="confirm-msg">確定刪除「<b>${esc(o.name)}</b>」（${esc(o.key)}）？</p>${refs.length?`<div class="warnbox">有 ${refs.length} 個關聯類型引用此物件類型，將一併刪除：${refs.map(r=>esc(r.key)).join('、')}</div>`:''}`+acts('刪除','danger'),
+    ()=>{S.rels=S.rels.filter(r=>!refs.includes(r));S.objects.splice(i,1);save();render()})}
+  else{const r=S.rels[i];openModal('刪除關聯類型',`<p class="confirm-msg">確定刪除關聯「<b>${esc(r.key)}</b>」（${esc(r.name)}）？</p>`+acts('刪除','danger'),()=>{S.rels.splice(i,1);save();render()})}}
+ vm.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.add)b.dataset.add==='obj'?editObj(null):editRel(null);
+  else if(b.dataset.edit)b.dataset.edit==='obj'?editObj(+b.dataset.i):editRel(+b.dataset.i);
+  else if(b.dataset.del)del(b.dataset.del,+b.dataset.i);
+  else if(b.id==='cfgReset')openModal('重設為預設',`<p class="confirm-msg">將物件類型與關聯類型還原為預設值，自訂內容會被清除。</p>`+acts('重設','danger'),()=>{S=structuredClone(DEF);try{localStorage.removeItem(SKEY)}catch(e){}render()});});
+ render();
+})();
+</script>
+<style id="r13">
+/* r13: consolidated executive top cards and aligned lower row */
+.home{grid-template-columns:minmax(0,1fr) 360px!important;align-items:stretch!important}
+.home .progress-panel{grid-column:1/-1!important;grid-row:1!important;display:block!important;background:transparent!important}
+.home .customer-panel{display:none!important}
+.home .analysis-panel{grid-column:1!important;grid-row:2!important;align-self:stretch!important}
+.home .signal-panel{grid-column:2!important;grid-row:2!important;align-self:stretch!important;height:auto!important;max-height:none!important}
+.top-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px}
+.top-head h2{margin:0;font-size:12px;font-weight:600}.top-head small{font-size:10px;color:var(--ink-3)}
+.top-cards{display:grid;grid-template-columns:.9fr 1.08fr .9fr 2.25fr;gap:10px;align-items:stretch}
+.metric-card,.momentum-card{background:var(--panel);border-radius:10px;min-width:0;overflow:hidden}
+.metric-card{padding:18px 16px;display:flex;flex-direction:column;min-height:258px}
+.metric-top{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.metric-card h3,.momentum-head h3{font-size:11px;font-weight:500;color:var(--ink-3);margin:0}
+.metric-number{font-family:var(--font-num);font-size:42px;font-weight:700;line-height:1.05;letter-spacing:-.035em;margin-top:8px;font-variant-numeric:tabular-nums}
+.metric-unit{font:400 10px/1 var(--font-body);color:var(--ink-3);margin-left:5px;letter-spacing:0}
+.metric-rate{text-align:right}.metric-rate strong{display:block;font-family:var(--font-num);font-size:22px;line-height:1;color:#23794f}.metric-rate span{font-size:9.5px;color:var(--ink-3)}
+.metric-chart{margin-top:auto;padding-top:22px;border-top:1px solid var(--line)}
+.metric-foot{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:9.5px;color:var(--ink-3)}
+.momentum-card{padding:0 16px}.momentum-head{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line)}
+.momentum-head span{font-size:9.5px;color:var(--ink-3)}
+.stock-list{list-style:none;margin:0;padding:0}.stock-row{display:grid;grid-template-columns:minmax(106px,.85fr) minmax(130px,1.25fr) 72px;gap:12px;align-items:center;min-height:40px;padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer;background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;color:inherit}
+.stock-row:last-child{border-bottom:0}.stock-row:hover,.stock-row:focus-visible{background:#f1f4f9;outline:none}
+.stock-name b{display:block;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stock-name small{font-size:9px;color:var(--ink-3)}
+.stock-chart{display:block;width:100%;height:31px;overflow:visible}.stock-change{text-align:right;font-family:var(--font-num);font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}.stock-change.up{color:#23794f}.stock-change.down{color:#aa5d3e}.stock-change.flat{color:var(--ink-2)}
+.dense-bar{transform-box:fill-box;transform-origin:bottom;animation:dense-rise .65s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--delay)}
+.dense-line{stroke-dasharray:600;stroke-dashoffset:600;animation:dense-draw .8s .12s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes dense-rise{from{transform:scaleY(.04);opacity:0}to{transform:scaleY(1);opacity:1}}@keyframes dense-draw{to{stroke-dashoffset:0}}
+.analysis-panel .graph{overflow-x:auto!important;padding:12px 14px 8px!important;background:radial-gradient(#ccd4e1 .7px,transparent .8px) 0 0/16px 16px,#f8f9fc!important}
+.analysis-panel .graph svg{min-width:720px!important}.graph .stage-label{font-size:10.5px;fill:#657186;font-weight:600;letter-spacing:.06em}
+.graph .flow-icon{color:#657695}.graph .nd.raw .flow-icon{color:#68758a}.graph .nd.ent .flow-icon{color:#536eae}.graph .nd.fam .flow-icon{color:#415ca6}.graph .nd.ext .flow-icon{color:#a76a22}
+.graph .flow-edge{fill:none;stroke:#91a5ca;stroke-width:1.35}.graph .flow-edge.sc{stroke:#d19845;stroke-dasharray:5 4}.graph .flow-edge.active{stroke-width:2.3;stroke-dasharray:var(--edge-length);stroke-dashoffset:var(--edge-length);animation:edge-in .42s cubic-bezier(.22,1,.36,1) forwards;animation-delay:var(--edge-delay)}
+@keyframes edge-in{to{stroke-dashoffset:0}}.graph .flow-edge.dim,.graph .nd.dim{opacity:.2}.graph .nd{transition:opacity .22s}.graph .nd rect{rx:8}
+.node-assist{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;margin-top:10px;padding:11px 12px;border:1px solid #d7deea;border-radius:8px;background:#eef3fa;min-height:0!important;color:var(--ink-2)}
+.node-assist .assist-mark{width:24px;height:24px;border:1px solid #aebbd0;display:grid;place-items:center;font:700 11px/1 var(--font-num);color:#526aa8;background:#fff}.node-assist small{display:block;font-size:9.5px;color:#6c7890;letter-spacing:.08em;text-transform:uppercase}.node-assist b{display:block;margin-top:2px;font-size:12px;color:var(--ink)}.node-assist p{margin:2px 0 0;font-size:11px;line-height:1.55;color:var(--ink-2)}
+.comparison .mini-report{display:flex!important;flex-direction:column;gap:10px!important}.compare-numbers{display:grid;grid-template-columns:1fr 1fr;gap:8px}.compare-numbers section{border:1px solid var(--line)!important;border-radius:8px;padding:10px!important;background:#fff}.compare-numbers section.pos{background:#edf3ff;border-color:#cbd7f0!important}.compare-numbers h4{margin:0 0 5px;font-size:10px;color:var(--ink-3)}.compare-numbers .big{font-family:var(--font-num);font-size:27px;font-weight:700;line-height:1}.compare-numbers .pos .big{color:#23794f}.compare-advice{border:0!important;border-radius:8px;padding:10px 11px!important;background:#f1f3f7!important}.compare-advice h4{margin:0 0 4px;font-size:10px;color:var(--ink-3)}.compare-advice p{margin:0;font-size:11px;line-height:1.65;color:var(--ink-2)}
+.comparison .tip{background:#202532!important;color:#f3f5f8!important;border:0!important;border-radius:8px!important;box-shadow:0 8px 22px #2025322b!important;padding:7px 9px!important;font:10.5px/1.55 var(--font-body)!important}.comparison .tip b{color:#fff!important}.comparison .tip .sw{border-radius:0!important;width:7px!important;height:2px!important;vertical-align:middle!important}.comparison .hl{stroke:#7b8fbf!important;stroke-width:1!important;stroke-dasharray:3 3}.comparison .chart svg rect:last-of-type{cursor:crosshair}
+@media(max-width:1180px){.top-cards{grid-template-columns:repeat(3,1fr)}.momentum-card{grid-column:1/-1}.home{grid-template-columns:1fr!important}.home .analysis-panel,.home .signal-panel{grid-column:1!important}.home .signal-panel{grid-row:3!important}}
+@media(max-width:720px){.top-cards{grid-template-columns:1fr}.metric-card,.momentum-card{min-height:0}.metric-card{padding:15px}.metric-chart{padding-top:16px}.momentum-card{grid-column:auto}.stock-row{grid-template-columns:100px minmax(90px,1fr) 64px;gap:8px}.home .analysis-panel{grid-row:2!important}.home .signal-panel{grid-row:3!important}.compare-numbers{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.dense-bar,.dense-line,.graph .flow-edge.active{animation:none!important;stroke-dashoffset:0!important}}
+</style>
+<script>
+/* r13: rebuild the executive summary, graph semantics and comparison copy. */
+(function r13(){
+ const iconPaths={
+  form:'<path d="M5 2.5h10l4 4v15H5z"/><path d="M15 2.5v4h4M8 11h8M8 15h8M8 19h5"/>',
+  building:'<path d="M5 21.5v-19h14v19M2.5 21.5h19"/><path d="M8.5 6h2M13.5 6h2M8.5 10h2M13.5 10h2M8.5 14h2M13.5 14h2M10 21.5v-4h4v4"/>',
+  buildings:'<path d="M2.5 21.5v-12h6v12M8.5 21.5v-19h7v19M15.5 21.5v-14h6v14M1.5 21.5h21"/><path d="M4.5 13h2M4.5 16.5h2M10.5 6h3M10.5 10h3M10.5 14h3M17.5 11h2M17.5 14.5h2"/>',
+  truck:'<path d="M2.5 5h12v11h-12zM14.5 9h4l3 3v4h-7zM2.5 16h2M11 16h5M20 16h1.5"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="18.5" cy="17.5" r="2"/>',
+  storefront:'<path d="M4 9.5v12h16v-12M3 3h18l1 6.5H2zM7 9.5v12M15 14h3M10 14h3v7.5"/><path d="M2 9.5c0 1.5 1 2.5 2.5 2.5S7 11 7 9.5c0 1.5 1 2.5 2.5 2.5S12 11 12 9.5c0 1.5 1 2.5 2.5 2.5S17 11 17 9.5c0 1.5 1 2.5 2.5 2.5S22 11 22 9.5"/>'};
+ const icon=(name,cls='')=>`<svg class="${cls}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${iconPaths[name]}</svg>`;
+ function dense(values,{W=180,H=46,warn=false,highlight=-1,aria='趨勢圖'}={}){
+  const min=Math.min(...values),max=Math.max(...values),span=max-min||1,base=H-3,top=5,step=W/values.length,lines=4,lineGap=1.65;
+  const y=v=>top+(1-(v-min)/span)*(H-top-10);let bars='';
+  values.forEach((v,i)=>{const cx=step*i+step/2,start=cx-(lines-1)*lineGap/2;for(let j=0;j<lines;j++)bars+=`<line class="dense-bar" style="--delay:${i*24+j*5}ms" x1="${(start+j*lineGap).toFixed(1)}" x2="${(start+j*lineGap).toFixed(1)}" y1="${base}" y2="${y(v).toFixed(1)}" stroke="${warn?'#c8aa9b':i===highlight?'#637ec3':'#a9b7d6'}" stroke-width="1"/>`});
+  const d=values.map((v,i)=>`${i?'L':'M'}${(step*i+step/2).toFixed(1)},${y(v).toFixed(1)}`).join(' '),c=warn?'#a66a4c':'#566fae';
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}" preserveAspectRatio="none">${bars}<path class="dense-line" d="${d}" fill="none" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+ }
+ const funnel=[18420,6315,1204];
+ progressPanel.innerHTML=`<div class="top-head"><h2>歸戶進度</h2><small>截至 2026-09</small></div><div class="top-cards">
+  <article class="metric-card"><div class="metric-top"><div><h3>提單原始名稱</h3><div class="metric-number">18,420<span class="metric-unit">筆</span></div></div></div><div class="metric-chart">${dense(funnel,{W:210,H:58,highlight:0,aria:'提單名稱、法人與家族的歸戶漏斗'})}</div><div class="metric-foot"><span>原始名稱</span><span>歸戶資料起點</span></div></article>
+  <article class="metric-card"><div class="metric-top"><div><h3>D-U-N-S 法人</h3><div class="metric-number">6,315<span class="metric-unit">個</span></div></div><div class="metric-rate"><strong>94.2%</strong><span>法人比對率</span></div></div><div class="metric-chart">${dense(funnel,{W:210,H:58,highlight:1,aria:'法人比對進度'})}</div><div class="metric-foot"><span>312 筆待人工確認</span><span>名稱＋地址比對</span></div></article>
+  <article class="metric-card"><div class="metric-top"><div><h3>企業家族</h3><div class="metric-number">1,204<span class="metric-unit">個</span></div></div></div><div class="metric-chart">${dense(funnel,{W:210,H:58,highlight:2,aria:'企業家族歸戶進度'})}</div><div class="metric-foot"><span>Global Ultimate</span><span>家族彙總</span></div></article>
+  <article class="momentum-card"><div class="momentum-head"><h3>重點客戶動能（近 3 月）</h3><span>近 3 月 vs 前 3 月</span></div><div class="stock-list" id="stockList"></div></article>
+ </div>`;
+ const stock=document.getElementById('stockList');
+ function stockRows(order=FAMS){stock.innerHTML=order.map((f,i)=>{const p=chg(f.total),cl=p>2?'up':p<-2?'down':'flat';return `<button class="stock-row" data-f="${f.id}"><span class="stock-name"><b>${f.name}</b><small>${f.members.length} 個法人</small></span><span class="stock-chart">${dense(f.total,{W:190,H:34,warn:p<-3,aria:f.name+'近十二月貨量趨勢'})}</span><span class="stock-change ${cl}">${pct(p)}</span></button>`}).join('')}
+ stockRows();stock.addEventListener('click',e=>{const b=e.target.closest('.stock-row');if(!b)return;curFam=b.dataset.f;show('fam')});
+
+ const oldGraph=document.getElementById('graph'),flow=oldGraph.cloneNode(false);oldGraph.replaceWith(flow);
+ const detail=document.getElementById('detail'),N=Object.fromEntries(G.nodes.map(n=>[n.id,n]));
+ const pos={r1:[22,72,260,68],r2:[22,178,260,68],r3:[22,284,260,68],e1:[362,72,240,68],e2:[362,178,240,68],e3:[362,284,240,68],up:[702,62,260,68],f:[702,178,260,82],dn:[702,310,260,68]};
+ const edgeDefs={r1e1:['r1','e1','解析為','res'],r2e2:['r2','e2','解析為','res'],r3e3:['r3','e3','解析為','res'],e1f:['e1','f','隸屬','res'],e2f:['e2','f','隸屬','res'],e3f:['e3','f','隸屬','res'],upe1:['up','e1','供貨給','sc'],fdn:['f','dn','出貨給','sc']};
+ const paths={r1:['r1e1','e1f'],r2:['r2e2','e2f'],r3:['r3e3','e3f'],e1:['r1e1','upe1','e1f'],e2:['r2e2','e2f'],e3:['r3e3','e3f'],up:['upe1','e1f'],f:['r1e1','r2e2','r3e3','e1f','e2f','e3f','fdn'],dn:['fdn']};
+ const typeLabel={raw:'提單原始名稱',ent:'D-U-N-S 法人',fam:'企業家族',ext:'供應鏈節點'};
+ const nodeIcon=id=>id==='up'?'truck':id==='dn'?'storefront':N[id].k==='raw'?'form':N[id].k==='ent'?'building':'buildings';
+ const point=(id,side)=>{const[x,y,w,h]=pos[id];return side==='l'?[x,y+h/2]:side==='r'?[x+w,y+h/2]:side==='t'?[x+w/2,y]:[x+w/2,y+h]};
+ let s='<defs><marker id="flow-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#7d91bb"/></marker><marker id="sc-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#c88c35"/></marker></defs>';
+ [['提單原始名稱',22],['D-U-N-S 法人',362],['企業家族',702]].forEach(([t,x])=>s+=`<text class="stage-label" x="${x}" y="30">${t}</text>`);
+ Object.entries(edgeDefs).forEach(([id,[a,b,label,kind]])=>{let d,lx,ly;if(id==='upe1'){const A=point(a,'l'),B=point(b,'r');d=`M${A[0]} ${A[1]}H650V${B[1]}H${B[0]}`;lx=650;ly=B[1]-8}else if(id==='fdn'){const A=point(a,'b'),B=point(b,'t');d=`M${A[0]} ${A[1]}V${B[1]}`;lx=A[0]+9;ly=(A[1]+B[1])/2}else if(b==='f'){const A=point(a,'r'),B=point(b,'l'),off={e1f:-18,e2f:0,e3f:18}[id];d=`M${A[0]} ${A[1]}H650V${B[1]+off}H${B[0]}`;lx=652;ly=B[1]+off-7}else{const A=point(a,'r'),B=point(b,'l');d=`M${A[0]} ${A[1]}H${B[0]}`;lx=(A[0]+B[0])/2;ly=A[1]-7}s+=`<path class="flow-edge ${kind}" data-edge="${id}" d="${d}" marker-end="url(#${kind==='sc'?'sc-arrow':'flow-arrow'})"/><text class="el" data-edge-label="${id}" x="${lx}" y="${ly}">${label}</text>`});
+ Object.entries(pos).forEach(([id,[x,y,w,h]])=>{const n=N[id],iconName=nodeIcon(id);s+=`<g class="nd ${n.k}" data-n="${id}" tabindex="0" role="button" aria-label="${n.t}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><g class="flow-icon" transform="translate(${x+13} ${y+13}) scale(.9)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter">${iconPaths[iconName]}</g><text class="n1" x="${x+46}" y="${y+28}">${n.t}</text><text class="n2" x="${x+46}" y="${y+49}">${n.s}</text>${id==='f'?`<text class="n2" x="${x+46}" y="${y+68}">3 個法人 · 貨量 +10.5%</text>`:''}</g>`});
+ flow.innerHTML=`<svg viewBox="0 0 984 404" role="img" aria-label="提單原始名稱、法人與企業家族歸戶流程圖">${s}</svg>`;
+ detail.className='detail node-assist';detail.innerHTML='<span class="assist-mark">i</span><div><small>節點說明</small><b>點選流程中的節點</b><p>查看名稱解析、法人比對與企業家族歸戶的判讀依據。</p></div>';
+ function choose(id){const active=new Set(paths[id]||[]),related=new Set([id]);active.forEach(e=>{related.add(edgeDefs[e][0]);related.add(edgeDefs[e][1])});flow.querySelectorAll('.nd').forEach(n=>{n.classList.toggle('on',n.dataset.n===id);n.classList.toggle('dim',!related.has(n.dataset.n))});flow.querySelectorAll('.flow-edge').forEach((p,i)=>{const on=active.has(p.dataset.edge);p.classList.remove('active');p.classList.toggle('dim',!on);if(on){p.style.setProperty('--edge-length',p.getTotalLength());p.style.setProperty('--edge-delay',`${i*35}ms`);void p.getBoundingClientRect();p.classList.add('active')}});flow.querySelectorAll('[data-edge-label]').forEach(t=>t.classList.toggle('dim',!active.has(t.dataset.edgeLabel)));const n=N[id];detail.innerHTML=`<span class="assist-mark">i</span><div><small>節點說明 · ${typeLabel[n.k]}</small><b>${n.t}</b><p>${n.info}</p></div>`}
+ flow.addEventListener('click',e=>{const n=e.target.closest('.nd');if(n)choose(n.dataset.n)});flow.addEventListener('keydown',e=>{const n=e.target.closest('.nd');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();choose(n.dataset.n)}});
+
+ const report=document.getElementById('cmpNote');if(report)report.innerHTML=`<div class="compare-numbers"><section><h4>近 3 月貨量</h4><div class="big">−5.5%</div></section><section class="pos"><h4>歸戶企業家族</h4><div class="big">+10.5%</div></section></div><section class="compare-advice"><h4>判讀建議</h4><p>只看提單上的「宏遠電子」，近 3 月貨量 <b>−5.5%</b>，會被判為流失風險；歸戶到企業家族後是 <b>+10.5%</b>，實際在成長，只是出貨地移到越南與墨西哥。</p></section>`;
+ document.querySelector('.signal-panel')?.style.removeProperty('height');
+})();
+</script>
+<style id="r14">
+/* r14: compact executive cards, contextual node help, and external process map */
+.top-cards{grid-template-columns:1.12fr 1.12fr 2.76fr}
+.summary-card{background:var(--panel);border-radius:10px;min-width:0;min-height:258px;padding:18px 16px;display:flex;flex-direction:column;overflow:hidden}
+.summary-card h3{margin:0;font-size:11px;font-weight:500;color:var(--ink-3)}
+.summary-card .summary-body{display:grid;align-items:center;flex:1;min-height:0}
+.split-metrics{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.split-metrics>div{min-width:0;padding-right:15px}.split-metrics>div+div{padding-left:15px;padding-right:0;border-left:1px solid var(--line)}
+.summary-number{font-family:var(--font-num);font-size:38px;font-weight:700;line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.summary-unit{font:400 9.5px/1 var(--font-body);color:var(--ink-3);letter-spacing:0;margin-left:4px}
+.summary-label{margin-top:7px;font-size:10px;color:var(--ink-3)}
+.match-block{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}
+.match-rate{text-align:right}.match-rate strong{display:block;font-family:var(--font-num);font-size:29px;line-height:1;color:#23794f}.match-rate span{display:block;margin-top:6px;font-size:9.5px;color:var(--ink-3)}
+.match-note{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:12px;margin-top:16px;font-size:9.5px;color:var(--ink-3)}
+.momentum-card,.stock-list,.stock-row,.stock-chart{min-width:0;max-width:100%}.momentum-card{overflow:hidden}.stock-row{overflow:hidden}.stock-chart{overflow:hidden!important;contain:paint}.stock-chart svg{display:block;width:100%;height:100%;overflow:hidden}
+.analysis-panel>.p-h{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:10px}.analysis-panel>.p-h h2{flex:none}.analysis-panel>.p-h .graph-key-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:0 0 0 auto;font-size:10px;color:var(--ink-3)}
+.analysis-panel>.p-h .graph-key-head span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.analysis-panel>.p-h .graph-key-head i{width:23px;display:inline-block;border-top:1.5px solid var(--c)}.analysis-panel>.p-h .graph-key-head i.dash{border-top-style:dashed}
+.node-assist[hidden]{display:none!important}.node-assist{animation:assist-in .22s cubic-bezier(.22,1,.36,1) both}.node-assist b{margin-top:0!important}.node-assist p{margin-top:3px!important}
+@keyframes assist-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+#v-model>.model-graph{display:none!important}
+#v-model .process-map{background:var(--panel);border-radius:12px;padding:18px 22px 22px;overflow:hidden}
+.process-map-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:18px}.process-map-head h2{margin:0;font-size:12px;font-weight:600}.process-map-head span{font-size:10px;color:var(--ink-3)}
+.process-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:relative}
+.process-stage{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;min-width:0;padding:4px 28px 2px 0}
+.process-stage+.process-stage{padding-left:28px;border-left:1px solid var(--line)}.process-stage:last-child{padding-right:0}
+.process-stage:not(:last-child)::after{content:"";position:absolute;right:-5px;top:29px;width:9px;height:9px;border-top:1.5px solid #8ea1c6;border-right:1.5px solid #8ea1c6;transform:rotate(45deg);background:var(--panel);z-index:1}
+.process-icon{width:38px;height:38px;border-radius:50%;border:1px solid #cbd4e3;display:grid;place-items:center;color:#536c9f;box-shadow:0 0 0 7px #f4f6fa,0 0 0 8px #e4e9f1}
+.process-icon svg{width:17px;height:17px}.process-copy{min-width:0}.process-kicker{font-family:var(--font-num);font-size:9.5px;color:#73809a;letter-spacing:.08em}.process-copy h3{margin:3px 0 8px;font-size:14px;font-weight:600}.process-copy ol{margin:0;padding:0;list-style:none;display:grid;gap:6px}.process-copy li{font-size:10.5px;color:var(--ink-2);line-height:1.45;display:grid;grid-template-columns:16px minmax(0,1fr);gap:5px}.process-copy li::before{content:attr(data-n);font-family:var(--font-num);font-size:9px;color:#8a96aa;padding-top:1px}
+@media(max-width:1180px){.top-cards{grid-template-columns:1fr 1fr}.momentum-card{grid-column:1/-1}}
+@media(max-width:760px){.top-cards{grid-template-columns:1fr}.summary-card{min-height:170px}.momentum-card{grid-column:auto}.analysis-panel>.p-h .graph-key-head{margin-left:0;gap:10px}.process-track{grid-template-columns:1fr;gap:22px}.process-stage,.process-stage+.process-stage{padding:0;border-left:0}.process-stage:not(:last-child)::after{display:none}.process-stage+.process-stage{padding-top:22px;border-top:1px solid var(--line)}#v-model .mv{grid-template-columns:1fr}.otype-list{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.node-assist{animation:none!important}}
+</style>
+<script>
+/* r14: requested information architecture and interaction refinements. */
+(function r14(){
+ const cards=document.querySelector('.top-cards');
+ if(cards){
+  const momentum=cards.querySelector('.momentum-card');
+  cards.innerHTML=`<article class="summary-card"><h3>歸戶資料規模</h3><div class="summary-body"><div class="split-metrics"><div><div class="summary-number">18,420<span class="summary-unit">筆</span></div><div class="summary-label">提單原始名稱</div></div><div><div class="summary-number">1,204<span class="summary-unit">個</span></div><div class="summary-label">企業家族</div></div></div></div></article><article class="summary-card"><h3>D-U-N-S 法人與比對率</h3><div class="summary-body"><div><div class="match-block"><div><div class="summary-number">6,315<span class="summary-unit">個</span></div><div class="summary-label">已比對法人</div></div><div class="match-rate"><strong>94.2%</strong><span>法人比對率</span></div></div><div class="match-note"><span>名稱＋地址比對</span><span>312 筆待人工確認</span></div></div></div></article>`;
+  if(momentum){momentum.querySelector('.momentum-head span').textContent='近三月';cards.append(momentum)}
+ }
+
+ const panel=document.querySelector('.analysis-panel'),flow=document.getElementById('graph'),detail=document.getElementById('detail');
+ if(panel&&flow&&detail){
+  const key=panel.querySelector('.key');if(key){key.classList.add('graph-key-head');panel.querySelector(':scope>.p-h')?.append(key)}
+  detail.innerHTML='';detail.hidden=true;
+  const clean=flow.cloneNode(true);flow.replaceWith(clean);
+  const N=Object.fromEntries(G.nodes.map(n=>[n.id,n]));
+  const edgeDefs={r1e1:['r1','e1'],r2e2:['r2','e2'],r3e3:['r3','e3'],e1f:['e1','f'],e2f:['e2','f'],e3f:['e3','f'],upe1:['up','e1'],fdn:['f','dn']};
+  const paths={r1:['r1e1','e1f'],r2:['r2e2','e2f'],r3:['r3e3','e3f'],e1:['r1e1','upe1','e1f'],e2:['r2e2','e2f'],e3:['r3e3','e3f'],up:['upe1','e1f'],f:['r1e1','r2e2','r3e3','e1f','e2f','e3f','fdn'],dn:['fdn']};
+  let selected=null;
+  function reset(){selected=null;clean.querySelectorAll('.nd').forEach(n=>n.classList.remove('on','dim'));clean.querySelectorAll('.flow-edge').forEach(p=>p.classList.remove('active','dim'));clean.querySelectorAll('[data-edge-label]').forEach(t=>t.classList.remove('dim'));detail.hidden=true;detail.innerHTML=''}
+  function choose(id){if(selected===id){reset();return}selected=id;const active=new Set(paths[id]||[]),related=new Set([id]);active.forEach(e=>{related.add(edgeDefs[e][0]);related.add(edgeDefs[e][1])});clean.querySelectorAll('.nd').forEach(n=>{n.classList.toggle('on',n.dataset.n===id);n.classList.toggle('dim',!related.has(n.dataset.n))});clean.querySelectorAll('.flow-edge').forEach((p,i)=>{const on=active.has(p.dataset.edge);p.classList.remove('active');p.classList.toggle('dim',!on);if(on){p.style.setProperty('--edge-length',p.getTotalLength());p.style.setProperty('--edge-delay',`${i*35}ms`);void p.getBoundingClientRect();p.classList.add('active')}});clean.querySelectorAll('[data-edge-label]').forEach(t=>t.classList.toggle('dim',!active.has(t.dataset.edgeLabel)));const n=N[id];detail.innerHTML=`<span class="assist-mark">i</span><div><b>${n.t}</b><p>${n.info}</p></div>`;detail.hidden=false}
+  clean.addEventListener('click',e=>{const n=e.target.closest('.nd');if(n)choose(n.dataset.n)});clean.addEventListener('keydown',e=>{const n=e.target.closest('.nd');if(n&&(e.key==='Enter'||e.key===' ')){e.preventDefault();choose(n.dataset.n)}});
+ }
+
+ const vm=document.getElementById('v-model');
+ if(vm){
+  const oldGraph=vm.querySelector('.model-graph');oldGraph?.remove();
+  const drawer=document.getElementById('pipeDrawer'),scrim=document.querySelector('.scrim');drawer?.remove();scrim?.remove();
+  const icons=[
+   '<path d="M3 2.5h10l3 3v10H3zM13 2.5v3h3M6 9h7M6 12h7"/>',
+   '<circle cx="9.5" cy="6" r="3.5"/><path d="M7 8.5l-3.5 3.5M3.5 12H6M12 10l3.5 3.5"/>',
+   '<path d="M2.5 13.5l4-4 3 2.5 5-6M11.5 6H15v3.5"/>'
+  ];
+  const sv=p=>`<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${p}</svg>`;
+  const stages=[
+   ['01 · DATA','資料輸入',['匯入提單與艙單','名稱與地址清洗']],
+   ['02 · INSIGHTS','實體解析',['比對 D-U-N-S 編碼','掛上企業家族樹']],
+   ['03 · ACTIONS','決策訊號',['推導上下游關係','家族層級趨勢偵測']]
+  ];
+  const map=document.createElement('section');map.className='process-map';map.innerHTML=`<div class="process-map-head"><h2>資料處理流程</h2><span>資料 → 洞察 → 行動</span></div><div class="process-track">${stages.map((s,i)=>`<article class="process-stage"><span class="process-icon">${sv(icons[i])}</span><div class="process-copy"><span class="process-kicker">${s[0]}</span><h3>${s[1]}</h3><ol>${s[2].map((x,j)=>`<li data-n="${String(i*2+j+1).padStart(2,'0')}"><span>${x}</span></li>`).join('')}</ol></div></article>`).join('')}</div>`;
+  vm.prepend(map);
+ }
+})();
+</script>
+<style id="r15">
+/* r15: read-only ontology registry and consolidated family workspace */
+.bar{position:sticky;top:0;z-index:30;background:color-mix(in oklch,var(--bg) 96%,transparent);backdrop-filter:blur(10px)}
+#v-fam .chips{position:sticky;top:72px;z-index:24;box-shadow:0 8px 18px #2025320a}
+.process-map{padding-bottom:10px!important}.process-list{list-style:none;margin:0;padding:0}.process-list li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--line)}.process-list li:first-child{border-top:0;padding-top:4px}
+.process-list .step-no{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#dce3ed;color:#263248;font-family:var(--font-num);font-size:13px;font-weight:700}.process-list h3{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink)}.process-list p{margin:0;max-width:88ch;font-size:11.5px;line-height:1.65;color:var(--ink-2)}
+#v-model .mv{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+.model-list{width:100%;border-collapse:collapse;table-layout:fixed}.model-list th,.model-list td{text-align:left;border-bottom:1px solid var(--line);padding:11px 12px;vertical-align:top}.model-list th{font-size:10px;font-weight:500;color:var(--ink-3);background:#f4f6f9}.model-list td{font-size:11.5px;line-height:1.55;color:var(--ink-2)}.model-list tbody tr:last-child td{border-bottom:0}.model-list .name{font-weight:600;color:var(--ink)}.model-list .code{font-family:var(--font-mono);font-size:10px;color:#4d6090}.object-list th:nth-child(1){width:25%}.object-list th:nth-child(2){width:27%}.relation-list th:nth-child(1),.relation-list th:nth-child(3){width:29%}.relation-list th:nth-child(2){width:42%}
+#v-fam .kstrip{grid-template-columns:1.35fr .72fr 1.8fr}.insight-card{display:block;padding:20px 18px}.insight-card .insight-label{font-size:10px;color:var(--ink-3);margin-bottom:7px}.insight-card p{margin:0;font-size:11.5px;line-height:1.65;color:var(--ink-2);max-width:66ch}
+#v-fam .fv-grid{grid-template-columns:minmax(0,1.42fr) minmax(400px,1fr);align-items:start}.family-side .p-b{padding-top:8px}.family-side-block+.family-side-block{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.family-side-block h3{margin:0 0 10px;font-size:11px;font-weight:600;color:var(--ink-2)}
+.family-side .tree{margin-bottom:0}.family-side .member-wrap{overflow:hidden}.family-side #fTable{width:100%;table-layout:fixed}.family-side #fTable th,.family-side #fTable td{padding:8px 6px;font-size:10.5px;white-space:normal}.family-side #fTable th:nth-child(1){width:36%}.family-side #fTable th:nth-child(3){width:12%}.family-side #fTable th:nth-child(5){width:20%}.family-side #fTable th:nth-child(7){width:32%}.family-side #fTable :is(th,td):nth-child(2),.family-side #fTable :is(th,td):nth-child(4),.family-side #fTable :is(th,td):nth-child(6),.family-side #fTable :is(th,td):nth-child(8){display:none}.family-side #fTable td:nth-child(5),.family-side #fTable td:nth-child(7){text-align:right}
+#v-fam .tip{background:#202532!important;color:#f3f5f8!important;border:0!important;border-radius:8px!important;box-shadow:0 8px 22px #2025322b!important;padding:7px 9px!important;font:10.5px/1.55 var(--font-body)!important}#v-fam .tip b{color:#fff!important}#v-fam .tip .sw{border-radius:0!important;width:7px!important;height:2px!important;vertical-align:middle!important}#v-fam .hl{stroke:#7b8fbf!important;stroke-width:1!important;stroke-dasharray:3 3}#v-fam .chart svg rect:last-of-type{cursor:crosshair}
+@media(max-width:980px){#v-fam .fv-grid{grid-template-columns:1fr}#v-fam .kstrip{grid-template-columns:1fr 1fr}.insight-card{grid-column:1/-1}}
+@media(max-width:760px){.bar{padding-top:10px;padding-bottom:10px}#v-fam .chips{top:60px}.process-list li{grid-template-columns:32px minmax(0,1fr);gap:12px}.process-list p{font-size:11px}#v-model .mv{grid-template-columns:1fr}.model-list{min-width:560px}#v-fam .kstrip{grid-template-columns:1fr}.insight-card{grid-column:auto}.family-side #fTable th:nth-child(3),.family-side #fTable td:nth-child(3){display:none}.family-side #fTable th:nth-child(1){width:44%}.family-side #fTable th:nth-child(5){width:22%}.family-side #fTable th:nth-child(7){width:34%}}
+</style>
+<script>
+/* r15: requested ontology and enterprise-family restructuring. */
+(function r15(){
+ const vm=document.getElementById('v-model');
+ if(vm){
+  const steps=[
+   ['匯入提單與艙單','每筆貨載帶有 B/L 號碼、裝卸港、TEU、品項 HS code，以及託運人、收貨人、通知人的原始名稱與地址。'],
+   ['名稱與地址清洗','統一大小寫、公司型態字尾（CO LTD、SA DE CV、Sdn Bhd）與地址格式，減少同一家公司的寫法差異。'],
+   ['比對 D-U-N-S 編碼','以鄧白氏比對服務取得 D-U-N-S 與信心分數，低於門檻的名稱進入人工確認清單。'],
+   ['掛上企業家族樹','依鄧白氏家族樹（Parent、Domestic Ultimate、Global Ultimate）把各地子公司歸到同一家族。'],
+   ['推導上下游關係','同一批貨的託運人與收貨人形成「供貨給」關係，串出供應商、工廠、買方的鏈條。'],
+   ['家族層級趨勢偵測','以家族為單位比較近 3 月與前 3 月 TEU，並偵測貨量在成員之間的移轉（例如產線外移）。']
+  ];
+  const map=vm.querySelector('.process-map');if(map)map.innerHTML=`<div class="process-map-head"><h2>資料處理流程</h2><span>提單資料 → 實體解析 → 決策訊號</span></div><ol class="process-list">${steps.map((s,i)=>`<li><span class="step-no">${i+1}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div></li>`).join('')}</ol>`;
+  vm.querySelectorAll('.control.add,.cfg-foot,.modal,.modal-scrim').forEach(x=>x.remove());
+  const panels=[...vm.querySelectorAll('.mv .p')],obj=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='物件類型'),rel=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='關聯類型');
+  if(obj){const body=obj.querySelector('.p-b');body.innerHTML=`<div class="x-scroll"><table class="model-list object-list"><thead><tr><th>物件</th><th>識別鍵</th><th>說明</th></tr></thead><tbody><tr><td class="name">貨載</td><td class="code">Shipment</td><td>B/L 號碼、裝卸港、開航日、TEU、HS code</td></tr><tr><td class="name">當事人</td><td class="code">Party</td><td>提單上的原始名稱、地址、角色（託運人／收貨人）</td></tr><tr><td class="name">法人實體</td><td class="code">LegalEntity</td><td>D-U-N-S、國家、產業別（SIC）、營運狀態</td></tr><tr><td class="name">企業家族</td><td class="code">CorporateFamily</td><td>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</td></tr></tbody></table></div>`}
+  if(rel){const body=rel.querySelector('.x-scroll');body.innerHTML=`<table class="model-list relation-list"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody><tr><td class="name">貨載</td><td><span class="code">shipper / consignee</span>　託運／收貨</td><td class="name">當事人</td></tr><tr><td class="name">當事人</td><td><span class="code">resolvesTo</span>　解析為</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">parent</span>　母公司</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">memberOf</span>　隸屬</td><td class="name">企業家族</td></tr><tr><td class="name">法人實體</td><td><span class="code">suppliesTo</span>　供貨給</td><td class="name">法人實體</td></tr></tbody></table>`}
+ }
+
+ const fv=document.getElementById('v-fam');
+ if(fv){
+  const right=fv.querySelector('.fv-grid>.col'),tree=document.getElementById('fTree'),table=document.getElementById('fTable'),read=document.getElementById('fRead');
+  const treePanel=tree?.closest('.p'),tablePanel=table?.closest('.p'),readPanel=read?.closest('.p');
+  const store=document.createElement('div');store.hidden=true;store.id='familyReadStore';if(read)store.append(read);fv.append(store);readPanel?.remove();
+  if(right&&tree&&table){const side=document.createElement('div');side.className='p family-side';side.innerHTML='<div class="p-h"><h2>家族樹與成員名單</h2></div><div class="p-b"><section class="family-side-block tree-slot"><h3>企業家族樹</h3></section><section class="family-side-block member-slot"><h3>成員名單</h3><div class="member-wrap"></div></section></div>';side.querySelector('.tree-slot').append(tree);side.querySelector('.member-wrap').append(table);right.replaceChildren(side);treePanel?.remove();tablePanel?.remove()}
+  const previous=renderFam;
+  function tuneTop(){const f=FAMS.find(x=>x.id===curFam),strip=fv.querySelector('.kstrip');if(!f||!strip)return;const cards=[...strip.children];cards.slice(2).forEach(x=>x.remove());strip.insertAdjacentHTML('beforeend',`<div class="kcard insight-card"><div class="insight-label">判讀建議</div><p>${f.read}</p></div>`)}
+  renderFam=function(){previous();tuneTop()};
+  if(!fv.hidden)renderFam();
+ }
+})();
+</script>
+<style id="r16">
+/* r16: vertical KPI hierarchy, family grid alignment, horizontal processing bar */
+.top-cards{grid-template-columns:.92fr .92fr 3.16fr}
+.summary-card{padding:17px 16px}.summary-card .summary-body{align-content:center}.metric-stack{display:grid;gap:14px}.metric-stack>div+div{border-top:1px solid var(--line);padding-top:14px}.metric-stack .summary-number{font-size:33px}.metric-stack .summary-label{margin-top:5px}
+.duns-stack{display:grid;gap:13px;align-content:center}.duns-stack .summary-number{font-size:40px}.duns-rate{border-top:1px solid var(--line);padding-top:13px}.duns-rate-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.duns-rate-head strong{font-family:var(--font-num);font-size:26px;line-height:1;color:#23794f}.duns-rate-head span{font-size:9.5px;color:var(--ink-3)}
+.match-bars{position:relative;height:34px;margin-top:10px;display:flex;align-items:end;gap:3px;overflow:hidden}.match-bars::after{content:"";position:absolute;left:0;top:4px;width:94.2%;border-top:1.5px solid #637bb5}.match-bars span{display:block;flex:1;height:27px;border-left:1px solid #a8b6d5}.match-bars span.off{border-color:#d9dee8}.match-bars-caption{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--ink-3)}
+#v-fam .kstrip{grid-template-columns:minmax(0,1.42fr) minmax(400px,1fr);gap:20px}#v-fam .kleft{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}.kcard{background:var(--panel)!important}.trend-arrow{display:inline-block!important;width:0!important;height:0!important;margin-right:10px!important;background:transparent!important;vertical-align:.08em}.trend-arrow.up{border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid var(--good)}.trend-arrow.down{border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--crit)}
+.process-map{padding-bottom:18px!important}.process-map-scroll{overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin}.process-horizontal{--node:30px;position:relative;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(172px,1fr));min-width:1060px}.process-horizontal::before{content:"";position:absolute;left:15px;right:15px;top:15px;border-top:1px solid #aebad0}.process-horizontal li{position:relative;padding:0 22px 0 0;min-width:0}.process-horizontal li:last-child{padding-right:0}.process-horizontal .step-no{position:relative;z-index:1;width:var(--node);height:var(--node);border-radius:50%;display:grid;place-items:center;background:#e1e6ee;border:1px solid #b8c3d5;color:#28344a;font-family:var(--font-num);font-size:11px;font-weight:700;box-shadow:0 0 0 6px var(--panel)}.process-horizontal h3{margin:14px 0 6px;font-size:12px;font-weight:600;color:var(--ink)}.process-horizontal p{margin:0;font-size:10.5px;line-height:1.55;color:var(--ink-2);max-width:25ch}.process-horizontal li[data-phase="insight"] .step-no{background:#dce5f5;border-color:#9cafd1;color:#3f5891}.process-horizontal li[data-phase="action"] .step-no{background:#e7eaf0;border-color:#b8bfcc;color:#3d485d}
+@media(max-width:1180px){.top-cards{grid-template-columns:1fr 1fr}.momentum-card{grid-column:1/-1}}
+@media(max-width:980px){#v-fam .kstrip{grid-template-columns:1fr;gap:10px}}
+@media(max-width:760px){.top-cards{grid-template-columns:1fr}#v-fam .kleft{grid-template-columns:1fr}.process-horizontal{grid-template-columns:repeat(6,190px)}}
+</style>
+<script>
+/* r16: final requested card order, alignment and processing-bar restoration. */
+(function r16(){
+ const cards=document.querySelector('.top-cards');
+ if(cards){
+  const summaries=[...cards.querySelectorAll('.summary-card')],scale=summaries.find(x=>x.textContent.includes('歸戶資料規模')),duns=summaries.find(x=>x.textContent.includes('D-U-N-S'));
+  if(duns){
+   const bars=Array.from({length:32},(_,i)=>`<span class="${i>29?'off':''}"></span>`).join('');
+   duns.innerHTML=`<h3>D-U-N-S 法人與比對率</h3><div class="summary-body"><div class="duns-stack"><div><div class="summary-number">6,315<span class="summary-unit">個</span></div><div class="summary-label">已比對法人</div></div><div class="duns-rate"><div class="duns-rate-head"><strong>94.2%</strong><span>法人比對率</span></div><div class="match-bars" role="img" aria-label="法人比對率 94.2%">${bars}</div><div class="match-bars-caption"><span>名稱＋地址比對</span><span>312 筆待確認</span></div></div></div></div>`;
+   cards.prepend(duns);
+  }
+  if(scale)scale.innerHTML='<h3>歸戶資料規模</h3><div class="summary-body"><div class="metric-stack"><div><div class="summary-number">18,420<span class="summary-unit">筆</span></div><div class="summary-label">提單原始名稱</div></div><div><div class="summary-number">1,204<span class="summary-unit">個</span></div><div class="summary-label">企業家族</div></div></div></div>';
+ }
+ const vm=document.getElementById('v-model'),map=vm?.querySelector('.process-map');
+ if(map){
+  const steps=[
+   ['data','匯入提單與艙單','每筆貨載帶有 B/L 號碼、裝卸港、TEU、品項 HS code，以及託運人、收貨人、通知人的原始名稱與地址。'],
+   ['data','名稱與地址清洗','統一大小寫、公司型態字尾（CO LTD、SA DE CV、Sdn Bhd）與地址格式，減少同一家公司的寫法差異。'],
+   ['insight','比對 D-U-N-S 編碼','以鄧白氏比對服務取得 D-U-N-S 與信心分數，低於門檻的名稱進入人工確認清單。'],
+   ['insight','掛上企業家族樹','依鄧白氏家族樹（Parent、Domestic Ultimate、Global Ultimate）把各地子公司歸到同一家族。'],
+   ['action','推導上下游關係','同一批貨的託運人與收貨人形成「供貨給」關係，串出供應商、工廠、買方的鏈條。'],
+   ['action','家族層級趨勢偵測','以家族為單位比較近 3 月與前 3 月 TEU，並偵測貨量在成員之間的移轉（例如產線外移）。']
+  ];
+  map.innerHTML=`<div class="process-map-head"><h2>資料處理流程</h2><span>資料 → 洞察 → 行動</span></div><div class="process-map-scroll"><ol class="process-horizontal">${steps.map((s,i)=>`<li data-phase="${s[0]}"><span class="step-no">${String(i+1).padStart(2,'0')}</span><h3>${s[1]}</h3><p>${s[2]}</p></li>`).join('')}</ol></div>`;
+ }
+ const previous=renderFam;
+ renderFam=function(){previous();const strip=document.querySelector('#v-fam .kstrip'),direct=strip?[...strip.children].filter(x=>x.classList.contains('kcard')):[];if(strip&&direct.length>=3){const left=document.createElement('div');left.className='kleft';strip.insertBefore(left,direct[0]);left.append(direct[0],direct[1])}const p=chg(FAMS.find(x=>x.id===curFam).total),arrow=document.querySelector('#v-fam .kleft>.kcard:nth-child(2) .ki');if(arrow){arrow.removeAttribute('style');arrow.className='ki trend-arrow '+(p>=0?'up':'down')}};
+ if(!document.getElementById('v-fam').hidden)renderFam();
+})();
+</script>
+<style id="r17">
+/* r17: Yang Ming identity and a complete, data-first dark theme */
+.bar{min-height:58px;padding-top:10px!important;padding-bottom:10px!important}
+.ym-brand{display:inline-flex;align-items:center;gap:10px;flex:none;text-decoration:none;color:inherit}
+.ym-mark{display:block;width:34px;height:34px;flex:none;filter:drop-shadow(0 3px 8px #10172216)}
+.ym-wordmark{display:grid;line-height:1;gap:4px;white-space:nowrap}
+.ym-wordmark strong{font:800 14px/1 var(--font-num);letter-spacing:.055em;color:#d93438}
+.ym-wordmark small{font-size:9px;line-height:1;color:var(--ink-3);letter-spacing:.12em}
+.theme-toggle{position:relative;width:38px;height:34px;flex:none;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink-2);cursor:pointer;transition:background-color .18s,color .18s,border-color .18s,transform .18s}
+.theme-toggle:hover{background:var(--panel-2);color:var(--ink);border-color:var(--line-2)}
+.theme-toggle:active{transform:scale(.96)}.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.theme-toggle svg{position:absolute;width:17px;height:17px;transition:opacity .18s,transform .24s cubic-bezier(.22,1,.36,1)}
+.theme-toggle .sun{opacity:0;transform:rotate(-25deg) scale(.72)}.theme-toggle .moon{opacity:1;transform:none}
+[data-theme="dark"] .theme-toggle .sun{opacity:1;transform:none}[data-theme="dark"] .theme-toggle .moon{opacity:0;transform:rotate(25deg) scale(.72)}
+.bar>.tabs{margin-left:10px}.bar>.workspace-meta{margin-left:auto}.bar>.theme-toggle{margin-left:2px}
+body,.bar,.tabs,.p,.metric-card,.summary-card,.momentum-card,.kcard,.process-map,.signal-panel,.control,.stock-row,.model-list th,.graph .nd rect,.node-assist,.compare-numbers section,.compare-advice{transition:background-color .2s ease,color .2s ease,border-color .2s ease,fill .2s ease,stroke .2s ease}
+
+html[data-theme="dark"]{
+ color-scheme:dark;
+ --bg:#10161d;--panel:#171f29;--panel-2:#202b37;--line:#293746;--line-2:#435467;
+ --ink:#edf2f7;--ink-2:#b4c0cd;--ink-3:#8593a3;--accent:#7f9fe6;--c2:#d39854;--c3:#a895d5;--c4:#58a28e;
+ --good:#52b982;--warn:#d5a657;--serious:#df8b64;--crit:#e26b73;
+}
+[data-theme="dark"] body{background:
+ radial-gradient(circle at 18% -20%,#24364b66 0,transparent 34%),
+ radial-gradient(#7281971f .65px,transparent .75px) 0 0/16px 16px,var(--bg)}
+[data-theme="dark"] .bar{background:color-mix(in oklch,var(--bg) 93%,transparent)!important;border-bottom:1px solid #253241!important}
+[data-theme="dark"] .ym-mark{filter:drop-shadow(0 4px 12px #0008)}
+[data-theme="dark"] .ym-wordmark small{color:#aab7c5}
+[data-theme="dark"] .tabs{background:#0d141c!important;border:1px solid #273544}
+[data-theme="dark"] .tabs button{color:#8f9dad}
+[data-theme="dark"] .tabs button:hover{background:#1d2935;color:var(--ink)}
+[data-theme="dark"] .tabs button[aria-selected="true"]{background:#e9eef4!important;color:#121923!important;box-shadow:0 3px 10px #0004!important}
+[data-theme="dark"] .workspace-meta{color:#718094}
+[data-theme="dark"] .route-mini svg circle,[data-theme="dark"] .route-mini svg path,[data-theme="dark"] .route-mini svg ellipse{filter:saturate(.72) brightness(1.15)}
+[data-theme="dark"] .p,[data-theme="dark"] .metric-card,[data-theme="dark"] .summary-card,[data-theme="dark"] .momentum-card,[data-theme="dark"] .kcard,[data-theme="dark"] .process-map{background:var(--panel)!important;box-shadow:inset 0 0 0 1px #263442,0 12px 28px #05080c26}
+[data-theme="dark"] .signal-panel{background:#151e27!important}
+[data-theme="dark"] .stock-row:hover,[data-theme="dark"] .stock-row:focus-visible{background:#202b37!important}
+[data-theme="dark"] .control,[data-theme="dark"] .sort-controls button{background:#202b37;color:var(--ink-2)}
+[data-theme="dark"] .sort-controls button[aria-pressed="true"]{background:#dfe7f0;color:#111820}
+[data-theme="dark"] .customer-panel{background:#171f29!important}
+[data-theme="dark"] .customer-panel .fam{border-color:var(--line)}
+[data-theme="dark"] .customer-panel .fam:hover{background:#202b37}
+[data-theme="dark"] .analysis-panel .graph{background:
+ radial-gradient(ellipse at 50% 118%,#28456652 0,transparent 58%),
+ radial-gradient(#6784ad40 .75px,transparent .85px) 0 0/16px 16px,#111923!important;
+ box-shadow:inset 0 0 0 1px #2b3b4d,inset 0 -30px 60px #07101a!important}
+[data-theme="dark"] .analysis-panel .graph:after{background:radial-gradient(#7d9ac6 1px,transparent 1.35px) 0 0/22px 22px!important;opacity:.26!important}
+[data-theme="dark"] .graph .stage-label{fill:#8999ad}
+[data-theme="dark"] .graph .nd rect{fill:#1a2531!important;stroke:#3b4d60!important}
+[data-theme="dark"] .graph .nd.fam rect{fill:#24324a!important;stroke:#607dbb!important}
+[data-theme="dark"] .graph .nd.ext rect{fill:#292821!important;stroke:#665c48!important}
+[data-theme="dark"] .graph .nd.on rect{stroke:#a9c3ff!important;stroke-width:2!important}
+[data-theme="dark"] .graph .nd:hover rect{stroke:#7f98b5!important}
+[data-theme="dark"] .graph .n1{fill:#edf2f7!important}[data-theme="dark"] .graph .n2{fill:#9eacbc!important}
+[data-theme="dark"] .graph .el{fill:#8f9fb2}[data-theme="dark"] .graph .flow-edge{stroke:#7890ba}
+[data-theme="dark"] .node-assist{background:#202b37;border-color:#334557;color:var(--ink-2)}
+[data-theme="dark"] .node-assist .assist-mark{background:#151e27;border-color:#4b6075;color:#9db8f2}
+[data-theme="dark"] .node-assist small{color:#8e9daf}
+[data-theme="dark"] .compare-numbers section{background:#202b37!important;border-color:#304154!important}
+[data-theme="dark"] .compare-numbers section.pos{background:#1d2b3e!important;border-color:#3c5477!important}
+[data-theme="dark"] .compare-advice{background:#202b37!important}
+[data-theme="dark"] .comparison .tip,[data-theme="dark"] #v-fam .tip{background:#091019!important;color:#eef3f8!important;box-shadow:0 10px 24px #0008!important;border:1px solid #34465a!important}
+[data-theme="dark"] .model-list th{background:#202b37;color:#9ba9b9}
+[data-theme="dark"] .model-list .code{color:#9db3eb}
+[data-theme="dark"] .process-horizontal::before{border-color:#425369}
+[data-theme="dark"] .process-horizontal .step-no{background:#263342;border-color:#506176;color:#dbe4ee;box-shadow:0 0 0 6px var(--panel)}
+[data-theme="dark"] .process-horizontal li[data-phase="insight"] .step-no{background:#263a55;border-color:#607cb2;color:#bdd0fa}
+[data-theme="dark"] .process-horizontal li[data-phase="action"] .step-no{background:#30323b;border-color:#626b7a;color:#d3dae5}
+[data-theme="dark"] .match-bars span{border-color:#61769b}[data-theme="dark"] .match-bars span.off{border-color:#344251}
+[data-theme="dark"] .match-bars::after{border-color:#8ca8eb}
+[data-theme="dark"] .tree,[data-theme="dark"] .member-wrap,[data-theme="dark"] .x-scroll{scrollbar-color:#536579 transparent}
+[data-theme="dark"] .chips{background:color-mix(in oklch,var(--bg) 92%,transparent)!important}
+[data-theme="dark"] .chips button{background:#1b2631;color:#aebac7;border-color:#2d3c4c}
+[data-theme="dark"] .chips button.on{background:#e9eef4;color:#121923;border-color:#e9eef4}
+[data-theme="dark"] .obj{background:#1d2834;border-color:#304255}
+[data-theme="dark"] .kind.k-fam{background:#263552;color:#b9cbf7;border-color:#465e8b}
+[data-theme="dark"] .warnbox{background:#2b251b;color:#e3bf84;border-color:#635136}
+[data-theme="dark"] .coverage-inline .coverage-ticks{opacity:.75}
+[data-theme="dark"] .dense-bar{filter:brightness(1.12)}[data-theme="dark"] .dense-line{filter:brightness(1.28)}
+@media(max-width:900px){.ym-wordmark small{display:none}.ym-wordmark strong{font-size:12px}.bar>.tabs{margin-left:0}.workspace-meta{display:none!important}}
+@media(max-width:680px){.bar{display:grid!important;grid-template-columns:auto 1fr auto!important}.ym-wordmark{display:none}.bar>.tabs{grid-row:2;grid-column:1/-1;width:100%;justify-content:center}.bar>.theme-toggle{grid-column:3;grid-row:1}.ym-brand{grid-column:1;grid-row:1}}
+@media(prefers-reduced-motion:reduce){body,.bar,.tabs,.p,.metric-card,.summary-card,.momentum-card,.kcard,.process-map,.signal-panel,.control,.stock-row,.model-list th,.graph .nd rect,.node-assist,.compare-numbers section,.compare-advice,.theme-toggle svg{transition:none!important}}
+</style>
+<script>
+/* r17: brand lockup, light-first theme switch, and remembered preference. */
+(function r17(){
+ const root=document.documentElement;
+ let savedTheme=null;try{savedTheme=localStorage.getItem('warroom.theme.v2')}catch(e){}
+ const applyTheme=theme=>{
+  root.dataset.theme=theme;
+  const button=document.querySelector('.theme-toggle');
+  if(button){const dark=theme==='dark';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'切換為淺色模式':'切換為深色模式');button.title=dark?'切換為淺色模式':'切換為深色模式'}
+  let meta=document.querySelector('meta[name="theme-color"]');if(!meta){meta=document.createElement('meta');meta.name='theme-color';document.head.append(meta)}meta.content=theme==='dark'?'#10161d':'#eff0f3';
+ };
+ applyTheme(savedTheme==='dark'?'dark':'light');
+ const bar=document.querySelector('.bar');if(!bar)return;
+ const brand=document.createElement('a');brand.className='ym-brand';brand.href='https://www.yangming.com/zh-Hant';brand.target='_blank';brand.rel='noreferrer';brand.setAttribute('aria-label','陽明海運官方網站');
+ brand.innerHTML='<img class="ym-logo" src="https://www.yangming.com/_next/static/media/logo.18azf_ms3vzwh.png" width="228" height="27" alt="陽明海運 YANG MING">';
+ bar.prepend(brand);
+ const button=document.createElement('button');button.type='button';button.className='theme-toggle';button.innerHTML='<svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"/></svg>';
+ bar.append(button);applyTheme(root.dataset.theme);
+ button.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';applyTheme(next);try{localStorage.setItem('warroom.theme.v2',next)}catch(e){}});
+})();
+</script>
+<style id="r18">
+/* r18: light-primary brand header and cross-view alignment pass */
+.ym-brand{height:34px}.ym-logo{display:block;width:174px;height:auto;max-width:none}
+.bar>.workspace-meta{margin-left:0}.bar>.theme-toggle{margin-left:auto}
+.theme-toggle{width:40px;border-radius:8px}
+
+.top-cards{grid-template-columns:1.35fr .82fr 2.83fr}
+.top-cards .summary-card{min-height:258px}
+.top-cards .summary-number,.duns-value,.match-rate-value{font-family:var(--font-num);font-size:40px!important;font-weight:700;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.top-cards .summary-unit,.duns-value small{font:400 10px/1 var(--font-body);color:var(--ink-3);letter-spacing:0;margin-left:4px}
+.top-cards .summary-label{display:none!important}
+.metric-kicker{display:block;margin-bottom:8px;font-size:10px;font-weight:500;color:var(--ink-2)}
+.metric-stack.clean{height:100%;align-content:center;gap:20px}.metric-stack.clean>div+div{padding-top:18px}
+.duns-clean{display:grid;align-content:center;gap:18px;height:100%}.duns-count{padding-bottom:17px;border-bottom:1px solid var(--line)}
+.match-rate-visual{display:grid;grid-template-columns:auto minmax(92px,1fr);align-items:end;gap:16px;min-width:0}
+.match-rate-copy{min-width:0}.match-rate-value{white-space:nowrap}.match-rate-value .percent{font-size:.55em;margin-left:1px}
+.match-rate-label{display:block;margin-top:8px;font-size:10px;color:var(--ink-3)}
+.match-funnel{height:61px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;overflow:hidden;padding-bottom:2px}
+.match-funnel .bar-group{height:100%;display:flex;align-items:flex-end;gap:2px;flex:1;min-width:0}
+.match-funnel i{display:block;flex:1;max-width:2px;border-left:1px solid #8ea3d2}
+.match-funnel .bar-group:nth-child(1) i{height:55px}.match-funnel .bar-group:nth-child(2) i{height:28px}.match-funnel .bar-group:nth-child(3) i{height:7px}.match-funnel .bar-group:nth-child(4) i{height:2px}
+.momentum-head h3{white-space:nowrap}
+
+.analysis-panel>.p-h{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.analysis-panel>.p-h .graph-key-head,.analysis-panel>.p-h .reading-key{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:0!important;font-size:10px;color:var(--ink-3)}
+.reading-key span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.reading-key i{width:22px;border-top:1.5px solid var(--c)}.reading-key i.dash{border-top-style:dashed}
+.compare-numbers section.pos{background:var(--panel-2)!important;border-color:var(--line)!important}
+[data-theme="dark"] .compare-numbers section.pos{background:var(--panel-2)!important;border-color:var(--line)!important}
+
+#v-fam .fv-grid{align-items:stretch!important}
+#v-fam .fv-grid>.p{height:100%}
+#v-fam .fv-grid>.col{display:flex;min-height:100%}
+#v-fam .family-side{display:flex;flex-direction:column;width:100%;height:100%}
+#v-fam .family-side>.p-b{display:flex;flex-direction:column;flex:1;padding-top:18px}
+#v-fam .family-side-block h3.family-section-title{margin:0 0 14px;font-size:12px;font-weight:500;letter-spacing:0;color:var(--ink)}
+#v-fam .family-side-block+.family-side-block{margin-top:20px;padding-top:20px}
+#v-fam .family-side .member-slot{flex:1}
+
+#v-model .mv{align-items:stretch!important}
+#v-model .mv>.p{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#v-model .mv>.p>.p-h{display:flex;align-items:center;min-height:52px;padding:16px 20px 10px}
+#v-model .mv>.p>.p-h h2{font-size:12px;font-weight:500;letter-spacing:0}
+#v-model .mv>.p>.p-b,#v-model .mv>.p>.x-scroll{flex:1}
+#v-model .mv>.p>.x-scroll{padding:0 0 14px}
+#v-model .mv .model-list th{height:38px;padding:10px 12px;font-size:10px;font-weight:500}
+#v-model .mv .model-list td{padding:11px 12px}
+
+@media(max-width:1180px){.top-cards{grid-template-columns:1fr 1fr}.momentum-card{grid-column:1/-1}}
+@media(max-width:900px){.ym-logo{width:154px}}
+@media(max-width:680px){.ym-brand{height:29px}.ym-logo{width:148px}.match-rate-visual{grid-template-columns:1fr 1fr}}
+</style>
+<script>
+/* r18: requested copy, KPI composition, legends, and section titles. */
+(function r18(){
+ const cards=document.querySelector('.top-cards');
+ if(cards){
+  const duns=[...cards.querySelectorAll('.summary-card')].find(card=>card.textContent.includes('D-U-N-S'));
+  if(duns){
+   const groups=[10,8,7,6].map(count=>`<span class="bar-group">${'<i></i>'.repeat(count)}</span>`).join('');
+   duns.innerHTML=`<h3>D-U-N-S 法人與比對率</h3><div class="summary-body"><div class="duns-clean"><div class="duns-count"><span class="metric-kicker">D-U-N-S 法人</span><div class="duns-value">6,315<small>個</small></div></div><div class="match-rate-visual"><div class="match-rate-copy"><div class="match-rate-value">94.2<span class="percent">%</span></div><span class="match-rate-label">法人比對率</span></div><div class="match-funnel" role="img" aria-label="法人比對率 94.2%">${groups}</div></div></div></div>`;
+  }
+  const scale=[...cards.querySelectorAll('.summary-card')].find(card=>card.textContent.includes('歸戶資料規模'));
+  if(scale)scale.innerHTML='<h3>歸戶資料規模</h3><div class="summary-body"><div class="metric-stack clean"><div><span class="metric-kicker">提單原始名稱</span><div class="summary-number">18,420<span class="summary-unit">筆</span></div></div><div><span class="metric-kicker">企業家族</span><div class="summary-number">1,204<span class="summary-unit">個</span></div></div></div></div>';
+  const momentum=cards.querySelector('.momentum-head h3');if(momentum)momentum.textContent='重點客戶動能';
+ }
+
+ const analysisHead=document.querySelector('.analysis-panel>.p-h');
+ if(analysisHead){
+  analysisHead.querySelectorAll('.graph-key-head,.reading-key').forEach(x=>x.remove());
+  const key=document.createElement('div');key.className='reading-key';key.setAttribute('aria-label','關聯線說明');key.innerHTML='<span><i style="--c:#91a5ca"></i>實體解析／家族歸戶</span><span><i class="dash" style="--c:#d19845"></i>供應鏈上下游（由貨載推導）</span>';analysisHead.append(key);
+ }
+
+ const side=document.querySelector('#v-fam .family-side');
+ if(side){
+  side.querySelector(':scope>.p-h')?.remove();
+  const treeTitle=side.querySelector('.tree-slot>h3'),memberTitle=side.querySelector('.member-slot>h3');
+  if(treeTitle){treeTitle.textContent='企業家族樹';treeTitle.className='family-section-title'}
+  if(memberTitle){memberTitle.textContent='家族成員';memberTitle.className='family-section-title'}
+ }
+})();
+</script>
+<style id="r19">
+/* r19: overview card split and shared signal-column rhythm */
+.progress-panel>.top-head{display:none!important}
+.home .progress-panel{padding-top:0!important}
+.top-cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 360px!important;gap:10px!important;align-items:stretch}
+.top-cards>.summary-card,.top-cards>.momentum-card{min-width:0;min-height:232px}
+.top-cards>.summary-card{padding:18px 16px}
+.top-cards>.summary-card .summary-body{align-content:center}
+.top-cards>.momentum-card{grid-column:auto!important}
+.top-cards .single-kpi{display:flex;flex-direction:column;justify-content:center;gap:10px}
+.top-cards .single-kpi h3{margin-bottom:6px}
+.top-cards .single-kpi .single-value{font-family:var(--font-num);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.top-cards .single-kpi .single-value small{font:400 10px/1 var(--font-body);color:var(--ink-3);margin-left:4px;letter-spacing:0}
+@media(max-width:1180px){.top-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important}.top-cards>.momentum-card{grid-column:1/-1!important}}
+@media(max-width:820px){.top-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}.top-cards>.momentum-card{grid-column:1/-1!important}}
+@media(max-width:560px){.top-cards{grid-template-columns:1fr!important}.top-cards>.momentum-card{grid-column:auto!important}}
+</style>
+<script>
+/* r19: expose three independent KPI cards and remove the wrapper title. */
+(function r19(){
+ const panel=document.querySelector('.progress-panel'),cards=document.querySelector('.top-cards');
+ panel?.querySelector('.top-head')?.remove();
+ if(!cards)return;
+ const duns=[...cards.children].find(x=>x.classList.contains('summary-card')&&x.textContent.includes('D-U-N-S'));
+ const momentum=cards.querySelector('.momentum-card');
+ if(!duns||!momentum)return;
+ duns.classList.add('duns-card');
+ const groups=[10,8,7,6].map(count=>`<span class="bar-group">${'<i></i>'.repeat(count)}</span>`).join('');
+ duns.innerHTML=`<h3>D-U-N-S 法人</h3><div class="summary-body"><div class="duns-clean"><div class="duns-count"><div class="duns-value">6,315<small>個</small></div></div><div class="match-rate-visual"><div class="match-rate-copy"><div class="match-rate-value">94.2<span class="percent">%</span></div><span class="match-rate-label">法人比對率</span></div><div class="match-funnel" role="img" aria-label="法人比對率 94.2%">${groups}</div></div></div></div>`;
+ const name=document.createElement('article');name.className='summary-card single-kpi';name.innerHTML='<h3>提單原始名稱</h3><div class="summary-body"><div class="single-value">18,420<small>筆</small></div></div>';
+ const family=document.createElement('article');family.className='summary-card single-kpi';family.innerHTML='<h3>企業家族</h3><div class="summary-body"><div class="single-value">1,204<small>個</small></div></div>';
+ cards.replaceChildren(duns,name,family,momentum);
+ const momentumTitle=momentum.querySelector('.momentum-head h3');if(momentumTitle)momentumTitle.textContent='重點客戶動能';
+})();
+</script>
+</body>
+</html>
