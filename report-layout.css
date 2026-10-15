@@ -80,13 +80,29 @@
 .report-document .page-card-head span{font-size:12px;color:#a1a1aa;white-space:normal}
 .report-document .page-grid,.report-document .risk-analysis-grid,.report-document .safety-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
 .report-document .page-grid>.page-card,.report-document .risk-analysis-grid>.page-card,.report-document .safety-evidence-grid>.page-card{min-width:0;margin:0}
-.report-document .safety-evidence-grid{gap:0;border:1px solid #27272a;border-radius:10px;background:#111113;overflow:hidden}
-.report-document .safety-evidence-grid>.page-card{padding:24px;border:0;border-radius:0;background:transparent}
-.report-document .safety-evidence-grid>.page-card+.page-card{border-left:1px solid #27272a}
+.report-document .safety-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px;border:0;background:transparent;overflow:visible}
+.report-document .safety-evidence-grid>.page-card{padding:24px;border:1px solid #27272a;border-radius:10px;background:#111113}
+.report-document .safety-evidence-grid>.page-card:nth-child(1){grid-column:1;grid-row:1;height:100%}
+.report-document .safety-evidence-grid>.page-card:nth-child(2){grid-column:2;grid-row:1;height:100%}
 .report-document .reading,.report-document .plain-list{font-size:14px;line-height:1.85;color:#f1f1f1}
 .report-document .chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:0;background:none;font-size:12px}
 .report-document svg{max-width:100%;height:auto}
 .report-document .wide-chart>svg,.report-document .page-card>svg,.report-document .report-topic>svg{display:block;width:100%;max-height:360px;padding:0;background:#101010}
+.report-document .country-risk-chart{max-height:none!important;aspect-ratio:900/550;border-radius:10px;background:#101010}
+.report-document .country-risk-chart text{font-family:Inter,'Noto Sans TC',sans-serif}
+.report-document .country-risk-chart .country-chart-title{fill:#f4f4f5;font-size:20px;font-weight:700}
+.report-document .country-risk-chart .country-chart-meta,.report-document .country-risk-chart .country-chart-axis,.report-document .country-risk-chart .country-chart-ticks{fill:#a1a1aa;font-size:17px}
+.report-document .country-risk-chart .quadrant-caution{fill:#3b3217;fill-opacity:.58}
+.report-document .country-risk-chart .quadrant-risk{fill:#421d20;fill-opacity:.72}
+.report-document .country-risk-chart .quadrant-priority{fill:#15382f;fill-opacity:.58}
+.report-document .country-risk-chart .quadrant-opportunity{fill:#1a2a40;fill-opacity:.68}
+.report-document .country-risk-chart .country-chart-grid{fill:none;stroke:#3f3f46;stroke-width:1;opacity:.55}
+.report-document .country-risk-chart .country-chart-average{fill:none;stroke:#a1a1aa;stroke-width:2;stroke-dasharray:7 7}
+.report-document .country-risk-chart .country-chart-frame{fill:none;stroke:#52525b;stroke-width:1}
+.report-document .country-risk-chart .quadrant-label{font-size:18px;font-weight:700}
+.report-document .country-risk-chart .label-caution{fill:#ffd449}.report-document .country-risk-chart .label-risk{fill:#fda4af}.report-document .country-risk-chart .label-priority{fill:#6ee7c0}.report-document .country-risk-chart .label-opportunity{fill:#93c5fd}
+.report-document .country-risk-chart .country-chart-points circle{stroke:#101010;stroke-width:4}
+.report-document .country-risk-chart .country-point-label{fill:#e4e4e7;font-size:17px;font-weight:500}
 .report-document .route-advice-map svg{padding:0;max-height:none}
 .report-document .data-table{font-size:13px;line-height:1.8;width:100%;border-collapse:collapse}
 .report-document .data-table th{font-weight:500;background:#18181b;color:#a1a1aa}
@@ -115,6 +131,7 @@
 .report-file .report-document{max-width:1040px;margin:auto}
 .report-file [hidden]{display:none!important}
 @media(max-width:1100px){.report-workspace .report-grid{grid-template-columns:240px minmax(0,1fr)}.report-document .strategy-summary{grid-template-columns:1fr}}
-@media(max-width:850px){.report-workspace .report-grid{grid-template-columns:1fr}.report-workspace .report-grid>.page-card:first-child{position:static;max-height:none}.report-document .page-grid,.report-document .risk-analysis-grid,.report-document .safety-evidence-grid{grid-template-columns:1fr}.report-document .safety-evidence-grid>.page-card+.page-card{border-left:0;border-top:1px solid #27272a}.report-document .report-cover{padding:24px;min-height:280px}.report-document .report-cover-copy{max-width:100%}.report-document>section,.report-document .report-executive-summary{margin-inline:24px}}
+@media(max-width:850px){.report-workspace .report-grid{grid-template-columns:1fr}.report-workspace .report-grid>.page-card:first-child{position:static;max-height:none}.report-document .page-grid,.report-document .risk-analysis-grid{grid-template-columns:1fr}.report-document .report-cover{padding:24px;min-height:280px}.report-document .report-cover-copy{max-width:100%}.report-document>section,.report-document .report-executive-summary{margin-inline:24px}}
+@media(max-width:640px){.report-document .safety-evidence-grid{grid-template-columns:1fr!important}.report-document .safety-evidence-grid>.page-card:nth-child(n){grid-column:1;grid-row:auto}}
 @media(max-width:520px){.report-file{padding:12px}.report-document .report-cover{padding:20px}.report-document .report-cover h1{font-size:24px}.report-document .report-cover h2{font-size:18px}.report-document>section,.report-document .report-executive-summary{margin-inline:16px;padding-block:24px}.report-document>section.report-calculation-note{margin-inline:16px;padding:12px 14px}.report-document .page-card,.report-document .report-news article{padding:16px}.report-document .bar-row{flex-wrap:wrap}.report-document .bar-row>strong{width:auto}.report-document .bar-track{min-width:60px}.report-document .route-advice-card{grid-template-columns:1fr}}
 @media print{.report-file{background:#fff;padding:0}.report-document.report-preview{border:0;background:#fff;color:#18181b}.report-document .report-cover{min-height:200px;background:#fff}.report-document .report-cover-photo{opacity:.15}.report-document .report-cover:after{display:none}.report-document h1,.report-document h2,.report-document h3,.report-document .report-cover h1,.report-document .report-cover h2,.report-document .report-risk-lead>p:first-of-type,.report-document .reading,.report-document .plain-list,.report-document .strategy-summary p,.report-document .data-table td{color:#18181b}.report-document .page-card,.report-document .strategy-summary,.report-document .report-news article{background:#fff;border-color:#d4d4d8}.report-document .report-contents{display:none}.report-document small,.report-document .report-cover-date p,.report-document .report-news-meta,.report-document .report-summary-parts strong,.report-document .micro-note,.report-document .report-news-evidence{color:#52525b}.report-document>section{break-inside:auto}.report-document .page-card,.report-document .report-news article{break-inside:avoid}.report-document svg{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-document .report-topic{break-before:page}.report-document .route-map-alt,.report-document .route-map-pulse{animation:none}}
