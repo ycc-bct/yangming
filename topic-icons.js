@@ -25,14 +25,7 @@
    const key=NAME[el.dataset.filter]||NAME[ownText(el)];if(!key)return;
    el.prepend(icon(key));el.classList.add('has-topic-ic');
   });
-  // 雷達軸標（SVG text）：圖示放左邊，整組仍以原本的 x 置中
-  root.querySelectorAll('.radar-topic-label').forEach(g=>{
-   if(g.querySelector('.topic-ic'))return;const key=NAME[g.dataset.radarTopic];const t=g.querySelector('text');if(!key||!t||!t.getBBox)return;
-   let b;try{b=t.getBBox()}catch(e){return}if(!b.width)return;
-   const S=16,GAP=6,x=+t.getAttribute('x');t.setAttribute('x',x+(S+GAP)/2);
-   const ic=icon(key,'topic-ic radar-ic');ic.setAttribute('width',S);ic.setAttribute('height',S);ic.setAttribute('x',x-b.width/2-(S+GAP)/2);ic.setAttribute('y',b.y+(b.height-S)/2);
-   g.insertBefore(ic,t);
-  });
+  // 雷達軸標的圖示由 risk-radar.js 直接畫在文字上方（上下排列），這裡不再處理。
  }
  const run=()=>apply(document);
  run();

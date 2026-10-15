@@ -33,3 +33,16 @@
 .has-risk-workspace .page-content::before{content:'';display:block;position:sticky;top:-20px;z-index:7;height:20px;margin:-20px -24px 0;background:#101010}
 @media(max-width:900px){.has-risk-workspace .page-content::before{top:-16px;height:16px;margin:-16px -16px 0}}
 @media(max-width:600px){.has-risk-workspace .page-content::before{top:-12px;height:12px;margin:-12px -12px 0}}
+
+/* Radar topic labels: icon stacked above text. #pageContent outranks the generic 14px topic-ic rule. */
+#pageContent .radar-topic-label svg.radar-ic,.radar-topic-label svg.radar-ic{width:18px!important;height:18px!important;display:inline!important;overflow:visible}
+/* Icon and label share one colour (currentColor); #pageContent outranks design-tokens.css, which loads later. */
+#pageContent .radar-topic-label{color:#abc4d8}#pageContent .radar-topic-label.active{color:#c4e8ff}#pageContent .radar-topic-label text{fill:currentColor}
+#pageContent .radar-topic-label .radar-ic{color:inherit;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+/* Sector dividers and a pronounced outer ring. */
+.radar-dividers line{stroke:#5aa7e6;stroke-width:1.4;stroke-opacity:.75;stroke-linecap:round}
+.radar-dividers circle{fill:#9fd6ff;stroke:#0a131e;stroke-width:1.5;filter:drop-shadow(0 0 4px #4fb3ff)}
+.radar-rim{fill:none;stroke:#7cc6ff;stroke-width:2.5;filter:drop-shadow(0 0 6px #2f8fe0aa);pointer-events:none}
+/* Topic labels are not interactive; signal nodes are. */
+#pageContent .radar-topic-label{cursor:default}#pageContent .radar-topic-label:hover text{fill:currentColor}
+#pageContent .radar-signal{cursor:pointer}

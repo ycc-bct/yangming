@@ -14,7 +14,10 @@ function renderIntelligence(){
   countries:{chart:intelligenceDistribution([4,5,6].map((level,i)=>['DB'+level,COUNTRY_ROWS.filter(c=>Math.floor(c[4])===level).length,['#fbbf24','#f87171','#ef4444'][i]])),caption:'CRR 國家風險級距 · 國'},
   policy:{chart:spark(TPU_MA7,'全球貿易政策不確定性 MA7 指數，2023/9–2026/5','#60a5fa'),caption:'貿易政策不確定性 MA7 · 指數 · 2023/9–2026/5'}
  };
- return `${riskRouteHeatmap()}${riskStatusMatrix()}<section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key],model=riskTopicModel(key);return `<article class="risk-overview-card" data-topic="${key}"><div class="risk-overview-focus"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${model.signal}</span></div>${(st=>`<div class="risk-status-row">${riskStatusBadge(st.status)}</div>`)(riskTopicStatus(key))}<h2 class="risk-card-value">${model.headline}</h2><p>${model.description}</p><div class="risk-card-chart">${c.chart}</div><small>${c.caption}</small></div><a href="#${key}">查看主題分析</a></article>`}).join('')}</section>`;
+ // Overview: five topic cards; the read-only route × topic grid is kept below but hidden for now.
+ const topicCards=`<section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key],model=riskTopicModel(key);return `<article class="risk-overview-card" data-topic="${key}"><div class="risk-overview-focus"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${model.signal}</span></div>${(st=>`<div class="risk-status-row">${riskStatusBadge(st.status)}</div>`)(riskTopicStatus(key))}<h2 class="risk-card-value">${model.headline}</h2><p>${model.description}</p><div class="risk-card-chart">${c.chart}</div><small>${c.caption}</small></div><a href="#${key}">查看主題分析</a></article>`}).join('')}</section>`;
+ const heatmap=typeof routeTopicGrid==='function'?`<div class="overview-heatmap" hidden>${routeTopicGrid(-1,riskRouteTopicMatrix(),false)}</div>`:'';
+ return topicCards+heatmap;
 }
 const STRATEGY={
  policy:{signal:'政策尚未定案，貨主已提前出貨',impact:'貨流與船位需求在政策窗口前先行改變。',action:'提前保留船位、規劃加班船，評估替代樞紐。'},
@@ -74,31 +77,10 @@ showEvents('全部');
 
 $('#overviewSummaryCount').innerHTML=events.length+' 則訊號<br>'+new Set(events.map(e=>e.route)).size+' 條航線';
 
-/* P1 prototype. Heatmap cells are presence only (a topic has advice for the route); colour = that topic's status.
-   Exposure weights are not available yet, so cells carry no intensity. */
+/* Route × topic presence (a topic has advice for the route) feeds the routes-page picker; the overview shows the status matrix only. */
 const RISK_TOPIC_SHORT={safety:'航道',policy:'政策',fuel:'燃油',ports:'港口',countries:'國家'};
 function riskRouteTopicMatrix(){
  const scopes={ports:{entries:PORT_EVENTS,area:'全部',status:'全部'}},map=routes.map(()=>({}));
  INTELLIGENCE_TOPICS.forEach(key=>riskTopicModel(key,scopes[key]||{}).routeIdeas.forEach(r=>{map[r.index][key]=r}));
  return map;
 }
-function riskRouteHeatmap(){
- const matrix=riskRouteTopicMatrix(),status=Object.fromEntries(INTELLIGENCE_TOPICS.map(k=>[k,riskTopicStatus(k).status])),max=INTELLIGENCE_TOPICS.length;
- const head=`<div class="heat-corner">航線</div>${INTELLIGENCE_TOPICS.map(k=>`<a class="heat-col heat-${status[k]}" href="#${k}"><span>${RISK_TOPIC_SHORT[k]}</span><i aria-hidden="true"></i></a>`).join('')}<div class="heat-corner heat-count-head">合計</div>`;
- const rows=routes.map((route,i)=>{const hits=INTELLIGENCE_TOPICS.filter(k=>matrix[i][k]).length,tone=riskLevelTone(route.level);
-  return `<div class="heat-route tone-${tone}"><strong>${escapeHTML(route.name)}</strong><small>${escapeHTML(route.via)}</small></div>${INTELLIGENCE_TOPICS.map(k=>{const r=matrix[i][k];return r?`<button type="button" class="heat-cell is-on heat-${status[k]}" data-heat-topic="${k}" data-heat-route="${i}" aria-label="${escapeHTML(route.name+route.via)}：${RISK_TOPIC_SHORT[k]}有建議「${escapeHTML(r.proposal)}」，主題狀態${RISK_STATUS[status[k]].label}" title="${escapeHTML(r.proposal)}"><span></span></button>`:`<span class="heat-cell" aria-label="${RISK_TOPIC_SHORT[k]}無建議"></span>`}).join('')}<div class="heat-count" aria-label="${hits} 個主題有建議"><b>${hits}</b><i style="--w:${hits/max*100}%"></i></div>`}).join('');
- return `<section class="page-card risk-heatmap"><div class="page-card-head"><h2>航線 × 主題</h2><span>點格子查看建議</span></div><div class="heat-grid" role="group" aria-label="航線與風險主題對應">${head}${rows}</div><div class="heat-legend" aria-hidden="true"><span><i class="heat-act"></i>行動</span><span><i class="heat-watch"></i>觀察</span><span><i class="heat-normal"></i>正常</span><span><i class="heat-empty"></i>無建議</span></div></section>`;
-}
-function riskStatusMatrix(){
- const rows=INTELLIGENCE_TOPICS.map(k=>{const st=riskTopicStatus(k),s=st.signals.find(x=>x.thresholds),d=s&&s.compare?s.value-s.compare.value:0,trend=!s||!s.compare||!d?['─','持平','flat']:d>0?['▲','上升','up']:['▼','下降','down'];
-  return `<a class="status-row" href="#${k}"><span class="status-topic">${TOPIC_LABELS[k]}</span>${riskStatusBadge(st.status)}<span class="status-signal"><span class="status-signal-name">${escapeHTML(s?s.name:'—')}</span>${s?riskBullet(s):''}</span><strong class="status-value">${s?escapeHTML(riskFormat(s.value,s.unit)):'—'}</strong><span class="status-trend trend-${trend[2]}" title="${s&&s.compare?'較'+escapeHTML(s.compare.label)+trend[1]:'無比較基準'}" aria-label="${trend[1]}">${trend[0]}</span></a>`}).join('');
- return `<section class="page-card risk-status-matrix"><div class="page-card-head"><h2>主題狀態</h2><span>暫定門檻</span></div><div class="status-rows">${rows}</div></section>`;
-}
-document.addEventListener('click',e=>{
- const cell=e.target.closest('[data-heat-topic]');if(!cell)return;
- const index=cell.dataset.heatRoute,started=Date.now();location.hash=cell.dataset.heatTopic;
- // Port and country filters re-render the analysis after the page renders, so re-query once it settles.
- (function focus(){if(!document.querySelector(`.route-advice-card[data-route="${index}"]`)){if(Date.now()-started<1500)requestAnimationFrame(focus);return}
-  setTimeout(()=>{const card=document.querySelector(`.route-advice-card[data-route="${index}"]`);if(!card)return;
-  card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});card.classList.remove('is-spotlight');void card.offsetWidth;card.classList.add('is-spotlight')},200)})();
-});

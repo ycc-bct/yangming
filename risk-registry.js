@@ -107,5 +107,3 @@ const RISK_ROUTE_VISUAL={
  'countries|4':{impacts:[['運河預約','eval'],['轉運費用','eval'],['接駁時程','eval']]}
 };
 const RISK_IMPACT_GLYPH={up:['▲','增加'],down:['▼','降低'],same:['─','維持'],eval:['◇','需評估']};
-/* Chokepoint positions [lon,lat]; 'mid'/'end' fall back to the route path. */
-const RISK_ROUTE_NODES={0:[43.4,12.6],1:[18.4,-35.2],2:[56.5,26.5],3:'mid',4:[-79.7,9],5:'end'};

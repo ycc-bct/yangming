@@ -37,38 +37,6 @@
 .risk-status-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:0 0 12px}
 .risk-analysis .page-card-head>span .risk-freshness{font-size:12px}
 
-/* Route advice: mini route map + glyph tradeoffs. Map is illustrative geometry from the route paths. */
-.route-advice-list{display:grid;gap:16px}
-.route-advice-card{--tone:#60a5fa;position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0;border:1px solid #27303c;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#0d1622 0%,#111113 55%);transition:border-color .2s,transform .2s,box-shadow .2s}
-.route-advice-card:before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--tone);box-shadow:0 0 18px var(--tone)}
-.route-advice-card:hover{border-color:#3b5577;transform:translateY(-2px);box-shadow:0 14px 34px #0008}
-.route-advice-card.tone-high{--tone:#f87171}.route-advice-card.tone-medium{--tone:#fbbf24}.route-advice-card.tone-low{--tone:#38bdf8}
-.route-advice-map{position:relative;min-height:190px;background:#08111b}
-.route-map{display:block;width:100%;height:100%;max-height:none!important}
-.route-map-sea{fill:#08111b}.route-map-grid{stroke:#1d2c3d;stroke-width:.6;stroke-dasharray:1 3;fill:none}
-.route-map-land{fill:#17222f;stroke:#25374b;stroke-width:.5}
-.route-map-glow{fill:none;stroke:#3b9cff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.16;filter:blur(3px)}
-.route-map-main{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.route-map-alt{fill:none;stroke:#34d399;stroke-width:1.8;stroke-dasharray:5 5;stroke-linecap:round;opacity:.9;animation:routeDash 1.6s linear infinite}
-.route-map-end{fill:#d8ecff;stroke:#08111b;stroke-width:1.5}
-.route-map-node{fill:var(--tone);stroke:#08111b;stroke-width:1.5}
-.route-map-pulse{fill:none;stroke:var(--tone);stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:routePulse 2s ease-out infinite}
-@keyframes routeDash{to{stroke-dashoffset:-20}}
-@keyframes routePulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(3.4);opacity:0}}
-.route-map-node-label{position:absolute;left:14px;bottom:12px;display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:#08111bcc;border:1px solid #ffffff1a;backdrop-filter:blur(6px);font-size:11px;letter-spacing:.02em;color:#e4e4e7}
-.route-map-node-label:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--tone);box-shadow:0 0 8px var(--tone)}
-.route-map-key{position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#a7f3d0}
-.route-map-key i{width:16px;border-top:2px dashed #34d399}
-.route-advice-body{display:flex;flex-direction:column;gap:10px;padding:20px 22px}
-.route-advice-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.route-kind{font-size:11px;letter-spacing:.08em;color:#9dc7f5;text-transform:uppercase}
-.route-level{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--tone)}
-.route-level:before{content:'';width:6px;height:6px;border-radius:1px;background:currentColor}
-.route-advice-name{display:flex;align-items:center;gap:10px;margin:2px 0 0;font-size:20px;font-weight:600;letter-spacing:-.01em;color:#f8fafc}
-.route-advice-name i{flex:0 0 28px;height:2px;border-radius:2px;background:linear-gradient(90deg,#2f7fd8,var(--tone));position:relative}
-.route-advice-name i:after{content:'';position:absolute;right:-1px;top:-3px;border-left:6px solid var(--tone);border-top:4px solid transparent;border-bottom:4px solid transparent}
-.route-advice-via{font-size:12px;color:#8b98a8;margin-top:-6px}
-.route-advice-body h4{margin:4px 0 0;font-size:15px;font-weight:500;line-height:1.5;color:#e4e4e7}
 .route-advice-trigger{display:flex;gap:8px;align-items:flex-start;margin:0;font-size:12px;line-height:1.7;color:#a1a1aa}
 .route-advice-trigger svg{flex:none;width:14px;height:14px;margin-top:3px;fill:var(--tone)}
 .route-impacts{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0}
@@ -76,25 +44,9 @@
 .route-impacts i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;font-style:normal;font-size:9px;font-weight:700}
 .route-impacts .impact-up i{background:#ef444426;color:#fca5a5}.route-impacts .impact-down i{background:#34d39926;color:#6ee7b7}
 .route-impacts .impact-same i{background:#27272a;color:#d4d4d8}.route-impacts .impact-eval i{background:#3b82f626;color:#93c5fd}
-.route-advice-cta{align-self:flex-start;margin-top:auto;display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border:1px solid #2f6fbd;border-radius:999px;background:linear-gradient(90deg,#004ea2,#0b67c9);color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:gap .2s,box-shadow .2s}
-.route-advice-cta:hover{gap:16px;box-shadow:0 0 0 3px #004ea240}
-.route-advice-cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
 .route-impact-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;font-size:11px;color:#71717a}
 .route-impact-legend span{display:inline-flex;align-items:center;gap:6px}.route-impact-legend i{font-style:normal;font-size:9px;color:#a1a1aa}
-.route-advice-card .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-@media(max-width:1500px){.risk-workspace .route-advice-card{grid-template-columns:1fr}.risk-workspace .route-advice-map{min-height:0;aspect-ratio:16/9}}
-@media(max-width:650px){.route-advice-card{grid-template-columns:1fr}.route-advice-map{min-height:0;aspect-ratio:16/9}.route-advice-body{padding:18px}}
-@media(prefers-reduced-motion:reduce){.route-map-alt,.route-map-pulse{animation:none}.route-advice-card,.route-advice-cta{transition:none}.route-advice-card:hover{transform:none}}
 
-/* P1 prototype: route × topic heatmap and topic status matrix. */
-.heat-grid{display:grid;grid-template-columns:minmax(118px,1.6fr) repeat(5,minmax(38px,1fr)) 64px;gap:6px;align-items:stretch}
-.heat-corner{font-size:11px;color:#71717a;align-self:end;padding-bottom:6px}.heat-count-head{text-align:right}
-.heat-col{display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:6px;font-size:12px;color:#d4d4d8;text-decoration:none}
-.heat-col i{width:18px;height:3px;border-radius:2px;background:var(--heat)}
-.heat-col:hover{color:#fff}
-.heat-route{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 0 8px 12px;border-left:3px solid var(--tone,#38bdf8)}
-.heat-route.tone-high{--tone:#f87171}.heat-route.tone-medium{--tone:#fbbf24}.heat-route.tone-low{--tone:#38bdf8}
-.heat-route strong{font-size:13px;font-weight:600;color:#f1f1f1}.heat-route small{font-size:11px;color:#8b98a8}
 .heat-act{--heat:#f87171}.heat-watch{--heat:#fbbf24}.heat-normal{--heat:#34d399}.heat-info{--heat:#8b98a8}
 .heat-cell{position:relative;display:grid;place-items:center;min-height:44px;border-radius:8px;background:#141519;border:1px solid #1f2127}
 .heat-cell:not(.is-on):after{content:'';width:4px;height:4px;border-radius:50%;background:#2e3038}
@@ -102,23 +54,33 @@
 .heat-cell.is-on span{width:10px;height:10px;border-radius:3px;background:var(--heat);box-shadow:0 0 12px var(--heat)}
 .heat-cell.is-on:hover{transform:scale(1.06);box-shadow:inset 0 0 18px color-mix(in srgb,var(--heat) 40%,transparent),0 0 0 1px var(--heat)}
 .heat-cell.is-on:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
-.heat-count{display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:6px}
-.heat-count b{font-size:18px;font-weight:600;line-height:1;color:#f1f1f1;font-variant-numeric:tabular-nums}
-.heat-count i{display:block;width:100%;height:3px;border-radius:2px;background:linear-gradient(90deg,#2f7fd8 var(--w),#27272a var(--w))}
 .heat-legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;font-size:11px;color:#8b8b94}
 .heat-legend span{display:inline-flex;align-items:center;gap:6px}.heat-legend i{width:10px;height:10px;border-radius:3px;background:var(--heat);box-shadow:0 0 8px var(--heat)}
 .heat-legend i.heat-empty{background:#141519;border:1px solid #2e3038;box-shadow:none}
-.status-rows{display:grid}
-.status-row{display:grid;grid-template-columns:96px 82px minmax(0,1fr) 92px 24px;align-items:center;gap:14px;padding:12px 4px;border-top:1px solid var(--border,#303033);color:inherit;text-decoration:none;transition:background .15s}
-.status-row:first-child{border-top:0}.status-row:hover{background:#ffffff06}
-.status-topic{font-size:13px;font-weight:500;color:#e4e4e7}
-.status-row .risk-status{justify-self:start}
-.status-signal{min-width:0}.status-signal-name{display:block;font-size:11px;color:#8b8b94;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-signal .risk-bullet{margin:8px 0 2px}
-.status-value{font-size:16px;font-weight:600;text-align:right;color:#f1f1f1;font-variant-numeric:tabular-nums;white-space:nowrap}
-.status-trend{font-size:11px;text-align:center}.trend-up{color:#fca5a5}.trend-down{color:#6ee7b7}.trend-flat{color:#71717a}
-.route-advice-card.is-spotlight{animation:routeSpotlight 1.8s ease-out}
-@keyframes routeSpotlight{0%,30%{box-shadow:0 0 0 2px var(--tone),0 0 40px color-mix(in srgb,var(--tone) 45%,transparent)}100%{box-shadow:none}}
-@media(max-width:650px){.heat-grid{grid-template-columns:minmax(92px,1.4fr) repeat(5,minmax(30px,1fr)) 34px;gap:4px}.heat-cell{min-height:38px}.heat-route{padding-left:8px}.heat-route strong{font-size:12px}.heat-col{font-size:11px}.heat-count b{font-size:15px}
-.status-row{grid-template-columns:1fr auto auto;grid-template-areas:"topic badge value" "signal signal trend";row-gap:8px}.status-topic{grid-area:topic}.status-row .risk-status{grid-area:badge}.status-value{grid-area:value}.status-signal{grid-area:signal}.status-trend{grid-area:trend}}
-@media(prefers-reduced-motion:reduce){.heat-cell.is-on{transition:none}.heat-cell.is-on:hover{transform:none}.route-advice-card.is-spotlight{animation:none}}
+
+/* Shared pieces now used by the routes page (advice cards) and status colours. */
+.route-kind{font-size:11px;letter-spacing:.08em;color:#9dc7f5}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.heat-act{--heat:#f87171}.heat-watch{--heat:#fbbf24}.heat-normal{--heat:#34d399}.heat-info{--heat:#8b98a8}
+.heat-cell{position:relative;display:grid;place-items:center;min-height:40px;border-radius:8px;background:#141519;border:1px solid #1f2127}
+.heat-cell:not(.is-on):after{content:'';width:4px;height:4px;border-radius:50%;background:#2e3038}
+.heat-cell.is-on{border-color:color-mix(in srgb,var(--heat) 45%,transparent);background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--heat) 38%,transparent),color-mix(in srgb,var(--heat) 10%,transparent) 70%);box-shadow:inset 0 0 14px color-mix(in srgb,var(--heat) 22%,transparent)}
+.heat-cell.is-on span{width:10px;height:10px;border-radius:3px;background:var(--heat);box-shadow:0 0 12px var(--heat)}
+
+/* 影響航線: the only exit from a risk page, always labelled with its destination. */
+.risk-route-exits{margin-top:20px;padding-top:16px;border-top:1px solid var(--border,#303033)}
+.risk-route-exits-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.risk-route-exits-head span{font-size:12px;font-weight:500;color:#a1a1aa}.risk-route-exits-head small{font-size:11px;color:#609fe4}
+.risk-route-exit-list{display:flex;flex-wrap:wrap;gap:8px}
+.risk-route-exit{--tone:#38bdf8;display:inline-flex;align-items:center;gap:8px;padding:7px 12px 7px 10px;border:1px solid #2a3442;border-left:3px solid var(--tone);border-radius:8px;background:#121821;color:#e4e4e7;font:inherit;font-size:12px;cursor:pointer;transition:border-color .15s,background .15s}
+.risk-route-exit.tone-high{--tone:#f87171}.risk-route-exit.tone-medium{--tone:#fbbf24}.risk-route-exit.tone-low{--tone:#38bdf8}
+.risk-route-exit b{font-weight:600}.risk-route-exit small{color:#8b98a8;font-size:11px}.risk-route-exit i{font-style:normal;color:#609fe4}
+.risk-route-exit:hover{background:#16202c;border-color:#3b5577}.risk-route-exit:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.overview-heatmap[hidden]{display:none!important}
+
+/* Every risk subpage: cards 20px apart, and the last card ends flush with the radar's bottom edge
+   (no trailing margin on the last child or any wrapper around it). */
+.risk-workspace .risk-workspace-main .risk-overview-grid{gap:var(--risk-card-gap)}
+.risk-workspace-main>:last-child,.risk-workspace-main>:last-child>:last-child,.risk-workspace-main>:last-child>:last-child>:last-child,.risk-workspace-main>:last-child>:last-child>:last-child>:last-child,
+.risk-workspace-main>:has(+[hidden]:last-child){margin-bottom:0}
+

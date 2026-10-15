@@ -68,3 +68,12 @@ The client wants a cool, fashion-forward look: prefer visuals over explanatory c
 
 ## P1 prototype: overview heatmap and status matrix (October 14 update)
 The 情報總覽 page opens with 航線 × 主題 (routes × five topics) and 主題狀態, above the existing topic cards. Heatmap cells are presence only: a lit cell means that topic has route advice for the route, its colour is the topic's current status, and there is no intensity until the business supplies exposure weights. Clicking a cell opens the topic and spotlights the matching route card. The status matrix shows each topic's first thresholded signal with a bullet bar, value and a trend glyph against the series' own comparison basis. Thresholds remain provisional.
+
+## Navigation rules: risk data vs route decisions (October 15 update)
+The manager found the cross-page jumps confusing, so each top-level section has one job.
+- 風險情報 shows data only: key signals, charts, 分析判讀. It has no route advice and no 管理建議. Topic tabs switch subpages, and so do radar signal nodes (each opens its own topic). Radar topic labels are static labels that only show which topic is active. Radar node labels are taken from each topic page's 關鍵訊號 titles (long titles wrap to two lines), and the radar always shows the global, unfiltered view. Its footnote reads only 越靠中心越接近行動門檻。 The overview shows the five topic cards only (the 主題狀態 matrix was removed); a read-only route × topic grid sits below them but is hidden (`hidden`) until the team decides to show it.
+- The single exit from a risk subpage is 影響航線 under 分析判讀: route chips labelled 前往航線方案評估 ↗, opening that route.
+- 航線方案評估 is one decision line for one route, wrapped around assessment.js by route-hub.js (assessment.js is not edited): ① route capsules (name + five topic dots: lit = topic has advice for the route, colour = topic status) replace the select and the heatmap; ② 本次評估 question with 持續觀察; ③ 主題依據, one row per topic merging the old evidence card and topic advice (status, this route's exposure, proposal, trigger on hover, tradeoff chips); ④ 方案比較 — map, A/B cards with the difference on card B, and a 試算條件 card holding only the inputs; ⑤ 記錄結論 with 相關管理建議 collapsed. Each fact appears once; nothing links back to risk pages.
+- No auto-scroll or spotlight jumps. Any control that leaves a section names its destination.
+
+- Spacing on all six risk subpages: cards are 20px apart (overview card grid included), and the last card has no trailing margin from itself or any wrapper, so when scrolled to the end it lines up with the radar panel's bottom edge.
