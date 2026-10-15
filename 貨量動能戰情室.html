@@ -1849,5 +1849,27 @@ html[data-theme="dark"]{
 }
 .compare-numbers section.pos,[data-theme="dark"] .compare-numbers section.pos{background:var(--panel)!important;border-color:var(--line)!important}
 </style>
+<style id="r22">
+/* r22: normalize overview tags, graph legend placement, and comparison cards. */
+.signal-panel .kind{border-radius:999px;padding:1px 7px;line-height:1.45}
+.comparison .compare-numbers section{display:flex;flex-direction:column;gap:6px;min-height:112px}
+.comparison .compare-numbers h4{margin:0}
+.comparison .compare-numbers p{margin:auto 0 0;font-size:10.5px;line-height:1.55;color:var(--ink-2)}
+</style>
+<script>
+/* r22: keep one complete graph legend and integrate judgment into two metrics. */
+(function r22(){
+ const analysis=document.querySelector('.home .analysis-panel');
+ const head=analysis?.querySelector(':scope>.p-h');
+ if(head){
+  let key=head.querySelector('.reading-key');
+  if(!key){key=document.createElement('div');key.className='reading-key';key.setAttribute('aria-label','關聯線說明');head.append(key)}
+  key.innerHTML='<span><i class="dash" style="--c:#aab6c9"></i>提單原始名稱</span><span><i style="--c:#91a5ca"></i>實體解析／家族歸戶</span><span><i class="dash" style="--c:#d19845"></i>供應鏈上下游（由貨載推導）</span>';
+ }
+ analysis?.querySelectorAll('.gkey').forEach(key=>key.remove());
+ const report=document.getElementById('cmpNote');
+ if(report)report.innerHTML='<div class="compare-numbers"><section><h4>單一託運人 · 近 3 月</h4><div class="big">−5.5%</div><p>只看提單上的「宏遠電子」，會被判為流失風險。</p></section><section class="pos"><h4>歸戶企業家族 · 近 3 月</h4><div class="big">+10.5%</div><p>家族實際仍在成長，貨量移往越南與墨西哥。</p></section></div>';
+})();
+</script>
 </body>
 </html>
