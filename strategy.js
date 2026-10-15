@@ -10,8 +10,8 @@ function renderIntelligence(){
  const countryAverageSRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[5],0)/COUNTRY_ROWS.length;
  const highRiskCountries=COUNTRY_ROWS.filter(row=>row[4]>countryAverageCRR&&row[5]>countryAverageSRR).length;
  const cards={
-  safety:{chart:spark(HORMUZ_ODDS.map(p=>p[1]),'荷莫茲封鎖事件市場機率（%），2025/11–2026/3','#60a5fa'),caption:'封鎖事件市場機率 · % · 2025/11–2026/3'},
-  fuel:{chart:spark(OVX_WEEKS.ovx,'OVX 波動率指數，2025/11–2026/4','#60a5fa'),caption:'OVX · 指數 · 2025/11–2026/4'},
+  safety:{chart:spark(RISK_SHARED.hormuzTransits.values.slice(12),'荷莫茲海峽每月通行量（艘/日），2025/1–2026/6','#60a5fa'),caption:'荷莫茲海峽通行量 · 艘/日 · 2025/1–2026/6'},
+  fuel:{chart:spark(CRACK.near,'380cst − Brent 裂解價差（近月，美元/桶），2025/5–2026/4','#60a5fa'),caption:'380cst 裂解價差 · 美元/桶 · 2025/5–2026/4'},
   ports:{chart:intelligenceDistribution(['已發生','常態化','前瞻預警'].map((stage,i)=>[stage,PORT_EVENTS.filter(e=>e.status===stage).length,['#f87171','#fbbf24','#60a5fa'][i]])),caption:'追蹤議題分布 · 筆'},
   countries:{chart:intelligenceDistribution([4,5,6].map((level,i)=>['DB'+level,COUNTRY_ROWS.filter(c=>Math.floor(c[4])===level).length,['#fbbf24','#f87171','#ef4444'][i]])),caption:'CRR 國家風險級距 · 國'},
   policy:{chart:spark(TPU_MA7,'全球貿易政策不確定性 MA7 指數，2023/9–2026/5','#60a5fa'),caption:'貿易政策不確定性 MA7 · 指數 · 2023/9–2026/5'}
