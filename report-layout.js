@@ -93,7 +93,7 @@
     const brand = source.querySelector('small'), stamp = source.querySelector('p');
     const hero = document.createElement('div');
     hero.className = 'report-cover';
-    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.png" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-meta"><span>主要風險節點 · ${escapeHTML(route.node)}</span><span class="report-level" data-level="${escapeHTML(route.level)}">風險 · ${escapeHTML(route.level)}</span></div><div class="report-cover-date"></div></div>`;
+    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.jpg" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-meta"><span>主要風險節點 · ${escapeHTML(route.node)}</span><span class="report-level" data-level="${escapeHTML(route.level)}">風險 · ${escapeHTML(route.level)}</span></div><div class="report-cover-date"></div></div>`;
     hero.querySelector('.report-cover-brand').append(brand);
     hero.querySelector('.report-cover-title').append(title);
     hero.querySelector('.report-cover-route').append(routeTitle);
@@ -241,8 +241,8 @@
   }
   // Build a self-contained, trusted local report. Never execute decoded share-link contents.
   async function buildPortable(report) {
-    const [css, picture, fonts] = await Promise.all([reportStyles(), dataURL('assets/report-port.png'), ReportFonts.inlineFor(report.body)]);
-    const body = report.body.replace('src="assets/report-port.png"', `src="${picture}"`);
+    const [css, picture, fonts] = await Promise.all([reportStyles(), dataURL('assets/report-port.jpg'), ReportFonts.inlineFor(report.body)]);
+    const body = report.body.replace('src="assets/report-port.jpg"', `src="${picture}"`);
     const eventsJSON = JSON.stringify(SAFETY_CHART_EVENTS).replace(/</g, '\\u003c');
     const script = `const escapeHTML=${escapeHTML.toString()};const SAFETY_CHART_EVENTS=${eventsJSON};${bindSafetyChartEvents.toString()};bindSafetyChartEvents(document.querySelector('.safety-event-chart'),SAFETY_CHART_EVENTS);${bindReportOrder.toString()};${bindReportIndicator.toString()};bindReportOrder(document.querySelector('.report-document'));bindReportIndicator(document.querySelector('.report-document'));`;
     return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>${escapeHTML(report.title)}</title><style>${fonts}\n${css}</style></head><body class="report-file"><article class="report-preview report-document">${body}</article><script>${script}<\/script></body></html>`;
