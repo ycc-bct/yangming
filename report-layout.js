@@ -82,7 +82,7 @@
     return renderBeforeLayout()
       .replace('<section class="page-card"><div class="page-card-head"><h2>報告設定</h2>', '<section class="page-card report-setup-card"><div class="page-card-head"><h2>報告設定</h2>')
       .replace('type="submit" class="page-button">更新預覽', 'type="submit" id="updateReportPreview" form="reportForm" class="page-button">更新')
-      .replace('產生報告連結</button>', '產生報告</button><button type="button" id="downloadReportHTML" class="page-button full">Export 檔案</button><button type="button" id="previewReportHTML" class="page-button secondary-action full">全螢幕預覽 ↗</button><p id="reportExportStatus" class="micro-note full" role="status"></p>');
+      .replace('產生報告連結</button>', '產生報告</button>');
   };
   makeReport = function () {
     makeBeforeLayout();
@@ -279,7 +279,6 @@
     bindBeforeLayout(page);
     document.querySelector('#pageContent').classList.toggle('report-workspace', page === 'reports');
     if (page !== 'reports') return;
-    const exportButton = document.querySelector('#downloadReportHTML');
     const updateButton = document.querySelector('#updateReportPreview');
     const generateButton = document.querySelector('#generateReport');
     const setupCard = document.querySelector('.report-grid>.page-card:first-child');
@@ -293,12 +292,6 @@
     }
     const previewCard = document.querySelector('.report-grid>.page-card:nth-child(2)');
     const previewHeader = previewCard?.querySelector('.page-card-head');
-    if (exportButton && previewHeader) {
-      exportButton.classList.add('report-export-button');
-      previewHeader.append(exportButton);
-    }
-    document.querySelector('#downloadReportHTML').onclick = () => exportReport(false);
-    document.querySelector('#previewReportHTML').onclick = () => exportReport(true);
   };
   if (currentPage === 'reports') renderPage('reports');
 })();
