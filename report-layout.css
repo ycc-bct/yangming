@@ -88,21 +88,11 @@
 .report-document .chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:0;background:none;font-size:12px}
 .report-document svg{max-width:100%;height:auto}
 .report-document .wide-chart>svg,.report-document .page-card>svg,.report-document .report-topic>svg{display:block;width:100%;max-height:360px;padding:0;background:#101010}
-.report-document .country-risk-chart{max-height:none!important;aspect-ratio:900/550;border-radius:10px;background:#101010}
-.report-document .country-risk-chart text{font-family:Inter,'Noto Sans TC',sans-serif}
-.report-document .country-risk-chart .country-chart-title{fill:#f4f4f5;font-size:20px;font-weight:700}
-.report-document .country-risk-chart .country-chart-meta,.report-document .country-risk-chart .country-chart-axis,.report-document .country-risk-chart .country-chart-ticks{fill:#a1a1aa;font-size:17px}
-.report-document .country-risk-chart .quadrant-caution{fill:#3b3217;fill-opacity:.58}
-.report-document .country-risk-chart .quadrant-risk{fill:#421d20;fill-opacity:.72}
-.report-document .country-risk-chart .quadrant-priority{fill:#15382f;fill-opacity:.58}
-.report-document .country-risk-chart .quadrant-opportunity{fill:#1a2a40;fill-opacity:.68}
-.report-document .country-risk-chart .country-chart-grid{fill:none;stroke:#3f3f46;stroke-width:1;opacity:.55}
-.report-document .country-risk-chart .country-chart-average{fill:none;stroke:#a1a1aa;stroke-width:2;stroke-dasharray:7 7}
-.report-document .country-risk-chart .country-chart-frame{fill:none;stroke:#52525b;stroke-width:1}
-.report-document .country-risk-chart .quadrant-label{font-size:18px;font-weight:700}
-.report-document .country-risk-chart .label-caution{fill:#ffd449}.report-document .country-risk-chart .label-risk{fill:#fda4af}.report-document .country-risk-chart .label-priority{fill:#6ee7c0}.report-document .country-risk-chart .label-opportunity{fill:#93c5fd}
-.report-document .country-risk-chart .country-chart-points circle{stroke:#101010;stroke-width:4}
-.report-document .country-risk-chart .country-point-label{fill:#e4e4e7;font-size:17px;font-weight:500}
+.report-document .country-risk-chart{display:block;width:100%;max-height:none!important;background:#101010}
+.report-document .country-rating,.report-document .country-zone-badge{font-size:12px}
+.report-document .risk-signal-value{margin-left:auto}
+.report-document .risk-signal-value strong{order:1}
+.report-document .risk-signal-value .risk-status{order:2}
 .report-document .route-advice-map svg{padding:0;max-height:none}
 .report-document .data-table{font-size:13px;line-height:1.8;width:100%;border-collapse:collapse}
 .report-document .data-table th{font-weight:500;background:#18181b;color:#a1a1aa}
