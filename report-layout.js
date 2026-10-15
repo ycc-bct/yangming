@@ -275,23 +275,56 @@
       status.textContent = error.message || '匯出失敗，請重試。';
     } finally { buttons.forEach(button => { button.disabled = false; }); }
   }
+  async function shareReportLink() {
+    try {
+      makeReport();
+      const token = await ReportCodec.encode(pageState.report.html);
+      const url = snapshotURL(token);
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        const input = document.createElement('textarea');
+        input.value = url;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.append(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+      }
+      let toast = document.querySelector('.report-share-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'report-share-toast';
+        document.body.append(toast);
+      }
+      toast.textContent = '已複製報告連結';
+      toast.classList.add('is-visible');
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(() => toast.classList.remove('is-visible'), 2200);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   bindPage = function (page) {
     bindBeforeLayout(page);
     document.querySelector('#pageContent').classList.toggle('report-workspace', page === 'reports');
     if (page !== 'reports') return;
     const updateButton = document.querySelector('#updateReportPreview');
     const generateButton = document.querySelector('#generateReport');
-    const setupCard = document.querySelector('.report-grid>.page-card:first-child');
-    const setupHeader = setupCard?.querySelector('.page-card-head');
-    if (setupHeader) {
-      const actions = document.createElement('div');
-      actions.className = 'report-setup-actions';
-      if (updateButton) actions.append(updateButton);
-      if (generateButton) actions.append(generateButton);
-      setupHeader.append(actions);
-    }
+    updateButton?.remove();
+    generateButton?.remove();
     const previewCard = document.querySelector('.report-grid>.page-card:nth-child(2)');
     const previewHeader = previewCard?.querySelector('.page-card-head');
+    if (previewHeader) {
+      const shareButton = document.createElement('button');
+      shareButton.type = 'button';
+      shareButton.className = 'page-button report-share-button';
+      shareButton.textContent = '分享連結';
+      shareButton.addEventListener('click', shareReportLink);
+      previewHeader.append(shareButton);
+    }
   };
   if (currentPage === 'reports') renderPage('reports');
 })();
