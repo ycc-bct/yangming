@@ -10,9 +10,16 @@
 .report-document>section.is-dragging{opacity:.58;cursor:grabbing;background-color:#004ea20c}
 .report-document>section:focus{outline-color:#004ea2}
 .report-document>section:focus:not(:focus-visible){outline-color:transparent}
-.report-document .report-section-indicator{position:fixed;z-index:10;right:20px;top:50%;display:flex;flex-direction:column;gap:8px;transform:translateY(-50%);width:148px;padding:12px 10px;border-left:1px solid #27272a;background:linear-gradient(90deg,transparent,#101010e8 22%);font-size:11px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s}
-.report-document .report-section-indicator.is-scrolling{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
-.report-document .report-section-indicator a{display:flex;align-items:center;gap:8px;min-height:20px;color:#71717a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-document .report-drag-hint{position:absolute;z-index:2;right:12px;top:12px;display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #3f3f46;border-radius:5px;background:#18181b;color:#a1a1aa;font-size:11px;line-height:1.4;opacity:0;visibility:hidden;transform:translateY(-4px);pointer-events:none;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s}
+.report-document .report-drag-hint i{width:14px;flex:none;color:#d4d4d8;font-style:normal;font-size:15px;line-height:1;text-align:center}
+.report-document>section:hover>.report-drag-hint,.report-document>section:focus-visible>.report-drag-hint{opacity:1;visibility:visible;transform:translateY(0);transition-delay:0s}
+.report-document .report-section-indicator{position:fixed;z-index:10;right:0;top:50%;display:flex;flex-direction:column;gap:6px;width:188px;padding:12px;border:1px solid #3f3f46;border-right:0;border-radius:8px 0 0 8px;background:#111113f2;font-size:11px;opacity:0;transform:translate(156px,-50%);pointer-events:auto;transition:opacity .18s ease,transform .18s ease}
+.report-document .report-section-indicator:hover,.report-document .report-section-indicator:focus-within,.report-document .report-section-indicator.is-scrolling{opacity:1;transform:translate(0,-50%)}
+.report-document .report-indicator-head{padding:0 4px 8px;color:#f1f1f1;font-size:12px;font-weight:600;border-bottom:1px solid #27272a}
+.report-document .report-indicator-option{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:6px;min-height:28px;color:#71717a}
+.report-document .report-indicator-option>input{width:14px;height:14px;margin:0;accent-color:#609fe4}
+.report-document .report-section-indicator a{display:flex;align-items:center;gap:8px;min-width:0;min-height:28px;color:inherit;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-document .report-section-indicator a[aria-disabled=true]{opacity:.45;pointer-events:none}
 .report-document .report-section-indicator a span{width:6px;height:6px;flex:none;border:1px solid #52525b;border-radius:50%;background:#101010;transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
 .report-document .report-section-indicator a b{overflow:hidden;text-overflow:ellipsis;font-weight:500}
 .report-document .report-section-indicator a:hover,.report-document .report-section-indicator a.is-active{color:#f1f1f1}
@@ -20,23 +27,24 @@
 .report-document .report-table-icon{display:inline-flex;vertical-align:middle;width:16px;height:16px;margin-right:8px;color:#a1a1aa}
 .report-document .report-table-icon svg{display:block;width:16px;height:16px;padding:0;background:transparent}
 .report-document .country-label{display:inline;white-space:nowrap}.report-document .country-flag{display:inline-block;margin-right:2px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;letter-spacing:0}
-@media(max-width:1100px){.report-document .report-section-indicator{right:8px;width:34px;padding:12px 8px;background:linear-gradient(90deg,transparent,#101010e8 12%)}.report-document .report-section-indicator a b{display:none}.report-document .report-section-indicator a{justify-content:center}}
-@media(max-width:850px){.report-document .report-section-indicator{position:fixed;right:4px;width:26px;padding-inline:4px;border-left:0}.report-document>section{cursor:default}}
+@media(max-width:850px){.report-document .report-section-indicator{width:180px;transform:translate(154px,-50%)}.report-document .report-section-indicator:hover,.report-document .report-section-indicator:focus-within,.report-document .report-section-indicator.is-scrolling{transform:translate(0,-50%)}.report-document>section{cursor:default}.report-document .report-drag-hint{display:none}}
 @media print{.report-document .report-section-indicator{display:none}}
-@media(prefers-reduced-motion:reduce){.report-document>section,.report-document .report-section-indicator a span{transition:none}}
-.report-workspace .report-grid{grid-template-columns:280px minmax(0,1fr);gap:24px;max-width:1560px;margin:auto}
-.report-workspace .report-grid>.page-card:first-child{position:sticky;top:0;max-height:calc(100dvh - 160px);overflow:auto;padding:20px}
-.report-workspace .report-grid>.page-card:nth-child(2){padding:0;border:0;background:none;min-width:0}
-.report-workspace .report-grid>.page-card:nth-child(2)>.page-card-head{padding:0 0 12px;margin:0}
-.report-workspace .form-grid{gap:16px}
-.report-workspace .form-grid label,.report-workspace .report-sections legend{font-size:13px}
-.report-workspace .form-grid textarea{min-height:200px;font-size:13px}
-.report-workspace .report-setup-card>.page-card-head{align-items:center}
-.report-workspace .report-share-button{margin:0 0 0 auto;padding:7px 11px;min-height:34px;font-size:12px}
-.report-workspace .report-sections{gap:12px;border-color:#27272a}
-.report-workspace .page-button{font-size:13px;min-height:40px;margin:0}
-.report-workspace #generateReport{grid-column:1/-1;order:3}
-.report-workspace>.page-card{max-width:1560px;margin:32px auto}
+@media(prefers-reduced-motion:reduce){.report-document>section,.report-document .report-section-indicator,.report-document .report-section-indicator a span,.report-document .report-drag-hint{transition:none}}
+.report-workspace>.page-title{max-width:1560px;margin:0 auto 16px;align-items:center}
+.report-workspace>.page-title>div{display:flex;align-items:center;min-width:0}
+.report-workspace>.page-title h1{margin:0;font-size:24px}
+.report-workspace .report-share-button{margin:0 0 0 auto;padding:7px 12px;min-height:36px;font-size:12px}
+.report-workspace .report-grid{display:block;max-width:1560px;margin:auto}
+.report-workspace .report-controls{display:none!important}
+.report-workspace .report-preview-shell{padding:0;border:0;background:none;min-width:0;margin:0}
+.report-workspace .report-route-tabs{display:flex;gap:4px;margin:0 0 12px;padding:0 0 1px;overflow-x:auto;border-bottom:1px solid #3f3f46;scrollbar-width:thin}
+.report-workspace .report-route-tabs button{position:relative;display:flex;flex-direction:column;gap:2px;min-width:150px;padding:10px 14px 12px;color:#a1a1aa;text-align:left;border-radius:5px 5px 0 0}
+.report-workspace .report-route-tabs button:hover{background:#18181b;color:#e4e4e7}
+.report-workspace .report-route-tabs button.is-active{color:#f1f1f1;background:#18181b}
+.report-workspace .report-route-tabs button.is-active:after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:#609fe4}
+.report-workspace .report-route-tabs strong{font-size:12px;font-weight:600;white-space:nowrap}
+.report-workspace .report-route-tabs span{font-size:10px;color:#71717a;white-space:nowrap}
+.report-workspace .report-route-tabs button.is-active span{color:#a1a1aa}
 .report-document.report-preview{padding:0;background:#101010;color:#f1f1f1;border:1px solid #27272a;border-radius:10px;overflow:hidden;font:15px/1.85 Inter,'Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums}
 .report-document *{box-sizing:border-box}
 .report-document .report-cover{position:relative;isolation:isolate;min-height:310px;padding:32px;display:flex;align-items:center;background:#111113;overflow:hidden}
