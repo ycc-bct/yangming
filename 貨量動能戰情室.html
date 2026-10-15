@@ -4,6 +4,64 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>貨量動能戰情室</title>
+<script id="ym-gate-inline">
+/* Password gate for the preview site. Loaded synchronously in <head> so the page never flashes.
+   Unlock lasts for the current browser tab (sessionStorage); a new visit asks again.
+   Note: this is a viewing lock for a static site, not real security — the files are public on GitHub. */
+(function () {
+  var HASH = "d75f4c676cb14c557b5337f513e90c428e285a84340fbea4a4acc41b75358c6e"; // SHA-256 of the password
+  var KEY = "ym-gate";
+  try { if (sessionStorage.getItem(KEY) === HASH) return; } catch (e) {}
+
+  var css = document.createElement("style");
+  css.id = "ym-gate-css";
+  css.textContent =
+    "body>*:not(#ym-gate){visibility:hidden!important}" +
+    "#ym-gate{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#eef1f5;color:#202532;" +
+    "font:15px/1.6 Inter,'Noto Sans TC',sans-serif}" +
+    "#ym-gate form{width:min(340px,calc(100vw - 32px));display:flex;flex-direction:column;gap:14px;padding:28px;" +
+    "background:#ffffff;border:1px solid #dde3ec;border-radius:10px;box-shadow:0 18px 50px rgba(32,37,50,.10)}" +
+    "#ym-gate h1{margin:0;font-size:18px;font-weight:600}#ym-gate p{margin:0;color:#657186;font-size:13px}" +
+    "#ym-gate input{font:inherit;color:inherit;background:#ffffff;border:1px solid #c9d3e3;border-radius:6px;padding:10px 12px;outline:none}" +
+    "#ym-gate input:focus{border-color:#5468AE}" +
+    "#ym-gate button{font:inherit;font-weight:600;cursor:pointer;border:0;border-radius:6px;padding:10px;background:#5468AE;color:#ffffff}" +
+    "#ym-gate .err{color:#d1453b;font-size:13px;min-height:1.2em}";
+  document.head.appendChild(css);
+
+  function sha256(text) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+    });
+  }
+
+  function mount() {
+    var gate = document.createElement("div");
+    gate.id = "ym-gate";
+    gate.innerHTML =
+      '<form autocomplete="off"><h1>貨量動能戰情室</h1><p>此預覽需要密碼才能檢視。</p>' +
+      '<input type="password" aria-label="密碼" placeholder="請輸入密碼" required>' +
+      '<button type="submit">進入</button><div class="err" role="alert"></div></form>';
+    document.body.appendChild(gate);
+    var input = gate.querySelector("input");
+    var err = gate.querySelector(".err");
+    input.focus();
+    gate.querySelector("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      sha256(input.value.trim()).then(function (h) {
+        if (h !== HASH) { err.textContent = "密碼不正確，請再試一次。"; input.select(); return; }
+        try { sessionStorage.setItem(KEY, HASH); } catch (x) {}
+        gate.remove();
+        css.remove();
+        window.dispatchEvent(new Event("resize")); // let canvases re-measure now that the page is visible
+      });
+    });
+  }
+
+  if (document.body) mount();
+  else document.addEventListener("DOMContentLoaded", mount);
+})();
+
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 /* Layout: a single dark operations console. Command bar with tabs on top; overview = KPI + family list | ontology graph + roll-up chart | signal feed. Family and model tabs drill down. Deliberately dark-only: it is a control room. */
@@ -1513,9 +1571,8 @@ document.getElementById('refreshDemo').addEventListener('click',()=>{volumeGraph
   const map=vm.querySelector('.process-map');if(map)map.innerHTML=`<div class="process-map-head"><h2>資料處理流程</h2><span>提單資料 → 實體解析 → 決策訊號</span></div><ol class="process-list">${steps.map((s,i)=>`<li><span class="step-no">${i+1}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div></li>`).join('')}</ol>`;
   vm.querySelectorAll('.control.add,.cfg-foot,.modal,.modal-scrim').forEach(x=>x.remove());
   const panels=[...vm.querySelectorAll('.mv .p')],obj=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='物件類型'),rel=panels.find(p=>p.querySelector('.p-h h2')?.textContent==='關聯類型');
-  [obj,rel].forEach(panel=>panel?.classList.add('ontology-list-card'));
-  if(obj){const body=obj.querySelector('.p-b');body.className='p-b model-table-body';body.innerHTML=`<div class="x-scroll"><table class="model-list object-list"><thead><tr><th>物件</th><th>識別鍵</th><th>說明</th></tr></thead><tbody><tr><td class="name">貨載</td><td class="code">Shipment</td><td>B/L 號碼、裝卸港、開航日、TEU、HS code</td></tr><tr><td class="name">當事人</td><td class="code">Party</td><td>提單上的原始名稱、地址、角色（託運人／收貨人）</td></tr><tr><td class="name">法人實體</td><td class="code">LegalEntity</td><td>D-U-N-S、國家、產業別（SIC）、營運狀態</td></tr><tr><td class="name">企業家族</td><td class="code">CorporateFamily</td><td>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</td></tr></tbody></table></div>`}
-  if(rel){const body=rel.querySelector('.x-scroll');body.className='p-b model-table-body';body.innerHTML=`<div class="x-scroll"><table class="model-list relation-list"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody><tr><td class="name">貨載</td><td><span class="code">shipper / consignee</span>　託運／收貨</td><td class="name">當事人</td></tr><tr><td class="name">當事人</td><td><span class="code">resolvesTo</span>　解析為</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">parent</span>　母公司</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">memberOf</span>　隸屬</td><td class="name">企業家族</td></tr><tr><td class="name">法人實體</td><td><span class="code">suppliesTo</span>　供貨給</td><td class="name">法人實體</td></tr></tbody></table></div>`}
+  if(obj){const body=obj.querySelector('.p-b');body.innerHTML=`<div class="x-scroll"><table class="model-list object-list"><thead><tr><th>物件</th><th>識別鍵</th><th>說明</th></tr></thead><tbody><tr><td class="name">貨載</td><td class="code">Shipment</td><td>B/L 號碼、裝卸港、開航日、TEU、HS code</td></tr><tr><td class="name">當事人</td><td class="code">Party</td><td>提單上的原始名稱、地址、角色（託運人／收貨人）</td></tr><tr><td class="name">法人實體</td><td class="code">LegalEntity</td><td>D-U-N-S、國家、產業別（SIC）、營運狀態</td></tr><tr><td class="name">企業家族</td><td class="code">CorporateFamily</td><td>以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量</td></tr></tbody></table></div>`}
+  if(rel){const body=rel.querySelector('.x-scroll');body.innerHTML=`<table class="model-list relation-list"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody><tr><td class="name">貨載</td><td><span class="code">shipper / consignee</span>　託運／收貨</td><td class="name">當事人</td></tr><tr><td class="name">當事人</td><td><span class="code">resolvesTo</span>　解析為</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">parent</span>　母公司</td><td class="name">法人實體</td></tr><tr><td class="name">法人實體</td><td><span class="code">memberOf</span>　隸屬</td><td class="name">企業家族</td></tr><tr><td class="name">法人實體</td><td><span class="code">suppliesTo</span>　供貨給</td><td class="name">法人實體</td></tr></tbody></table>`}
  }
 
  const fv=document.getElementById('v-fam');
@@ -1716,16 +1773,14 @@ html[data-theme="dark"]{
 #v-fam .family-side-block+.family-side-block{margin-top:20px;padding-top:20px}
 #v-fam .family-side .member-slot{flex:1}
 
-#v-model .mv{--model-table-gutter:20px;align-items:stretch!important}
+#v-model .mv{align-items:stretch!important}
 #v-model .mv>.p{display:flex;flex-direction:column;height:100%;overflow:hidden}
-#v-model .mv>.p>.p-h{display:flex;align-items:center;min-height:52px;padding:16px var(--model-table-gutter) 10px}
+#v-model .mv>.p>.p-h{display:flex;align-items:center;min-height:52px;padding:16px 20px 10px}
 #v-model .mv>.p>.p-h h2{font-size:12px;font-weight:500;letter-spacing:0}
-#v-model .mv>.ontology-list-card>.model-table-body{flex:1;min-width:0;padding:0 0 14px}
-#v-model .mv>.ontology-list-card>.model-table-body>.x-scroll{min-width:0;width:100%;padding:0}
+#v-model .mv>.p>.p-b,#v-model .mv>.p>.x-scroll{flex:1}
+#v-model .mv>.p>.x-scroll{padding:0 0 14px}
 #v-model .mv .model-list th{height:38px;padding:10px 12px;font-size:10px;font-weight:500}
 #v-model .mv .model-list td{padding:11px 12px}
-#v-model .mv .model-list :is(th,td):first-child{padding-left:var(--model-table-gutter)}
-#v-model .mv .model-list :is(th,td):last-child{padding-right:var(--model-table-gutter)}
 
 @media(max-width:1180px){.top-cards{grid-template-columns:1fr 1fr}.momentum-card{grid-column:1/-1}}
 @media(max-width:900px){.ym-logo{width:154px}}
@@ -1819,57 +1874,927 @@ html[data-theme="dark"]{
 })();
 </script>
 <style id="r21">
-/* Compact metrics with a complete five-customer momentum list. */
+/* r21: align all four overview cards to the compact red-line height. */
 .top-cards{align-items:stretch}
-.top-cards>.summary-card{height:112px;min-height:112px;max-height:112px;box-sizing:border-box}
+.top-cards>.summary-card,.top-cards>.momentum-card{height:216px;min-height:216px;max-height:216px;box-sizing:border-box}
 .top-cards>.summary-card{padding:12px 16px}
 .top-cards>.summary-card h3{margin-bottom:2px}
-.top-cards>.single-kpi{justify-content:initial;gap:0}
-.top-cards>.summary-card .summary-body{display:flex;align-items:flex-end;justify-content:flex-start;flex:1}
-.top-cards .duns-only{height:auto}
-.top-cards>.momentum-card{display:flex;flex-direction:column;height:230px;min-height:230px;max-height:230px;box-sizing:border-box;padding:0 14px 2px;overflow:hidden}
+.top-cards>.momentum-card{padding:0 14px;overflow:hidden}
 .top-cards>.momentum-card .momentum-head{min-height:38px;height:38px}
-.top-cards>.momentum-card .momentum-head h3{font-size:13px;font-weight:600;color:var(--ink)}
-.top-cards>.momentum-card .stock-list{flex:0 0 auto;min-height:0;overflow:visible}
-.top-cards>.momentum-card .stock-row{min-height:38px;height:38px;padding:4px 0;box-sizing:border-box;gap:8px}
-.top-cards>.momentum-card .stock-name b{font-size:13.5px;font-weight:400;line-height:1.15}
-.top-cards>.momentum-card .stock-name small{display:block;margin-top:0;font-size:8.5px;line-height:1}
-.top-cards>.momentum-card .stock-row{grid-template-columns:minmax(0,1fr) 90px 64px}
-.top-cards>.momentum-card .stock-chart{height:17px}
+.top-cards>.momentum-card .stock-row{min-height:35px;height:35px;padding:0;gap:8px}
+.top-cards>.momentum-card .stock-name b{font-size:10.5px}
+.top-cards>.momentum-card .stock-name small{font-size:8.5px}
+.top-cards>.momentum-card .stock-chart{height:21px}
 .top-cards>.momentum-card .stock-change{font-size:14px}
-@media(min-width:1181px){
- .home{grid-template-columns:repeat(3,minmax(0,1fr)) 360px!important;grid-template-rows:112px 108px auto;gap:10px!important;align-items:start!important}
- .home .progress-panel,.home .progress-panel .top-cards{display:contents!important}
- .top-cards>.duns-card{grid-column:1!important;grid-row:1}
- .top-cards>.single-kpi:nth-child(2){grid-column:2!important;grid-row:1}
- .top-cards>.single-kpi:nth-child(3){grid-column:3!important;grid-row:1}
- .top-cards>.momentum-card{grid-column:4!important;grid-row:1/3!important}
- .home .analysis-panel{grid-column:1/4!important;grid-row:2/4!important}
- .home .signal-panel{grid-column:4!important;grid-row:3!important}
-}
-.compare-numbers section.pos,[data-theme="dark"] .compare-numbers section.pos{background:var(--panel)!important;border-color:var(--line)!important}
+@media(max-width:720px){.top-cards>.summary-card,.top-cards>.momentum-card{height:216px;min-height:216px;max-height:216px}}
 </style>
-<style id="r22">
-/* r22: normalize overview tags, graph legend placement, and comparison cards. */
-.signal-panel .kind{border-radius:999px;padding:1px 7px;line-height:1.45}
-.comparison .compare-numbers section{display:flex;flex-direction:column;gap:6px;min-height:112px}
-.comparison .compare-numbers h4{margin:0}
-.comparison .compare-numbers p{margin:auto 0 0;font-size:10.5px;line-height:1.55;color:var(--ink-2)}
+
+<!-- ===== review layer (2026-10-14): three-column overview, readable type, page identity. Appended last so it overrides r2–r17. ===== -->
+<style id="r18-review">
+/* page identity */
+/* Header tint: color-mix(in oklch, …, transparent) resolves the hue to 0° and turns the bar pink/red-brown; mix in srgb instead */
+.bar{background:color-mix(in srgb,var(--bg) 94%,transparent)!important}
+[data-theme="dark"] .bar{background:color-mix(in srgb,var(--bg) 93%,transparent)!important}
+.bar .ym-title{display:flex;flex-direction:column;line-height:1.2;margin-left:-4px;padding-left:14px;border-left:1px solid var(--line,#d8dee8)}
+.bar .ym-title b{font-size:18px;font-weight:500}
+.bar .demo{display:none!important}
+.bar .theme-toggle{margin-left:auto}
+.bar .ym-logo{height:22px!important;width:auto!important}
+
+/* three columns: 歸戶進度 + 重點客戶 | 歸戶判讀 + 比較 | 動態訊號 */
+.view.home:not([hidden]){display:grid!important;grid-template-columns:272px minmax(0,1fr) 312px!important;gap:16px!important;align-items:start!important}
+.view.home>.col:not([hidden]){min-width:0;display:flex!important;flex-direction:column;gap:16px;grid-column:auto!important;grid-row:auto!important}
+.home .progress-panel{padding:0!important;height:auto!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.home .progress-panel .top-cards{display:flex!important;flex-direction:column!important;gap:16px!important;height:auto!important}
+.home .progress-group{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:var(--panel)}
+.home .progress-group .summary-card{background:transparent!important}
+.home .progress-group .pg-head{font-size:15px;font-weight:600;padding:14px 18px 6px}
+.home .progress-group .summary-card{height:auto!important;min-height:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;padding:10px 18px!important;display:flex!important;flex-direction:column;gap:2px}
+.home .progress-group .summary-card+.summary-card{border-top:1px solid var(--line,#e3e8ef)!important}
+.home .progress-group .summary-card h3{font-size:13px!important;margin:0!important}
+.home .progress-group .summary-body{min-height:0!important;height:auto!important;padding:0!important}
+.home .progress-group .duns-value,.home .progress-group .single-value{font-size:32px!important;line-height:1.15!important}
+.home .momentum-card{height:auto!important;min-height:0!important}
+.home .momentum-card .stock-row{padding:9px 0!important;min-height:52px;grid-template-columns:minmax(0,1fr) 84px 66px!important;gap:8px!important}
+.home .momentum-card .stock-change{text-align:right;white-space:nowrap}
+.home .momentum-card .stock-chart svg{width:100%!important}
+[data-theme="dark"] .graph .el{stroke:#141c27!important}
+body{min-height:100vh}
+.home .signal-panel{height:auto!important;max-height:none!important}
+.home .analysis-panel{height:auto!important}
+.home .analysis-split{display:flex!important;flex-direction:column!important;gap:18px!important}
+/* 歸戶判讀 graph: fit the column (no crop) and size SVG text in viewBox units so it reads ≥ 12px on screen */
+.home .analysis-panel .graph{overflow:visible!important}
+.home .analysis-panel .graph svg{min-width:0!important;width:100%!important;height:auto!important}
+.graph .stage-label{font-size:16px!important}
+.graph .nd .n1{font-size:14.5px!important}
+.graph .nd.raw .n1{font-size:13.5px!important}
+.graph .nd .n2{font-size:12.5px!important}
+.graph .el{font-size:12.5px!important}
+.graph .tag text{font-size:12px!important}
+/* comparison: numbers + advice first, then a full-width chart */
+/* comparison: advice first, then chart with the two numbers stacked beside it */
+.home .comparison{display:grid!important;grid-template-columns:minmax(0,1fr) 168px!important;grid-template-areas:"h h" "adv adv" "leg leg" "chart nums";gap:10px 14px!important}
+.home .comparison>h3{grid-area:h}
+.home .comparison #cmpNote{display:contents!important}
+.home .comparison .compare-advice{grid-area:adv}
+.home .comparison #cmpLegend{grid-area:leg;width:auto!important;height:auto!important}
+.home .comparison #cmpChart{grid-area:chart;width:100%!important;max-width:none!important;margin:0!important;height:auto!important}
+.graph [data-edge-label="r1e1"],.graph [data-edge-label="r2e2"],.graph [data-edge-label="r3e3"]{text-anchor:middle}
+.home .comparison .compare-numbers{grid-area:nums;display:flex!important;flex-direction:column;gap:10px;align-self:center}
+.home #cmpChart svg{width:100%!important;height:auto!important}
+.ax{font-size:14px!important}
+.home .gkey{display:none!important}
+.home .momentum-card{max-height:none!important;overflow:visible!important}
+@media (max-width:1200px){.view.home{grid-template-columns:280px minmax(0,1fr)!important}.view.home>.col.c-right{grid-column:1 / -1!important}}
+
+/* ---- 方案 A: 歸戶進度 + 重點客戶動能 as a full-width top row; 歸戶判讀 | 動態訊號 below ---- */
+.view.home:not([hidden]){grid-template-columns:400px minmax(0,1fr) 330px!important;align-items:stretch!important}
+.view.home>.col:first-child,.home .progress-panel,.home .progress-panel .top-cards{display:contents!important}
+.home .progress-group{grid-area:prog!important}
+.home .momentum-card{grid-area:mom!important}
+.home .view-main{grid-area:main!important}
+.view.home>.col:nth-child(2){grid-area:main!important}
+.view.home>.col.c-right{grid-area:feed!important}
+/* 歸戶進度: three numbers side by side */
+.home .progress-group{display:grid!important;grid-template-columns:repeat(3,1fr);grid-template-rows:auto 1fr;align-self:stretch}
+.home .progress-group .pg-head{grid-column:1/-1}
+.home .progress-group .summary-card{padding:6px 18px 16px!important;justify-content:flex-end}
+.home .progress-group .summary-card+.summary-card{border-top:0!important;border-left:1px solid var(--line,#e3e8ef)!important}
+.home .progress-group .duns-value,.home .progress-group .single-value{font-size:28px!important}
+/* 重點客戶動能: five families as columns */
+.home .momentum-card{align-self:stretch;padding:14px 18px!important}
+.home .momentum-card .stock-list{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:0 14px;height:auto!important}
+.home .momentum-card .stock-row{display:grid!important;grid-template-columns:1fr!important;grid-template-areas:"n" "c" "s";height:auto!important;overflow:visible!important;gap:4px 6px!important;padding:8px 0 0!important;border:0!important;min-height:0!important;align-items:start}
+.home .momentum-card .stock-row+.stock-row{border-left:1px solid var(--line,#e3e8ef)!important;padding-left:14px!important;margin-left:-14px}
+.home .momentum-card .stock-name{grid-area:n!important}
+.home .momentum-card .stock-change{grid-area:c!important}
+.home .momentum-card .stock-chart{grid-area:s!important}
+
+.home .momentum-card .stock-change{text-align:left!important;font-size:20px!important}
+.home .momentum-card .stock-change.flat{display:flex;align-items:baseline;gap:8px}
+.home .momentum-card .stock-change.flat small{font:400 12px/1 var(--font-body);color:var(--ink-3);letter-spacing:0}
+.home .momentum-card .stock-chart svg{height:28px!important}
+.home .momentum-card .stock-name{white-space:nowrap}
+.home .progress-group .duns-value,.home .progress-group .single-value{font-size:26px!important;white-space:nowrap}
+.home .progress-group .summary-body{white-space:nowrap}
+.home .comparison{grid-template-columns:minmax(0,1fr) 300px!important;grid-template-areas:"h h" "leg leg" "chart adv" "chart nums"!important;align-items:start}
+.home .comparison .compare-numbers{flex-direction:row!important;align-self:start}
+.home .comparison .compare-numbers>*{flex:1}
+.home #cmpChart svg{max-height:250px}
+
+.view.home:not([hidden]){grid-template-areas:"prog mom mom" "main main feed"!important}
+
+/* ---- One heading system for the overview ----
+   L1 panel title 15/600 ink · L2 section title 14/600 ink · L3 field label 13/500 ink-3 · meta 12/400 ink-3; every panel insets 22px */
+.home .progress-group .pg-head,.home .momentum-card .momentum-head h3,.home .analysis-panel>.p-h h2,.home .signal-panel>.p-h h2{font-size:15px!important;font-weight:600!important;color:var(--ink)!important;letter-spacing:0!important;line-height:1.4!important;margin:0!important}
+.home .progress-group .pg-head{padding:18px 22px 4px!important}
+.home .progress-group .summary-card{padding:6px 22px 18px!important}
+.home .momentum-card{padding:15px 22px 16px!important}
+/* column labels inside the graph sit below the panel title in the hierarchy */
+.home .graph .stage-label{font-size:13px!important;font-weight:600!important;letter-spacing:.04em!important}
+.home .momentum-card .momentum-head{padding:0 0 10px!important;margin:0!important;min-height:0!important;align-items:center}
+.home .analysis-panel>.p-h,.home .signal-panel>.p-h{padding:18px 22px 10px!important;min-height:0!important;align-items:center}
+.home .comparison>h3{display:flex!important;justify-content:space-between;align-items:center;font-size:15px!important;font-weight:600!important;color:var(--ink)!important;letter-spacing:0!important;line-height:1.4!important;margin:0!important}
+.home .comparison>h3 small{font-size:12px!important;font-weight:400!important;color:var(--ink-3)!important}
+.home .comparison{border-top:0!important}
+.home .progress-group .summary-card h3,.home .compare-advice h4,.home .compare-numbers h4{font-size:13px!important;font-weight:500!important;color:var(--ink-3)!important;letter-spacing:0!important;text-transform:none!important}
+.home .momentum-card .momentum-head span,.home .analysis-panel .reading-key,.home .analysis-panel .reading-key *,.home #cmpLegend,.home #cmpLegend *{font-size:12px!important;font-weight:400!important;color:var(--ink-3)!important}
+
+/* ---- Header 方案 A: white bar, text tabs with an underline in the site accent #5468AE; no bold in the header ---- */
+.bar{background:#fff!important;border-bottom:1px solid #e3e8f0!important;/* same line colour as the 歸戶判讀 graph frame */padding-top:0!important;padding-bottom:0!important;min-height:64px;align-items:center!important}
+.bar .tabs{height:64px!important;display:flex!important;align-items:stretch!important;background:transparent!important;padding:0!important;border:0!important;box-shadow:none!important;gap:28px!important;margin-left:28px;border-radius:0!important}
+.bar .tabs button{height:64px!important;background:transparent!important;color:var(--ink-3)!important;border:0!important;border-radius:0!important;padding:0 2px!important;font-size:15px!important;font-weight:500!important;box-shadow:none!important}
+.bar .tabs button:hover{color:var(--ink)!important}
+.bar .tabs button[aria-selected="true"]{color:#5468AE!important;font-weight:500!important;box-shadow:inset 0 -3px 0 #5468AE!important}
+.bar .tabs button:focus-visible{outline:2px solid #5468AE;outline-offset:-2px}
+[data-theme="dark"] .bar{background:var(--panel)!important;border-bottom-color:#2b3b4d!important}
+[data-theme="dark"] .bar .tabs button[aria-selected="true"]{color:#8fa3e0!important;box-shadow:inset 0 -3px 0 #8fa3e0!important}
+[data-theme="dark"] .bar .tabs button,[data-theme="dark"] .bar .tabs button[aria-selected="true"]{background:transparent!important}
+[data-theme="dark"] .bar .tabs{background:transparent!important;border:0!important}
+.bar{margin-bottom:20px!important}
+
+/* ---- 歸戶進度 card mirrors 重點客戶動能: same rows (title / divider / label / note / number) ---- */
+.home .progress-group .pg-head2{box-sizing:border-box;min-height:38px}
+.home .progress-group .pg-item{padding-top:8px!important}.home .progress-group .pg-item>span>small{margin-top:2px}.home .progress-group .pg-item .pg-num{margin-top:0}
+.home .progress-group .pg-item>span:first-child{display:block}
+.view.home:not([hidden]){grid-template-columns:560px minmax(0,1fr) 330px!important}
+.home .progress-group{display:block!important;padding:15px 22px 16px!important;border-radius:10px;background:var(--panel)}
+.home .progress-group .pg-head2{display:flex;justify-content:space-between;align-items:center;padding:0 0 10px;border-bottom:1px solid var(--line,#e0e3ea)}
+.home .progress-group .pg-head2 h3{font-size:15px;font-weight:600;color:var(--ink);margin:0;line-height:1.4}
+.home .progress-group .pg-head2 span{font-size:12px;color:var(--ink-3)}
+.home .progress-group .pg-list{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:0 14px}
+.home .progress-group .pg-item{padding:8px 0 0;display:flex;flex-direction:column;gap:4px}
+.home .progress-group .pg-item+.pg-item{border-left:1px solid var(--line,#e0e3ea);padding-left:14px;margin-left:-14px}
+.home .progress-group .pg-item b{display:block;font-size:12.5px;font-weight:600;line-height:19.375px;color:var(--ink)}
+.home .progress-group .pg-item small{display:block;font-size:12px;line-height:18.6px;color:var(--ink-3);white-space:nowrap}
+.home .progress-group .pg-item .pg-num{font-family:var(--font-num);font-size:26px;font-weight:700;line-height:31px;color:var(--ink);letter-spacing:-.02em;white-space:nowrap}
+.home .progress-group .pg-item .pg-num small{display:inline;font:400 12px/1 var(--font-body);color:var(--ink-3);margin-left:4px;letter-spacing:0}
+/* shared type scale for the two top cards */
+.home .pg-head2 span,.home .momentum-card .momentum-head span{font-size:12px!important}
+.home .pg-item b,.home .momentum-card .stock-name b{font-size:13px!important;font-weight:600!important;line-height:19.375px!important}
+.home .pg-item>span>small,.home .momentum-card .stock-name small{font-size:12px!important}
+.home .progress-group .pg-item .pg-num{font-size:20px!important;letter-spacing:0!important}
+
+.home .momentum-card .stock-change{display:flex!important;align-items:baseline;gap:5px}
+.home .momentum-card .stock-change .dir{font-style:normal;font-size:.6em;position:relative;top:-.15em}
+[data-theme="dark"] .home .progress-group{background:var(--panel)!important;box-shadow:inset 0 0 0 1px #263442,0 12px 28px #05080c26}
+/* momentum direction: ▲ / ▼ / – instead of +/− */
+.home .momentum-card .stock-change{display:flex!important;align-items:baseline;gap:5px}
+.home .momentum-card .stock-change .dir{font-style:normal;font-size:.6em;position:relative;top:-.15em}
+
+/* ---- Top row v3: equal progress columns, short inline trend, equal-height dividers, 比對率 info tip ---- */
+.view.home:not([hidden]){grid-template-columns:500px minmax(0,1fr) 330px!important}
+.home .progress-group .pg-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.home .momentum-card .stock-row{grid-template-columns:auto 1fr!important;grid-template-areas:"n n" "c s"!important;align-items:center!important;column-gap:10px!important}
+.home .momentum-card .stock-chart{width:56px;height:18px;justify-self:start;align-self:center}
+.home .momentum-card .stock-chart svg{width:56px!important;height:18px!important}
+.home .progress-group .pg-list,.home .momentum-card .stock-list{align-items:stretch}
+/* rows touch each other so the hover fill runs divider to divider (no 14px gap on the right) */
+.home .momentum-card .stock-list{column-gap:0!important;margin:0 -14px!important;width:auto!important;max-width:none!important}
+.home .momentum-card .stock-row,.home .momentum-card .stock-row+.stock-row{margin-left:0!important;padding-left:14px!important;padding-right:14px!important}
+.home .progress-group .pg-item,.home .momentum-card .stock-row{padding-bottom:2px!important}
+.home .pg-info{position:relative;display:inline-grid;place-items:center;width:12px;height:12px;margin-left:4px;padding:0;border:1px solid currentColor;border-radius:50%;background:none;color:var(--ink-3);font:600 8.5px/1 var(--font-body);font-style:normal;cursor:help;vertical-align:middle;position:relative;top:-2px}
+.home .pg-info:hover,.home .pg-info:focus-visible{color:#5468AE;outline:none}
+.home .pg-info::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);padding:5px 9px;border-radius:6px;background:#202532;color:#fff;font:400 12px/1.4 var(--font-body);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:40}
+.home .pg-info:hover::after,.home .pg-info:focus-visible::after{opacity:1}
+[data-theme="dark"] .home .pg-info::after{background:#e9edf3;color:#141c27}
+
+/* momentum trend lines: one neutral accent for every family; direction colour lives only on the number */
+.home .momentum-card .dense-line{stroke:#5468AE!important}
+.home .momentum-card .dense-bar{stroke:#c3cbe3!important}
+[data-theme="dark"] .home .momentum-card .dense-line{stroke:#8fa3e0!important}
+[data-theme="dark"] .home .momentum-card .dense-bar{stroke:#3a4866!important}
+
+/* 動態訊號 runs the full height of 歸戶判讀 */
+.view.home>.col.c-right,.view.home>.col:nth-child(2){align-self:stretch!important}
+.home .c-right>.signal-panel{flex:1 1 auto!important;height:auto!important;min-height:0}
+
+/* 動態訊號 uses the same card surface as the other overview cards (was one step greyer) */
+.home .signal-panel{background:var(--panel)!important}
+
+/* comparison cards: ▲ / ▼ + value in the same up / down colours as 重點客戶動能 */
+.home .compare-numbers .big{display:flex;align-items:baseline;gap:6px}
+/* both comparison cards share one surface; direction is carried by ▲ / ▼ and colour, not by a tinted card */
+.home .compare-numbers section.pos{background:#fff!important;border-color:var(--line,#e0e3ea)!important}
+[data-theme="dark"] .home .compare-numbers section.pos{background:var(--panel-2,#1b2532)!important;border-color:#2b3b4d!important}
+.home .compare-numbers .big.up{color:#23794f!important}
+.home .compare-numbers .big.down{color:#aa5d3e!important}
+.home .compare-numbers .big .dir{font-style:normal;font-size:.55em;position:relative;top:-.2em}
+[data-theme="dark"] .home .compare-numbers .big.up{color:#4fbf86!important}
+[data-theme="dark"] .home .compare-numbers .big.down{color:#d98a66!important}
+[data-theme="dark"] .home .momentum-card .stock-change.up{color:#4fbf86!important}
+[data-theme="dark"] .home .momentum-card .stock-change.down{color:#d98a66!important}
+[data-theme="dark"] .home .momentum-card .stock-change.flat{color:#9aa5b6!important}
+
+/* Ontology 關聯圖 relationship header + label chips */
+.home .graph .stage-flow{font-size:12px;fill:#8d98ab;letter-spacing:.04em}
+.home .graph .el-chip{fill:var(--panel);stroke:var(--line,#e0e3ea);stroke-width:1;transition:opacity .25s}
+.home .graph .el-chip:has(+ .el.dim){opacity:.25}
+[data-theme="dark"] .home .graph .el-chip{stroke:#2b3b4d}
+
+/* family node: lighter fill, the blue outline alone marks it as the family */
+.home .graph .nd.fam > rect{fill:#f4f7fe!important}
+[data-theme="dark"] .home .graph .nd.fam > rect{fill:#1d2738!important}
+
+/* graph node titles = 13px on screen, same as the family names in 重點客戶動能 */
+.home #graph .nd .n1,.home #graph .nd.raw .n1{font-size:calc(13px * var(--u, 1))!important;font-weight:600!important}
+
+/* feed tags share the corner radius of the graph label chips (rx 4 ≈ 4px on screen) */
+#feed .kind{border-radius:4px!important}
+
+/* selection motion (see r18-trace) */
+.home .graph .nd.trace-wait{opacity:.2!important}
+.home .graph .nd{transition:opacity .25s ease}
+
+/* selected node: lifted by a soft shadow; the outline stays 1px in the node's own type colour (no thick blue frame) */
+.home #graph .nd > rect{transition:filter .2s ease}
+.home #graph .nd.on > rect{stroke-width:1!important;filter:drop-shadow(0 6px 20px rgba(104,124,160,.13)) drop-shadow(0 1px 2px rgba(104,124,160,.06))}
+/* the soft outer shadow carries the card's own border hue */
+.home #graph .nd.fam.on > rect{filter:drop-shadow(0 6px 20px rgba(84,104,174,.15)) drop-shadow(0 1px 2px rgba(84,104,174,.07))}
+.home #graph .nd.ext.on > rect{filter:drop-shadow(0 6px 20px rgba(224,162,74,.17)) drop-shadow(0 1px 2px rgba(224,162,74,.08))}
+.home #graph .nd.raw.on > rect{stroke:#aab6c9!important;stroke-dasharray:4 3!important}
+.home #graph .nd.ent.on > rect{stroke:#b9c5d8!important;stroke-dasharray:none!important}
+.home #graph .nd.fam.on > rect{stroke:#7d95d6!important}
+.home #graph .nd.ext.on > rect{stroke:#e0a24a!important}
+[data-theme="dark"] .home #graph .nd.on > rect{stroke-width:1!important;filter:drop-shadow(0 0 10px rgba(143,163,224,.22))}
+[data-theme="dark"] .home #graph .nd.raw.on > rect,[data-theme="dark"] .home #graph .nd.ent.on > rect{stroke:#7f98b5!important}
+[data-theme="dark"] .home #graph .nd.fam.on > rect{stroke:#8fa3e0!important}
+[data-theme="dark"] .home #graph .nd.ext.on > rect{stroke:#c5934a!important;filter:drop-shadow(0 0 10px rgba(224,162,74,.2))}
+@media (prefers-reduced-motion: reduce){.home #graph .nd > rect{transition:none}}
+
+/* one tag size: 解析為 / 隸屬 header, 供貨給 / 出貨給 chips and the feed tags are all 12px on screen */
+.home #graph .stage-flow,.home #graph [data-edge-label="upe1"],.home #graph [data-edge-label="fdn"]{font-size:calc(12px * var(--u, 1))!important}
+#feed .kind{font-size:12px!important;font-weight:400!important}
+
+/* highlighted path keeps the resting line weight, so lines and arrowheads look the same as unselected */
+.home #graph .flow-edge.active{stroke-width:1.35!important}
+
+/* node detail v2 (see renderDetail in r18-trace) */
+.home #detail.v2[hidden],.home #detail.v2:empty{display:none!important}
+.home #detail.v2:not([hidden]){display:block!important;padding:12px 16px!important;border-radius:8px!important;background:#fff!important;border:1px solid var(--line,#e0e3ea)!important}
+.home #detail.v2 .d-row{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
+.home #detail.v2 .d-tag{flex:none;font:400 12px/18px var(--font-body);padding:1px 7px;border-radius:4px}
+.home #detail.v2 .d-tag.blue{color:#4a5f9e;background:#e7ecf8}
+.home #detail.v2 .d-tag.grey{color:#5d6878;background:#eceef2}
+.home #detail.v2 .d-tag.orange{color:#9a5b00;background:#fbeedb}
+.home #detail.v2 .d-name{font:600 14px/1.4 var(--font-body);color:var(--ink)}
+.home #detail.v2 .d-id{font:400 12px/1.4 var(--font-mono,monospace);color:var(--ink-3)}
+.home #detail.v2 .d-metric{margin-left:auto;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.home #detail.v2 .d-metric small{font:400 12px/1 var(--font-body);color:var(--ink-3)}
+.home #detail.v2 .d-metric b{font:600 15px/1 var(--font-num);color:var(--ink)}
+.home #detail.v2 .d-metric b.up{color:#23794f}
+.home #detail.v2 .d-metric b.down{color:#aa5d3e}
+.home #detail.v2 .d-metric b i{font-style:normal;font-size:.7em;margin-right:3px;position:relative;top:-.1em}
+.home #detail.v2 .d-desc{margin:6px 0 0;font:400 13px/1.6 var(--font-body);color:var(--ink-2)}
+[data-theme="dark"] .home #detail.v2{background:var(--panel)!important;border-color:#2b3b4d!important}
+[data-theme="dark"] .home #detail.v2 .d-tag.blue{color:#a9bcff;background:#24324a}
+[data-theme="dark"] .home #detail.v2 .d-tag.grey{color:#aab4c3;background:#273242}
+[data-theme="dark"] .home #detail.v2 .d-tag.orange{color:#e5b06a;background:#3a2c14}
+[data-theme="dark"] .home #detail.v2 .d-metric b.up{color:#4fbf86}
+[data-theme="dark"] .home #detail.v2 .d-metric b.down{color:#d98a66}
+
+/* ---- Ontology 模型 (see r18-ontology): object colours, icons, equal-height panels ---- */
+:root{--o-ship:#3a8e8a;--o-party:#8a94a6;--o-ent:#b0577f;--o-fam:#5468AE;--o-sc:#c88c35}
+#v-model .mv.o1{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:16px!important;align-items:stretch!important}
+.o1 .o-panel{display:flex;flex-direction:column;background:var(--panel);border-radius:10px;padding:18px 22px 22px;min-width:0}
+.o1 .o-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line,#e0e3ea)}
+.o1 .o-head h2{margin:0;font:600 15px/1.4 var(--font-body);color:var(--ink)}
+.o1 .o-head span{font:400 12px/1 var(--font-body);color:var(--ink-3)}
+.o1 .o-code{font:400 12px/1.4 var(--font-mono,monospace);color:var(--ink-3)}
+.o1 .o-cards{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px}
+.o1 .o-card{position:relative;border:1px solid var(--line,#e0e3ea);border-radius:8px;padding:14px;background:#fff;display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:12px;align-content:start;cursor:pointer;transition:opacity .2s ease,box-shadow .2s ease,border-color .2s ease}
+.o1 .o-card:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.o1 .o-ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c)}
+.o1 .o-ico svg{width:18px;height:18px}
+.o1 .o-card b{font:600 14px/1.4 var(--font-body);color:var(--ink);margin-right:8px}
+.o1 .o-card p{margin:4px 0 0;font:400 13px/1.6 var(--font-body);color:var(--ink-2)}
+.o1 .o-card.on{border-color:var(--c);box-shadow:0 6px 20px color-mix(in srgb,var(--c) 16%,transparent),0 1px 2px color-mix(in srgb,var(--c) 8%,transparent)}
+.o1 .o-card.hi{border-color:var(--c)}
+.o1 .o-card.dim,.o1 .o-tr.dim{opacity:.3}
+.o1 .o-body{flex:1;display:flex}
+.o1 .o-table{width:100%;height:100%;border-collapse:collapse}
+.o1 .o-table th{text-align:left;font:400 12px/1 var(--font-body);color:var(--ink-3);padding:0 8px 10px;border-bottom:1px solid var(--line,#e0e3ea)}
+.o1 .o-table td{padding:10px 8px;border-bottom:1px solid var(--line,#e0e3ea);font:500 13px/1.4 var(--font-body);color:var(--ink);white-space:nowrap}
+.o1 .o-table tr:last-child td{border-bottom:0}
+.o1 .o-tr{transition:opacity .2s ease;outline:none}
+.o1 .o-tr.hover td{background:#f3f5fa}
+.o1 .o-obj{display:inline-flex;align-items:center;gap:7px}
+.o1 .o-obj svg{width:15px;height:15px;color:var(--c)}
+.o1 .o-rel-code{font:400 13px/1.4 var(--font-mono,monospace);color:#5468AE;margin-right:8px}
+.o1 .o-rel-code.sc{color:var(--o-sc)}
+.o1 .o-rel-zh{font:400 12px/1.4 var(--font-body);color:var(--ink-3)}
+[data-theme="dark"] .o1 .o-card{background:var(--panel-2,#1b2532);border-color:#2b3b4d}
+[data-theme="dark"] .o1 .o-ico{background:color-mix(in srgb,var(--c) 22%,transparent)}
+[data-theme="dark"] .o1 .o-card.on{box-shadow:0 0 12px color-mix(in srgb,var(--c) 30%,transparent)}
+[data-theme="dark"] .o1 .o-tr.hover td{background:#202b37}
+[data-theme="dark"] .o1 .o-rel-code{color:#8fa3e0}
+[data-theme="dark"] .o1 .o-rel-code.sc{color:#e0a24a}
+[data-theme="dark"]{--o-party:#a3adbd;--o-ent:#d98aac;--o-fam:#8fa3e0;--o-ship:#5fb3ae}
+@media (prefers-reduced-motion: reduce){.o1 .o-card,.o1 .o-tr{transition:none}}
+
+/* direction: one look for ▲ / ▼ / – across tabs (see dirify) */
+.st[data-dir],.kn[data-dir]{display:inline-flex;align-items:baseline;gap:5px}
+.st[data-dir] > i,.kn[data-dir] > .ki{display:none!important}
+.st[data-dir] .dir-g,.kn[data-dir] .dir-g{font-weight:inherit;font-size:.6em;position:relative;top:-.15em}
+.st[data-dir="up"],.kn[data-dir="up"],.dir-t[data-dir="up"]{color:#23794f!important}
+.st[data-dir="down"],.kn[data-dir="down"],.dir-t[data-dir="down"]{color:#aa5d3e!important}
+.st[data-dir="flat"],.kn[data-dir="flat"],.dir-t[data-dir="flat"]{color:#626c7e!important}
+.st .st-l{margin-right:4px;padding:1px 7px;border-radius:4px;font:400 12px/18px var(--font-body);align-self:center}
+.st[data-dir="up"] .st-l{color:#23794f;background:#e6f2eb}
+.st[data-dir="down"] .st-l{color:#8e4527;background:#f7ebe5}
+.st[data-dir="flat"] .st-l{color:#626c7e;background:#eceef2}
+[data-theme="dark"] .st[data-dir="up"] .st-l{color:#4fbf86;background:#1d3a2c}
+[data-theme="dark"] .st[data-dir="down"] .st-l{color:#d98a66;background:#3d2a22}
+[data-theme="dark"] .st[data-dir="flat"] .st-l{color:#9aa5b6;background:#273242}
+[data-theme="dark"] .st[data-dir="up"],[data-theme="dark"] .kn[data-dir="up"],[data-theme="dark"] .dir-t[data-dir="up"]{color:#4fbf86!important}
+[data-theme="dark"] .st[data-dir="down"],[data-theme="dark"] .kn[data-dir="down"],[data-theme="dark"] .dir-t[data-dir="down"]{color:#d98a66!important}
+[data-theme="dark"] .st[data-dir="flat"],[data-theme="dark"] .kn[data-dir="flat"],[data-theme="dark"] .dir-t[data-dir="flat"]{color:#9aa5b6!important}
+
+/* 資料處理流程: all six step numbers share one style (the phase tints read as "only 03–04 matter") */
+.process-horizontal li[data-phase] .step-no{background:#e1e6ee!important;border-color:#b8c3d5!important;color:#28344a!important}
+[data-theme="dark"] .process-horizontal li[data-phase] .step-no{background:#263342!important;border-color:#506176!important;color:#dbe4ee!important}
+
+/* ---- 企業家族 tab: 方案 A layout, overview title system, full member table ---- */
+#v-fam .kstrip,#v-fam .fv-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)!important}
+#v-fam .fv-grid .p-h h2,#v-fam .family-section-title,#v-fam .insight-label{font-size:15px!important;font-weight:600!important;color:var(--ink)!important;letter-spacing:0!important;text-transform:none!important;line-height:1.4!important}
+#v-fam .insight-label{margin-bottom:6px!important}
+#v-fam .fv-grid .p-h{display:flex!important;justify-content:space-between;align-items:center}
+#v-fam .fv-grid .p-h small{display:inline!important;font-size:12px!important;font-weight:400!important;color:var(--ink-3)!important}
+#v-fam .kl{font-size:12px!important;color:var(--ink-3)!important}
+#v-fam #fLegend,#v-fam #fLegend *{font-size:12px!important}
+#v-fam .member-slot table{table-layout:auto!important;width:100%!important}
+#v-fam .member-slot col{width:auto!important}
+#v-fam .member-slot th,#v-fam .member-slot td{display:table-cell!important;width:auto!important;padding-left:8px!important;padding-right:8px!important;font-size:13px!important;vertical-align:middle}
+#v-fam .member-slot th{font-size:12px!important;color:var(--ink-3)!important;font-weight:400!important;white-space:nowrap}
+/* 國家 (3), 角色 (4) and the trend sparkline (6) fold away; 國家 · 角色 sit under the name */
+#v-fam .member-slot tr > :nth-child(3),#v-fam .member-slot tr > :nth-child(4),#v-fam .member-slot tr > :nth-child(6){display:none!important}
+#v-fam .member-slot td:first-child{white-space:normal;line-height:1.45}
+#v-fam .member-slot .m-sub{display:block;margin-top:2px;font-size:12px!important;color:var(--ink-3)}
+#v-fam .member-slot td:nth-child(2){font-family:var(--font-mono,monospace);font-size:12px!important;color:var(--ink-3);white-space:nowrap}
+#v-fam .member-slot td:nth-child(5),#v-fam .member-slot td:nth-child(7),#v-fam .member-slot td:nth-child(8){white-space:nowrap}
+
+/* status: the ▲ value part has one fixed width, so the grade tags line up in every row */
+.st[data-dir] .st-v{display:inline-flex;align-items:baseline;justify-content:flex-end;gap:5px;min-width:4.6em;font-variant-numeric:tabular-nums}
+#v-fam .member-slot td:nth-child(7){text-align:right}
+
+/* 判讀建議 body text = 動態訊號 body text (13px / 400 / ink / 22.1px) */
+.home .compare-advice p,#v-fam .insight-card p{font-size:13px!important;font-weight:400!important;color:var(--ink)!important;line-height:22.1px!important;letter-spacing:normal!important}
+.home .compare-advice p b,#v-fam .insight-card p b{font-size:inherit!important}
+
+/* ---- readability pass ----
+   1 · light-mode secondary grey one step darker: #737e91 (3.96:1) → #66707f (≥4.5:1 on cards) */
+:root:not([data-theme="dark"]){--ink-3:#66707f}
+/* 7 · family switcher: unselected names on the grey track */
+#famChips button:not([aria-pressed="true"]):not(.on):not(.active){color:#4f5868!important}
+/* 2 · 企業家族 small text left at 10–11px */
+#v-fam #fSub{font-size:12px!important}
+#v-fam .tree-slot small,#v-fam .tree-slot .code{font-size:12px!important}
+
+/* contrast: coloured tag text and the orange relation code one step deeper; family subtitle sits on the page grey */
+#feed .kind.k-fam{color:#41579a!important}
+#feed .kind.k-sc{color:#8f5400!important}
+.o1 .o-rel-code.sc{color:#9a5b00!important}
+#v-fam #fSub{color:#5d6675!important}
+[data-theme="dark"] #feed .kind.k-fam{color:#a9bcff!important}
+[data-theme="dark"] #feed .kind.k-sc{color:#e5b06a!important}
+[data-theme="dark"] .o1 .o-rel-code.sc{color:#e0a24a!important}
+[data-theme="dark"] #v-fam #fSub{color:var(--ink-3)!important}
+
+/* ---- chart title rows: title + unit on the left, legend on the right; one legend style everywhere ---- */
+.home .comparison{grid-template-areas:"h h" "chart adv" "chart nums"!important}
+.home .comparison>h3,#v-fam .fv-grid .p-h{display:flex!important;flex-wrap:wrap;justify-content:flex-start!important;align-items:center!important;column-gap:10px;row-gap:6px}
+.home .comparison>h3 small,#v-fam .fv-grid .p-h small{font-size:12px!important;font-weight:400!important;color:var(--ink-3)!important}
+.home .comparison>h3 #cmpLegend,#v-fam .fv-grid .p-h #fLegend,.home .reading-key{margin:0 0 0 auto!important;display:flex!important;flex-wrap:wrap;justify-content:flex-end;gap:4px 16px!important;width:auto!important;height:auto!important;padding:0!important;grid-area:auto!important}
+.home .comparison>h3 #cmpLegend span,#v-fam #fLegend span,.home .reading-key span{display:inline-flex!important;align-items:center;gap:6px;font:400 12px/18px var(--font-body)!important;color:var(--ink-3)!important;white-space:nowrap}
+.home #cmpLegend i,#v-fam #fLegend i,.home .reading-key i{display:block!important;width:16px!important;height:0!important;border-top:2px solid var(--c)!important;margin:0!important;vertical-align:baseline!important;position:static!important}
+.home .reading-key i.dash,#v-fam #fLegend i.dash{border-top-style:dashed!important}
+#v-fam #fLegend i.tot{border-top-width:2.5px!important}
+/* 「只看台灣母公司」 is the dashed line in the chart — the legend key matches */
+.home #cmpLegend span:nth-child(2) i{border-top-style:dashed!important}
+
+/* 企業家族 KPI cards: same title / figure / note structure as the overview cards */
+#v-fam .kstrip .k-title{font:600 15px/1.4 var(--font-body);color:var(--ink);margin-bottom:8px}
+
+/* 家族成員貨量 is the exception: its long legend always sits on its own row under the title, left-aligned */
+#v-fam .fv-grid .p-h #fLegend{flex-basis:100%!important;margin:0!important;justify-content:flex-start!important}
+
+/* dark-mode toggle removed (see r18-light-only) */
+.theme-toggle{display:none!important}
 </style>
-<script>
-/* r22: keep one complete graph legend and integrate judgment into two metrics. */
-(function r22(){
- const analysis=document.querySelector('.home .analysis-panel');
- const head=analysis?.querySelector(':scope>.p-h');
- if(head){
-  let key=head.querySelector('.reading-key');
-  if(!key){key=document.createElement('div');key.className='reading-key';key.setAttribute('aria-label','關聯線說明');head.append(key)}
-  key.innerHTML='<span><i class="dash" style="--c:#aab6c9"></i>提單原始名稱</span><span><i style="--c:#91a5ca"></i>實體解析／家族歸戶</span><span><i class="dash" style="--c:#d19845"></i>供應鏈上下游（由貨載推導）</span>';
- }
- analysis?.querySelectorAll('.gkey').forEach(key=>key.remove());
- const report=document.getElementById('cmpNote');
- if(report)report.innerHTML='<div class="compare-numbers"><section><h4>單一託運人 · 近 3 月</h4><div class="big">−5.5%</div><p>只看提單上的「宏遠電子」，會被判為流失風險。</p></section><section class="pos"><h4>歸戶企業家族 · 近 3 月</h4><div class="big">+10.5%</div><p>家族實際仍在成長，貨量移往越南與墨西哥。</p></section></div>';
+<script id="r18-review-js">
+(() => {
+  const LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAABUCAYAAAAS/YYzAABQ80lEQVR4nO2dB5gkVbn3f+dU9+SZnu7ZZfOSxASGKypBvSwmrqBIEPTqpwKCgDkRvcqCigsCBsR0zRlQFFDEQBC9oCAmggIqsGFm00xPDt1ddb7nrTq1M6y701U93TM9u/V/ntrZ6emqOlXnnPe85w3/V3WTMyTYKQyUcqhUHu+zS8m/00BKQWmu25UgQYIECRIkSFApdMVnJkiQIEGCBAkSJJiXSBTABAkSJEiQIEGC3QyJApggQYIECRIkSLCbIVEAEyRIkCBBggQJdjMkCmCCBAkSJEiQIMFuhkQBTJAgQYIECRIk2M2QivIlg8JTyudEiQwFjvGYTUjzXO3EPk/aqUx9suHcBqlVlZ/uKZjdTpgCE2wwZrLJmGn71W3gVPj+jAKX+dv3s/ocM+jrOX/PxpdW/kH483ZQVXj3M4EbU+LO9vtyqnnJOhkD1Xymivpwhu2Y7fvN6N6VwARtDefqvFkLAWVfjroW1An2w7mWM6koyl8jRZrNOAaNKtPH4V89oxiitez3qwVpp8Yj5+Vj3VO+O0A7RVKz1tY4OHyGnIMywediIbH3lQk3l5POzOT9zdW7q1bfz+Zz1EFfx1L2bge9KngnsjDIz/qb/HUK+752KS7Uenmm2W5HvTx3VMz1RiGmnNFWwfM3OFZrrSs5M60C6GlNqzfKT174Yn727CNoGB3C8y1sO38GbQxuupEnbfoX7/zxNxijoebWNaMUjnEpNDXwocPewZhqAbE+TrtPUCjPY6KxkVP/8CP27XmMCVX7tsZZsB8l05lGn5pClco9zXbnew2oxnHMHYq+34l1ZjZ3P+H91tH5rBacl49jCiqGdShsfwEeWkbv9ReAvjBG+8P3t5blzZqxU8BrMigvyjbXgEmh0kXMY4q+a5llhG037NnUw+CbNLS5KFFSYu165R2mUI1F+Jui98ZaKYFh3/SQOyiFOqyAmYjS1+F7Nph/LKbvR7VWUq8BZ2FwD1nsfMUv/JvMMw25FlK5EmoRuO0GMkCrizLVNguVey8N/vhzr1lK/+NzvQnZUV93k3t6GnVUAVOMOy53MAZSRczWZfR9Yw43quZhch2tcJLCpERWVOe51A3L2fpwlD4Mv9NDZi+FPt5FuVHbIPdzME4RdfUK+tbHuV83nXuCeo2Jcb/t7532rVvO9/Zgy6bVoOLI6oiQdsnKrHroeoMDi0uYUpT2avAcVEMRbltK7x9quRYaq/RdO6moPkFZ7aZtYYqmToO7MJAzplmjckam/DYDYR0pgKIMFVSaAx9+kPcecTZb2/aB0jgoXWZIAPs7LN2ykdf/9gZ6dYaUVzvF3VWaTjPEh151Olcc/l6YGC3TRmmmC40dPGftray+5XP+c9aD8ieQiSkLVi8DI0vJHroIfewAJpq/3q5uTcAWzMZ+OvaHwf64StQMJwGG5c09jFybQe2XjuEblLaH/rgC5uXy2f7xBZPczk0xetRi9GeH0bHuL+3tB7ebzruX0L9WmjPb7oNB+loNqSuy6NZCBT4PeQ4ZL0OY4joW7A9b/1EL4bd627hSqxag1gxG9CeJNOhA0YP5LfCjUMjXQiCLMD7RCmNxIW2m8wAXdZCBQxTqKcByA4sVJt3oDx5dsZ9ppph8L+oB4PFwLFMHsIs7BnPoAvSlUft6ZzD2/DFgA113Qe9Ds71ZvT1ogtuCecUSnE8P+36umUEa346iW0QIPByxD+131AELcC4b831a0d9jM5qteH8B1l8b735PX4C+bKLC8R6O1w2Unq3gzdJ/MkaqDF/5s/993x7o/4gvZ0ofBv5gn7uq4+sC0DI3pip9sqFogec3op5dwDtYwz4eLCviLWxEianJ96dKY9ScSJqoCqBuYOXmdXzz+x/kuJOuwhsvYZTxrW7TnecWGzj3yPfz/H/+lWU93YzrJrRX/XntKodOb4hbnv1CPnnIm0n3dvvK9HTTR0nMn0qTG1rPd/73XJpHxxhVMoXqx4N1QmA2Lm4i9aaNuH9qgL1GxbMeUeYOQqkTvbgPLu2EU+W8GkzMHcFfcNcxelEOvd8mPJEtZXXXcMdqwO1ANfZjPrScvl9Ku+Oa/Vdvu5Z52xDGHcGUpIRfjEuUMqjGIdQpCi6w8W2zChPsCPODGLGECiqREiV5lwXcixWcUMvnMLBhHFMa9ndWkd61WBxkrAzWqD3huPHHzgayL9Bw/CY4wqCe0oHy55H8sYihCEwEu9dQCZX5N2XhmTW4WhwpKGlSXUKhJ4aDvhaBOVMDqYzRhjG8VwEP1WKBng5brPtfo44exbjD8WXFjiArnfJQhdgnoooDmJIEXMWY80Zu5KGLldxvEFOaqFzGmBGMaUK9YSO5z4vHSYwX4YarWggtixtg4xCmNIJxo/STWPwdf4wq2WdQqw3mhdaT0IrzshIcazCHN6EWN/vGGL1DOWPlC3MkZ3yUfYGO59KnOzn8gd/x9ju/yeX/+Tac4f7pky38BJAivY0LOeu4D3DNF98bTOkq7/FFCW2gQF9nF+86+hzf0ehqSViZXiY5nsJtbeHiH6xmZe8GelWGlL9u1Q9kFxwsYluGu8m+00H/TGHEfRVsGspDD2LcVtQpG8l9X9H3q0qUqTgIr7+B7Asb4X2ifCloiCpYRPlrRzUO4v3uEfJrrLIbazEILQjdLDgwhXfYsL+O0xhndslkHPeVA/XmHhZdCptG58gV59g5Kg9RiYBwhjBeC+r4HrperOi9tRbCOYB4SlUqnP5lv23bF3VDE7kV1oAs4/B+aFhI7r8N5kwHdZBEJEu/TmCQRc/2qd9k+/+pySDBH6rZuGjtF8yVATIi/OEofS3ze0b9Z33xcr1jgMtn09pp+9z9J9mMLNhjwXiUz3SVFIPYfWjPiTXnrc9NqUDW1fx+O7i/m0Y545jLDBxWyzg3cdHL2LP9FDGqh1S1N7/XTNlgihtd4ZymMG9sRK1ssVbtcZDMCflOKFd8GTNVzjwh82wOEOmliHLUp9o576Yv85yeu3Eb2/yYu3KWudT4IL/Y76V89qVvoMsboFRGMYsLT2nazDjnH/cuHuvcD6c05n9WTqF1WzL8vz//gBPvvIk+XX/KXwgZYJIJupT8zcN4n+1ApbzoCpGycYNiD/1sD4tan2hKry7sdY1hSYtCfcFBafEvxFD+JJZE3L4jLrxVEiBsLEVcYWJd0N5prSh/dxb3gWUBmMCIJXJPj8KrpQ3WVTTvEMQHKeXhXSLK1glzuNusNaxQloVM4tSOX0Tu7hbU15vQBxXA5DGlMYxYZ/xFwS4gTqWLdYKqQI9ipBOev56uJ1tryGxZ3P37NGIOa0MvKQQJQQk1Wkwou9HMoF7QQ9frQ+MFuyiM3UT/ja72zeQuSKP/0AEfdGClvAfZXIq8scqeL2dUncqYaIPd32Jo9ESRq65eQ7MZxEjMXJm12dUaPTLMxS85g3v2fSbt3ogfr1cNlLRD1hvgey98Fd99xrE4owNlKWC08XBTzeyXf4iPXPdpRkyT/1k9YxWIqVunSZ03iPdwC0p2qZEaLYNuFNwM+ikliqtlYtZKkZHrBokf4//TidpfTPQxhalYK50x+OBK8veJ4hvXUhVmHm9kj0XAa0fECTyD5w1SQ9Xbwn5gHkKEj7hlM+jnriN7so2v0ruqUH6Y3PKN5K5uRf3AQT1LrOAjGG+KMK5LQby7QvrCC9zAaQI3MLM9PhXqOCsk6iMIfB4iiNkW5d18ZCu5jloaG+YKJvAU+EaFtWSP6MLc3YZa7cGCfkypKHmzwdgVOTMvnj3aRNPKV5SGdQvPfPwBP2nCa24tG9MXxOG5jJo23vOacyk0NeL4caczezfCSdjsjfPYkj0598j3osaLkYzfymjSaY9PXbeGrqF+P74xsMPWb1/Jjlh4gxaxZdhgTnMxks0qkyuSsJIBKYtgM7x7HbmDxLImlpJqtlGuJ9ddS+75LagPyP3sRIgEG/eXGsD7xXL6rhTl7/AKFC6r3BqX0n93ojoLgfVPVao4ieLQBIdsJHewtUzM112tGseYNHr1WpbnVtdAOM+lwJPxEsSddq3qhDvbUSfKTlysfeHue67aliDa2Al4SNQxdly6s+X+DZQVdYQkXeyKG6PZgswxmW9Z1J4TmPfvahtNM+nCFe/Ch1pRN6dQTxWvQimw9qXm4/NGarDxCv6jSyZvXmc485ff5xWP/By3OeO7VKeDuGSdwjB/XHwga446jYwZnpkr2DoVG1Ie7z7+bLY2LEK7E2VdvynXxW1t5913fo0XP3An/bodx3cGuRgjoZn1qwSeuM0V3H/HBN4nMkEAe1QhKcJV7LXpFFwpcVHyYbUUAGNJLR9lz6Y0fEGoPUrxXL+e0AiMYgYU3hkywVYFwiP2blyURgMNHuZ0CbStglLiNQeubN8KOF8tBCKcx8HLwDLN6Nk2G7yqwsrDFOx2cFYnkt0slNaTfW0z5hcOaoXsxmUDkih+88oNLCEgz906e25g//ol1KpW1GLr/q3fRWAeQOabbLxSqPc+Tse+Ph1w9ftx1vvIgJIkFPnvRrq+1om6aAK80WCDOW+sfTtC+c7RivTBTwpoU2wY/IRxuOyHl9E13o3nNEqdkGkvIa5ZZ2SIT77gJG555gvp9AYrqtghKKmUH0941Utfzy37vhhnvPy1JF6x1NTO89bfzdk//TJ51U7K79YCenmO9KFPw0hujiwZdQpxQYqlrUj/6jzmvpYgEDaSEiiLoWS3ZVDPy5B9nyiUVXQF+ybxFIPnZ1D/IRm3cax/yipZE/C+JQw8ahNJYvvlrXXObCT7snb0U8eCLKuZBnNLbIvRmGM3kF1pY1v0fBbOjfDOzbTvV0Xh7CvFHgzMIFu50hv7luf1ZE9sRn3HhZQEXdvdeIL5A+WC1+bzVgZuYCHqno0bG7zjJPZ4jqtE7BIQRagIphXV7uBcGHqvqnFtq4DJnB+cTXe9sQk9q4Eect/KwEli9ZPP46xz9YrpH0BrPG+A1vPfRdNrj8Az/WitGFNN7LlpHVfc8AlMUxodYeoYifQoKt59zDn0deRoMOK2jTc2JH6w3Rvm9/v9Bxe/+G3o0RGfrHo6SJyixCu2m0GuuG4N6fFCEIeoFJ4ZIfO5j5F+zrMwROAOnEPIZJIA/r1hvIR6i4spWEruqBPBjwVrQn2om9zTZOGcqQIQxkNsovNZzaizJes3Di2EN+n6/cFK+r4auvIqb45/zTOrJSBsfJLbgW4zqJPsx/U7SMq72UwzqqVAak29kAvPNAtvHZlVTajvlPA5METpn/HGxs4pUZBn/Qjvy24GWQlCN3CtY25D928f2YwHLx8N5MZ8De+ou43moL/RVK8XNggxNlQpdMZmzarxWTbTaBkr3WQv60K/oS8gP6+K1c9yTnlzeZRZzIJwDEULmSs/ie7sBFMkpTzyuoPjf/9z3vTnH/hZtY5XKu8KLo7xaOeTOfc176bNSMauilftA5dCSxPvOv4chv0yc6WydJni5vWaW7jg51fy3EcfYEi34iiN5/bR8vr/pulVr8PbIuXj6t9oILtUUZJW0nvPGObjcVzBdndGI6pFsoKt8hfZVbtzwmdSJdSX0qhGGQExqAvEGqVH8HpSpN8h17Ou30ra4lO/9JDdP4V6uVjtquX+k2vb+KBT7mdhm7zv+RrcLMrRAMZrRh+3zqeFmZ/ZetInJ4C3mQVLGtDfEYEsyt8Md+Qyj2RT5AnPRAPoJtSsHxKqIRZx5T/O7pcNrIJs4KfU2A3sy75RtM3+NbIQzss5XW+w8l+q2ch/L7Xx5iG/f5VuMTswdpPZTe5NGfR7e/GVnNQMFT7XHn4FlbmQMVOPCESKGjM8gF64hMwnP0r+5HegU11o12WYZj5y3Wf43cpn8XDbvugyNCy+K3h0gO8fcCwvP+QuTrzL0rBEqBIiVruF3iBnv/Is/rroQFIjeT8TeDpIfGKpOcMrH7mZ02+7mq3C9yekKN44qZV7k/nMZdYRNn+MITYr2IElF/fQc0Qb+mCx7EWxfNh0fbcT/eIesqcuJf+lGXAD2myo3PkLUM8Xs3gc15sI+AaUHkKdsZzNm2bIUegLBQ/eItmE+SAJpSqKTUAJI5nUak9F6WgF3xUlfD7Vz9wOtrSZ9wkDB1mLU92UG4sTjL0e9/NZ9NKZ9LcNo9CSgR7QEMEo3rALA0a4W2cfbsBHZ0bYjSDaggkI2NMDlhTauoFrZQ01Cu+4VKBjzouxP4/ge5s6UIe80KeF6f1WrTloqw1jx94mOvZVmCulCINYiSvZKIQeBZFRImdEUAlDRQn6S5jBubT4R1uwU2lfd2056XQmbrmD0W9fi3ayFIwmO9TP5T++lONO+hxeUZddSYxkFE8UOeeV7+fgf93Pgk2bKKjGaelYAsqXQW589mF87uA3RqN8kegOp4mlo+v5xA8vZ8xLT3p4TYHOr34S3bXY/1WVcSPXE2yZOE7kwUIP2dOKmHvSkLbur7KDU74jwasa9fF15G6Cvg1xyy9Nut86n9kE/1OJ6zeLcvKYLy2n7wbr+q1IoQqpX9bSkQPeYK0IZTs0Lie575tDvc3A91bPYxedzW52c+jndJM9aRn5L1sr4IyEcyUktBXC33hI0kcG/WqpmqAr2JXb3biRiiAFDON494zBTQr9G433L4+WTUvpGatFiboo6LD3nE+LZhWwLRv4Arji9hrMs6nZvxOYI0RezNewjjqHKgSeGKGFuR76hufTRvNaUCf6tGbOp7Lojv6YzBYhRLmT9UjkzCBeYRhu03Czi7nHQz2+nL5N1pgwJ3Im+gP508bQ8enLSO25J8Yd9xMp8rqdl953J+/5zVdw29rR5bKCxYvvTrClcQnvO/4smpzpEz7F9dvoFdicW8jZrz4HV8iGAn63nTfVZ0E2mKYUa35yGSs2rWdcN6Kt67ftfWfQ+JJXQqFuqy1NizCuYgn5+0cxH5ZdRYxdhFi0TBsqpzGfshNSxc36DZRGdVVDBa5f4TIcxDzSiPqAXGcmgj6kfknhnJBB7xGF+kX+KNxjMbn0pNzRoZvIHnzhPHWdToGySTIX5sl0WlqYGS2CHkrcp7Nh/fOE1FzDxYUK2y25/7KTz6D0GN6viqiXLCJ/0BLyqxfTe4skIy2jZzQklbY/Z/VgF0OUWGVjs4E1PO8ddO1n51lVlbMw+W0CdXgbOnL2b4xY6wTbaGGEecCnhfnAfKKFMZZTdBPZI9rRr4xLaxZCijaIm9UBdwD3C6D+Yyl9/7WYvk8tI/9/K+hbL+Ve51LOxHoooTp0ckvJ/O+nAjXC9/l5flbtWT//Gs9f/3vcBqFXKVMlRDukxga5eb+XcuVLXkeXGaS0E2+0qxStWqp9vIfHMvvilEYjV/t48x+v4TW//zl9uiOodeMO0/CsZ9H+sYsCg+48svxtjzB+awX5y/oxt0s8YIysYHEFl9rRx68nd0Kg2kdWaHwLzAay782hXxjV/TzF/SiytGTQpy6kd0gexdKSVAKJG/Tb7qLOCLdREcrNicXqcwbzu1a/cnX5+8sztwTZimcyzxHSwnSil46gzrPvvyILnlRrEaRRfVK/VK5dw8VSxp4xTLw5g97H8vzpuMqfxN6koTCCec8i8i9bQu+tIc+jPeQZ5rpK0y4FiauM6AaW+dkQZgNXW2lYtW1sivs3evav1DlMBkJlzANpeHcPmb2rxDwwG91gRA6UUBeoCu8ryl+bTyFmHlN4L15G/5lL6XvQyhZHvGgX1IGcidUZKuVAyaXpZa+k9b1n+NY0pSQ1Q5MaK/Dpa9eQMQMYHaFKiKPRY6Nc/JK384d9DgiqhGynkInrt8sb5DuHvpqrDzjGun6n9/aIK7mUbuEp+Qe5+PorGaAFx7cduKhGRedXr0I1iYPFJnLPX/iFKoKFS50xhhmShS3q4ivqr5joHcwV1n1qZECWuaHNiMo9vQkuEuWP+ITPYk27bClb75AEkpm4uGx7zEYy/9mKerYQN5dxRfvJIWL9MnC5Rn2v0bqQI9xOlGZ52JASxq/QQp3BShETNVuvAfXO9Sx4co04u6qG0NVveFKjQb9PiK3jZuLJ3GgAIVKfGMYct5i+T4cCWf5uywa64W588rQEM0GQSmj+HtUKKBs5gzrWfuTWovYvfvZvpEpBvpXEDWK1JM45QUSLaMg80ILuKOF8LK63aSpun7xvvpoZJdsjpCHbQO7wFtQhw+XXlB0qf1KGdALv7wOY/9yDfn+tC0OtZAyKhfHCOpAz8QW+hEF6Hh0f+xgNz3iWb1WTj6RKyLMff5DzbrkKr6UlUpUQZYqM6Dbef/w5uEIn47/roGvFytfqjfHQ4r0576j3oEfH8crw9InSKUkrKafIZ36whtbBQZ83UIywnttP20XnkH7OIb4Six+KOb8RWgGX0/tQAXN2C0rHKRMXkAPr5ZrUJXKtkGtputNsOZzPNaBbivFcv1LqLdWPd+8g+QuqEXcWWp9c9Nsaok0imZhqAnP3MvJrx3Fv6McbFotoBIEm1r9SBt2mLCXMbHGVxYHEV0aNBXUD4dzs4X68mpxdNYK8a9NN35FtqH2FiDWu9U/GeKNftJ4z9yL/UwPpUCDXrtm7PTyZmx7qegX5VKTylYEb+FG6nlrlbGA/+7cJsyqO+zf4grrDBBQguzVsoJqJYtGdutFsgtdtoPNFMtdmUolKS/5EbWHkH4U5PWVdszFPNo1I9pgZKOAcvR/5dX8I5IxsHuoudjz+xLKGcNXYRuarn0U1BVne4gru1RneduvVvPzhX0aqEuIqB2d8mLuXPp81R55KzgwFmb1+4U7j+2k+cOI59KX2AE9Ctacfc6J0ui3tnP3bL/Oiv/2eQd2GI4QKpQGaDl9F+/vPscpf3a3bFUNbF+hy8l/ox/y8EyVRlZFdwQMYcW2euoGOl03nCg6zuNaRe3sGddhQDNevFRhC2jPmYt5yQJBsOaNYJ1kUJEh3LR1PSsErLfXLtO2RmwULkJGsNLU3A4+5cLMohRGVAJ+qwoNTNrCkxVYeqZc1QRRsacydHjzQHMG1HdLCtKGPW0/XS6rI2VVLwfxmHSgFcU/2rc+DmGuW0/c1a32en0HA8wsS8yuD6l4Dd8v/y238bF+lG/FeaT+qisC2G0aZssdFWdxDRaeI2aoxv3FQzXW3gs8NSiXMDyJarXyvlNDCeOhLLIVTxaUoxXNFjWCshW4tuWXAf41iVAXyUDaZwkn6/hVsfUSUv+fWsZyp7GWKq7bk0vDcQ2m/8BzfFexT0kl0Tsnhkz+8jEVjQZWQ6bJ7Ba7joEeH+NQLTuLW/Q/xq4RM6Aay3gCfe/n/49Z9VuFMDOJFoHyR+MOD1t/J+276+mS1D1NCZdrJfPEz4Ai7ly0Lv4vAzkDr0PZOH8X0ilszqiXQs0Y8jfMZw5KWHbmCQ9fvZhbs14T5mGQRxxk7cm6bb3kxH1pB/19s1u+MZKm1vhkH56R2dFM5pdcKc2cAb7CB1HWh8qngq4HLKVLm8DZKGCiIi8pUsaLKjCAPIzQmwHqDd76EA0RRsCcDgc0lIqxCq2o9un8307JEKv6JYI4ZeiCxp8I5OagxZ4XJJLVtdQKBDMBwgmi4RoKDyikO0j+hG9jKohlbaOWaJ1ryZxO4f8uOIRlzorAq1D0uzoNNQWDTbh0SIDG0zai0h/68h/llR/BO3AhJdG4n6pAecv+vjhNCtDTXwRzZiW4rxawlb+w6N4C5axl9XxHlsZ6VP2bUCWJFc13azjqLppe8GOMOoLVmTEuVkLWsuelyv0qIaCLl4VEqOrz3uHPZmu2iy81z937P4aLDzkCPDEer9qEbaDP9fPbqNahCCeMXagkqmQh/YWq//f32zufEj50hnFBL6X+8AO8PiGSju4JHMW4G/dQNTFywE1ew7/ot4n6+Cd0RlXImjIdoD1y/tywj/0mZFDNl+Ze2iPXtb3S1AydFKeSurIXMoG7eg609lstPTZC/bRTziLyziMkgtlCxOXMm5NW1QPBSTddy+m/ox/ymLVpikE8L04k6cBHZkyq1Aho/7742i2OoZBdpEdedjL9YdVul7ztQqoj+prj+bTJJ3fTbrh//52MxTPw0j+fzhU43VkRhEEu7A889qUq1gSezf3lhu3X/Rlj/fM+FwlxvMBIq4n/G7g2fR1TjTaQwZ00JAyobQiMx5wYuEgoeyzxQb5YYz3qmXiWKbgXnKw9DI+YjzBNUPql8om85Gsh8+SpURwdGqoTg+eTOJ975M17/lx/aKiFu+SohpTEezj2Nj77yDExrmjOPP48CzUH4bVnXr8FrbuLimz/D09c/xIhuCShfSnmajzuWlpNP32Xi/qZb5ESpWU7fN/rxrpMSa1FdwTZOw22E93fT9dypcRqh63c92dM60S8ZjOf69eN/xPJSxDvNLrozprkIqV8ymGM70MvGI8SDTQaXe98KswFvA0dK6yn4tsRtRE0GEUqYRvApYcKMMeoHvrIO5pxCQF9AFOE8Fix2q/vJZKMkBIUQd478LFLMK8xELbZXk5mb7kvFz1CB8iZKbjGNK5yHqh6tnLsygs4yTUsY2ezCPYFVbfo+dG02cLXcwOEYMqijo2T/WgVVrDmlEuonDl7L7q75hbCZf52L6f/rKOaajgib50nmgYAWxjIP1I01xkzhkxWC/PH4XgaxFusRuO928r8IE46oc8ysA8Sa5rqk9noKmSsvBm/I/8wxHkOqmTU/+DT75P+Om24p7wrWDmpsiG889RW89Iwv8bfsU1DF6SuLbHP9Nndw7N9+ysm3XRtUFgmrfSxbSuYLn7T7x3rbbFQfYo2SgZci/bYRvE1Sai2iVUsSAoTKw/EwXxBXoCzslvDZ66Zzz0bUxyXLNmbgvbgL9ATq3Xsx8GiYYTWzp/QVwLB+y+myU4tA/eLzMY3gPbqMtlvsx15ovdO43x7CjEVMBvGV7WaUKqHeZpXZulkbDEoUdLOc/F2jmO9K3JtYYcu7to0kBC0dRp0bMSHoCWjwyybX5D1YBlJ/3B0SkE/FFsyS+POnPej/q3wmVs4atDPBtND+xkRjfmQTQaYdK9LBO8gGrrhspYwh4Y808IqIHgN/3JQwf1xJ3wbQe1arxviuAEukrjyK/zOKGZZYyQiyU0tWrQPvfZyF+1bGPFAbwvlrbTtS6AOaAz7ZuF4GKW0qF/mhyJd6CQ0qh5lr4OIKLrm0vOlUml/3GrxSn19ZQ2yBmeF+rvzRpTjC0mb8Xd+0kKR8V6W5Z9FzUKWCTwI9beON51f7WDKyljU/+iTjsgyFkV1mjMznLsNZuGLec/7FdQUvZvOmIryrMUhuiCSwwjiNXOAKfL9c6wRrafPQn2tB5WK6fsWtKEH31+5J39dt3N+MF15RSsV9sIHsQY0gafpRKn9IFppkIv5AsX7MKqK+JUkE0GIG/uVhfm6TKMq2Uc4fsZQwvWRXyHWiWsxmCyKc03gfHsKLRA80WcRdv2NzHdHChG6iTWT2UrCXpILFUQSUtUJr1E/sXJgXgnlXg8HrtJRVPxnEFMq5gcOEK3EDb5jMBq6UQkT6XHkUXtiCWiEZ5OXWPlurVf7348Cqbn9NYCeREle+WcHQI0XMJ9ujWQGlHr1pQ7dp3I9UwjygUL12x11VRfCEbddTzxd5UUH2rzMcNOsm+b2eQoOmQxUEvCwdwfTs+MwVpFas9K1vjjIM6HYOv///eO9dX8Nt7ShbJWRbo4pjZZU//3tGYZo0V1x/KUu39DAm1T4k7s/to+XMk2k6+jVB3N8u7PrduSs4f80g3reEIDqOK1iIOxtRH15L9gAFhQ3k3pJFHTkQ0/Xb5F/L69ak31HtWDmrvJ3RFCF710ypgQzet6d8POVyfpzPV9xAUYqSDCKCTBTc1jHUKfJZXItZrXEvpJYw8FgJdVlU4Sy0MM2olgJmTb3QwoRUOyVS+7f6lDWxA7P9eDKF+q38fm1iwZl12Bcu8Twsoe/vrs0GLrPIiknZdwMbSwpdKe2Sdf+KCeK4hmghBJIYlRrESHHTG+0jzIsFfRYgXJryMoRLEVlrGlFSjGBtUwQ5I14W2Wg2o163gQUvOjE2LYwZn/kj7PjC+FDPjiv0rIdJYhwfL9F8/xOvV9+ozg5frGueh7NQqoRcEfSRUr4ruF+1c/ZPvsyB3XfjNrShfe7g6VHO7Ru6fkstHZx2z/c5+t5b6FdS7cNg3BHST3kqHZdeYh1Hc27EmHWsshYpD/c9Q3jro0zMqcSdzahmB/WJnsDqcqnwcsVYdP0YPydwn5y5hE2bqxV0b6lfhIpmuYLjRoKgYidC8oc8110r6f/rDuoe++STRdpuGcE8KoprFGEvpcRs3eGTxbVkLWZzrjCFgudAa8FL41yRxzzWHCEcwG4AhBbo2I11Rguj4OlxXXDWiqMmYMAw4QvmByKeb/ku5+xgF4MkCU1mnQdu4LKBqduKpKpj7CYytgfBLwv6BPdv+U2ejBtRUD24ZzEv/VtwHVumOIGfGGMCpwp7sWdqAX2DLnyoKVoyyLZ5Ce6lIl9i0sLUZG4ou2YaeEoh/n1887CC+1cGHibfJFbvMqa6pTAcWyXkiGNofc/pQZUQbauETBS58po1tDDkO6bKVQkpB3H9uulW9t96H6uvv4pBJUkfAaGJqD2Zr34a3dZpSU52OVlaFmEM10oG+yRbVZgVRUWPeK5Yy0SJe7mHc0cKcoUYcVcSbyau3yHMlyQbtVqu36kWAA1vEkLmKNmgIfefxnzbjronPIeyySAyccF8uzm4XJR35Qc1d6D2LDJxjFxnruM+LI16W/irvK9FbBHPxAeFhyvKmmu2xV8ZEc6+rJ9LhWQyeN/bL+65gfvXf+yHvshwry07GDUkYtbrcu7KtYCnIoVzo7iBxRpUZkz61lshhe6m6ymVZAN7dk7qbe7fSHHMVskxP1Zc68sug8kmMYBPpB6Tf/bicakBrpfT9+0BvN+1RYs59sONOtAH95B7w1zTwhiruL6BXJuCvUtBhZhYse4yXjzMX+JYqudaxshRjpi94iohE7f8htJ9j+DoFoZVK89+/AEu/OVVnHXUB3GGpaRbZWtlUO3DoVlPcMV1a2gbGWZQt+KI67e0hY4Lzqfx0Jf4VJWkqvt489EVvIT+n6yn84s5nNP7gqxQJ+rGuQFWFGJSvrT4cX/eQyPoD9hJVLWAe6F+Weu7kswp4geIkPnrc/8NYvITpK63H7s7SiqRn2mcbw3hna2gIRLDqR8fKY3QUh/4OzOlt5khAhMLRiwdfuynUMAEfZD//gay72xHHxyhdnNIC/OcbrInLyP/v2WqtvivahTd14wa19Bc5ZcQBv3tHfpo4pwbZHyqf0nWocyHwwOjUrkbph5gYVMWSaSffeQp6f3ZMjYfsgjLwVoaBHvIP9IHe7D1kfXkft+OelG58o1Sfi2DSucDN/Df7eIau1/cwP3LWHllQ9y/soEtKrS4f314mBafETBRAHcEPxSnG+ecEubXU5gHVDlaGAUX9ZG9HvJSai9yzHqVoXzBiVoqrGWl+PtdX/Y6qIfll1URT3oYGgssTM+VnBFUV0Oyy45q6aDzK1ex9UX/BSVDyrj0qQxvvfX73Lrf8/jZPi/HGa9MCXQ8j1JbB+//5eUc9vd72KSzfp0VUxqi4aCDaf/gB8GVfV9deK7mFKusApBHnTOAeWkL7CsCMGomr7Ww6RiLrfEwros57Wn0Dklsh1TrmNlT2ItbOpoUuaOkFJjEKpZrm3X/Ov2Ym/dmy8YduH99iHIQ/G3rIxvICbnpUVHobuTvsoA1waHryR6qyN8ZtpO5g9mRcN4AZxUxd0RU5pXUS1Zw4Vo6friawf5ywrmFhpKhaGpT/5dUN2qhJeyObdMXBTDi/fy+20zumBW4lwxTkkD3WbVMiJt+BSrVTfbNkP+tnUPzXhGUpA/5uSyYUxJp8uMU6kVRrNKhGxj4RJxN1tTsX4+iuH9DUvvp4G9ihzH3LKP372Elh6gelN0RYQUpxdY71pG7Jos6sVzMeFCTHUk63LMX84EcfKga5UErhAr+cRel0A1xkh3tyb6l2hW2tAhxxuGcbiG7ZhHuq4cpSYnBObGAVt9EFlYJed4L/Cohg+d+GJ1a6CtlRdfh0usu50/v2J9NThdKyrvF8EL7cX+NHax69A7e98tvslVlSPvz0kO1NdL5tc9BujnI+t0NXb/bI3SZ5MgPrKPr1DTcqjGy5Y46wCN3Tuj67cO7eDn9v4lqbYkB6wo0Z/jLQbQYC+H+E+oJn/uvjPVA4j9MD0iZMOEeizqAJAA4JfVlgTupM4ScjsvI/3Ydue/nUP+dL2MJDiue5NBL8phzL4SzV5cRzhrPpxKqBfLs06rIZ92YCuAU13X3E/kEd4zb7ffF3deMs89EkIU6q5BnlDCEESkqEGQn7irw592g/dngu4G9j1tr+06tRTKHQzdwkA3c+/cYSrE/34sUXtSOXiExw1IeIErZSjC+x2APlqdgvfAdJ5a/6eGHiqzD+eAo7lEpaC6VWWfCpMM0vGcje3wNNgtV2LTx4nEUsxhQwQ+9UOZesYxVevvxom1SoIfeNJUbdWcI57SC5S3ovedCzoSojdbpVwnxaP/A2TQefphfi1drxahuYp+Na/n4DZdjmoWyJXpfatGwnUZypa1c8cNLMQW7FCgHzx2g/eIPk37as3fZah8z3Z2toPf2UbzPSFZw1DJxFZTA+UM/+QtFQFfTHRryEa4n8+w0apUQMZdLTgi5/4bx/jlBx22hC3maU3z+vAHULwcxa6NyKAbp/8Y4mGP6yK6U911vlDBhkHUa939GMMNxaGHSdUALU2JQShRmKiWC8yj5CmBUGFRpHOMVMUX5OZtHeE8dUHPuSkhNSU5S4gY28HtbG3jaBV/cwFIbOMwGXhg7DEAdK9m/siqV+7KNTysJLZT8Ps76MHmlMdEAJ7G9/Ajj+Fay5R8FzKejMg+ULC1MkdLHpmMemNy8qa216gcX1RWFo3LHiUam4JGSOOPI5xtUYa7kTHjURqD7ipkogg10fulKdGc7eAVbJaSDE+65mVPuvRqvqdV36Ua6pGdIpR0uvPlTPHX9PxjRzWil8Nw8Ta86krZ3vstSvtTV2lsv8ESJcmg6vx9zf2uEQN2oCPmyipjxEt5bDoCCKBzVjOWY3DE5p0vbrbJWDp7wTmj0NXvz+Lgt/TZd+SlfqRTXNfDdcgvTdkJMSJTbxlEny2er6kwBnOSHHPhXCfOZOMK5BdU8gevTwtQqA2/6ZogCWGowqDab5BLr5OAhnZG497UuGbFGzOoR3lMoidiFYDAL5adUYZlMlhI3cCRBIRaWJ2QDq4ju3/tZ2GbJn0WRLGdo8QneXcxfltN/v1xjv21eDJWzE2aX6pfKof0s4O3gbxJb4NIBzLoo7BMhRVcznLiBTp8WZrp+8vyk/uridvtTg9SJjt3BflF61JhHSaIM5oWcCY/aLVRhlZAnHUDH5R/F+P0W6MqeUbzmNz8LKuepqNa/BhaP93D0fb9lUDX7PIOiVDrLl9B51acDi63vHErm5/YIlbFl9Ix6mLe6GFfi9arh1pBeEKVsHM5fQf9fbdZv1SyMNlXd3UjrIgWvFQLmKNQkdidf1Hjfk98j8hD676ME3wo4wCJXBvFLqXlwsmFJi7i+65DKw6c5aNomnInK2eW2oo9dT+6loTV59poctkN1BELWR5z3qqXqg+N7HgPlI8GcYVu/hXPRpXTjUFA+sJw13+/HqdnAQu1f5n7+3zsobSN/juA+lBKP0tTrbRzvtnbVqs71fENIJaAxXVOVJ/s3X3+SkCMXLohKCyODIe2LeXWp5QSc7pyayVWF2ZFSWw5iWRb0p2m1DDLzB7W1VIg1zhhaTjmV1DOfivHGUDYEt+CnDMS/5HhKXMcG5Th4ZoDW170RZ8U+UCwlrt9pcOIkQfRdY5g1UUqERXH9iku5H+9Xy+n7lFy/BpmwooTh0vi6DCpbiEAELO2Sqh4l+N1i8veFyQTlbhRWBtmLvgdLcGtrdCugFnN6BrVnD4Xj7Md1NRhFOK+eFM4flioxUTcA9kEukYD4ndHC7MEWSRjPO2EYXXVb3yqrQ3WvmWCWYbabZ2o5Q//wLCm0zNlobmBikUJb92850ukQ/oZH44WMAUnix85hppOhd9L3zQG8u8U4MF3fbk8Lcyi5N9przNpGc9Uks03XDDp8Xsqn2i9S2zKDG54wZirlAtSy/ExFqjFYkhJEzQp2lpO/sB/v3iicTTuDWI8aAjLk/gLeadLLsrOvQRq/tDltMG8txAgCFnswmO9M/hoN4cLiYL5qefEiT+ygGK45UwSglKtjbjBde0Ph/K3BiMI5pIXJop6ziOzJ03B2ybWlxFfVkVhf5jesWy09NUBe3MBWVvik0OXkhsxD8cVqzDGhLJvuu9uRP5fldQtrRpfgz4vo/7dNY42SD3bZ7haDg8KcJdWFIr448REaB1b/k2xG5OcceFEMuxlmx0rhB+PU6N36wySZm1Fgg2zlZ9HgvLWEmUgHbzB254hwlBiPIrxnbwYeq7brV2CvaXpY8LI29NNHI1C/2JhESUgZ0KSljqcgslUyXFjSqJuH8DbEqKLiJ4M0wCEbyB5sBdis7WJlBriB7O3sZknzTr6zTThr9HleUMkkyrWFFsZLoVb3k8nuTDgni2SCHcBms6j2KbQ+20pDptA/GcSTjUO5uSLZwOJum1obeGeywP/cUHhRDPJnv2Z0Cn68Ham7Lxs9zIJgg5eM8ajMA0vpv2MUc21HNCvgNi9KE3xAqLnqzYuyKyJ5wbsZwiDbZWz94xjmApmccV0dUqOzEyW1Mq9ZTt83akD54iNcJAyeVDOJGrMoO3kRKD9ZzOZNNoM4soIbJoNIeSNQ3xdNKqpiq2wQuUa9zd5z1neUHqSEkmVnfw/j+JbQe+so5oc2FMCNUPXEdKCWDOGcP5+Es+2E3W5nX+9QU7KB3SAbONjD7Pz7Yo33awPryLWBI9f+9eNdhzCSz3XDjmKGQx7DBPGYBxpwzh/FG0lFZB4IaWE2sXDfHTEP1PEm0zAPMS+EeIKqw4+xWE7+8l7MHWFmbZQTxRomFCnDmH9p0u+cupuvJkI+KNntp+Dlw4G1KlIVE3kQF/MdUUxPCGIIYx0PgCPnGpxvD8fjhPKtgBpz9NagXvGsU6dEVHZD4XzeGGYkHUM4N8I7usk9bS6erQLYEk2+cSfWeTbTPBhKFR7Vplua59gRM4CdV/rqiLtQPxvYPLE2sNqR+3cDS1oMvMxm/5Ybp/7GrYj5yx30P7CjmOFkExEPYajIIrb8s4COzDwgJMwt6LYC7kd3RAvj4vXWqiNMBfM1DKSWBJJGJuJ6fESGzqmcqXcBXh71uh+oY4SuQAUlhfpSYzwBJ1m/Eq/xgyVs2mxjebza9aw5TXb9bjROPrH+iXL6lxXkfyZWSRXEpblxDqGykXOXs+XPLtzYjvKtDxEaLMqn145uL8BJcYLV50I4i/VlHO+qmLQwTS5cspMdb01mo6bUOyWWKLL8lzEtxK4GOuOQKitMWjZFjagGqQpRySHny1hMxNO2BbLxfuF/fiIsx5534xDeqJRtjJINrJ5YG3j7V2zrhY8+vwn2KkSoZiTjRBqmUT8WD8lOanonCuAURMjC9r8m/eNS+sQA3voozAMh/2gz6rXdLPjPf6eFEWdEdXH7NgJ41RtXWMvz2dCATJHxIIk8IhSqua0KckbClKgQ89+sLYQbCSqCDN6eChUUu/NRU2kAqoVwF/84mazU6BYSt4ilcvyUfIX51wayR4g71KkwK1msjYHSZ9a6gXyIupYrkVAe5pQNLLliKT1jc1jjcjr4FrwBvEsGUG9sRC2W0n/TbQpDWpg21Kvk/SryP7f8iuL+F0E9FLz/6j5rgdS4Eyjyscl4g+/rXJTvbtlWbUb3DOPdMx6Us6pofohSoVBS5eKZlk5ot4XEmgqPYyuZFhjYRpURWpEV+bXdZP+vFfUy4YTbmaU/zAaeWhs4rPbx79/Vx4ryL/F/043poJ+Cce3u2P3rd50Gn4cyQTin1MJy1XXCcJo9GcivI3tRG+pLtj92CtvH4gbW47iXGjhUbjllI12zPZWWkuYVIOAnVWmXpiwMCRl0OYYFG1fqPTiEWlGpnAnWFVUymAUOaj+7SVa7hwJoS8SrhZVQ9yQIJ2j3DM/3S2xUGXYHXkqhX5NBLypXV3JKe8QFSwNKhP+x1Vh0ZbUS7sGoEzSocSnBzHrvQcZfreB7ZlJJqhuEQfSdDPZ1k72wBfWF/iBYflqEFheFusT4eTpB5ZPAXa9Gqyyd/S5sp2V0hNF+BxZVUg1E4S2dutPfGcLyYkvovRGQY0b4J3ssaqb0dwc649YX3QVhPN8A9ERMlmfUP9LwsgjX8bOBDepY4LKpoSvhxvFRaHJRR4m1sFztXxm3zSip5frX5TvO/g0hSSzbfbT7wvgJu5FgQ0We+bUN/PWtbejnjpSvE+zTwmTQB/WQe+NS+r7xcJBFXhMZumryzlvl3zhk0FZhlYdpMBSXAP/YWTWTKef442sF+Q8BclSE0LDQQ9ermuEGCT+KOz7rzj0VFX4xMF8BtAmPybTcVeDH9gTxeOoMu3BGPzlQ2owojYNVOMYxse5v2+DXWzYoqQ8sqNeyXr5wXkL+KwOYP0Xk7JJsTOF/fNYGuk6VBTesfFIrBWc9HcNgeuNyDIaWSIWSgPJZQ6gkO9So0tI8hFja3GCtfAImrW3uTeIGdsqQr9vawJLpf2A3ue2zgf2fTXQd3AT7SuJShI2b7/5VqJ/Z8bIzxWR3NuL+G6Ja+SfDjX5dMuhzYlip1EQgey8ST9BkRZaawMg/Lt5W61+ONW9FZgaVo9TyCkoVzgTauqArljPzX0AlLuBdCuGOfSOZFzWjniPWtzg8fgIRMLKLrNIRezLLebJINcIL1pE7OHSFMIeWlnKxoBrOjlrqKqSFcfA+vJ72rhqQf29rn4yHA3hQDLE96fgxgDY+J1AAb48Xq5psKasDvw+AlnbSvrtGCMm3/dHGiS2l/3ED/xexNrCfDawwr5TPQvfgZCyXd2xT8N+y41Lm5QjGK0FIGbWTe/+78pogHi3MCnpvHcO7riOIOY5AC4PXgVqp0O+3iRK1grE/ukN3bMykHz/ZTKGe/ESLYu3lzEzDbaqvAPqscrM4V3b0+ma7DQmqztxhcM6UiNooBdzrEWFCisacOVtlyIIR72ejpeIK58X0/WoEc0MmgnAOaWHEPQ+p/5m0tNXEShIGaD9qCz3GsQCKFUHOfmof2YzQ18TgcUsESHXHZXMDhcadhXwEyrr+UZRdUkgK7QVhHhKH7PerJG6thWaDOiqKJSckfy7Agyvo/eN0FYMkMShC0xKUoYWB0vkjGEn4icQ8ICwMTfDu9Sx4ctA/YeW1qsIE/3jrgMEK4uL87HTgufb3OBvNOZUz1X+ZMoXmkpg5JIZOyKHnHULql41k9tGYVw0Fjv5Zrz1bDUi7pf0KjhNKGJvNVjOLe2jtUpAp7GShLQcHzhvFCJdBWeGsbbZeI+rMHrL72/tXfZEMrToK7qtgRgtRuUmjFk+gniofXLsreD3mJyQkYodjKqwgpHFvGozgBrYWdhmvz5VsYFHs77Xx7GkyBzWh9rWhG2XJn2WiKMy/1f59YrtlbKuuebkTrTPmgeUMPVzEfCYe84BuA/dj1iMwJH1vdZeqKE/K/lzBYB7Mo+n4oSaqEMSbPqsHWkOrNvMA1ROGNrmn9Oj9mInhbVFQswrP8xU/97GH8Pr8eM4E8wihK8egT+pANwtB8XwNnLfCy+tEt43jnWw/ng3lI3Zll5BqYSl9DxYwn7cumnK7WF84N6Mai3CJCGeFGY5cYDgiwixDjbqvkvgccQNKTWfXJhicME/H066MMBs4qhvY/rHUjkqDd7T8fuCk7DjOpgWW09f87F/ZpLlov/bvtYnVtwLPfix4kjDWhruNFqZcP9sMba8NfXwPuYM8HH9hr/K6YET+2aK1D8aoHR1CC91Qkx8DmHmeKH/zZaOpq6p8AeO/upmhyz+OT01jP5sV2GVPwvbzp78T0zs4+XmCuod14bj3s7DNQ50ku7xKKTjqBTqIlZP/nfJnFrVaqpR6VUB84axo+lg/ZlNjwC017QQOaWE60UdtIPtCUI+nq+8KttVgJu4fw/SnYsbniGJh3TOvtu8+MeTMImShFlOARrWOo1ptDOCO4M91cQNHmfSWNFj+55NCS+6X4UmNHhw1HkF2WI5IucYD/6T3T3KNExPi7rKQ92R5HX1uzTgQuSDxn8I84KFWNwb8qmXnsnxHvBKev9EsCcF3WbaCCqDsz9/b6kGxbiFtavI5D/Xx8pxROUfnGlVfYHVrJ0Mfvozi3/4CTqp2NYC3gxFl09EMX7KGwi9+g+rMzMp9E1QNvkk/i/fqdp8baf6UGysTK+d2oPZaROFVVjGqy2cKhfMyerZ6qI+02IW73HlWUArn3aWSABdQdFRPyQ3JfpcyvEVj7rXB/ZEXalEERoKEnAM3s/AF8pnEPFarfQnKQwaRKO4O3nThVX6fFiJmA8s8GsNI8P2B68juL+NkA/kXNqP2mYggO8TCE1h6zPW2jKWMiR3erw45POsAqr3CE31r78P0fWMA7w/CPOBFswJKEOZhDurtHma4BkLUk38cPKlfLAUEYt3CsiPISSdKYlxIgk2do/rvsUGodwsMvOXtGHfMWuBqP39UYyOFe3/L0AWXohuz4NYV7VqCiILBYM4Uwa93EaFrXaJSZPTt9iOv3vtglOyX85j7o5QItIHaEnF7iIFXxCjZFwf+9Qz8Ksi2iz02xD2jipTOnU+7810JwSqw80za0A28D/2Pu9HcwH7VnbYgG9h3AyvM8bJBiFgay8/+Vdb9u6N7hQv4VnIdCpr8KK95sKjPEiqSY2F5N1G6U+hzhSQ8EieMLfEJvBVUa1TGghjt8uTnVvr/XsA8ItbhmCXW9ASIN2QPSL9dnnMnFWV2cQWw5KFUA4W77mZo9UW+Vc5MT/49I/jX9jzMSD8DJ78roIVxdhX1YfdAaJFZT+75jXCoKBEx6u/Kl6XXRT6UZuOIGWPnk1M3oV+w0VLC1KsFKqSFeTL/mHDQ58Y51yrtUvmiFrAlw9QNg8HuPFaiXhhH1II66jGyR0nA/x9qkLCSYHqoMpSeNgZYYg+ui1T0205IB/0KIX8Gjoia/Ru6f5fQ+0d7rZ0uUgUaJFcknSwp1UEYc7yY3ltGMT+OyDwQEjSrWlXWMeBIGVCNusHWLIyluEypl/6+dSzYT5Tcek9irI07ynioVJbhNZ+hcNcdKNUIpRpZ5Px9o2bwvA9SuO+vKCUJQ0mYz3xDkAVoThdahqicTyIE0qA6UKkMypGfs3E0xCcF88Sl6mLOkF/q2QIV0sIsYetPRzA3tUcghw5PrdUCqWx84hL6/u7C3S0o8SvEnuTi0m6BL6wnu+K5ULRl7BLUHkZIvA3OAvllZ5USLCm07CV+NoQ3EsUNLPF+Bp7RQO40YG+h/YmS/RvU/g2yf22lnp03Phhvif5XXYS0MOeOYKTUY6R4QP/EGrYJX0643xdFLq4nI4xLbUBl0rjfugkarYZSt0pgTQSgTEktjD1FRf9p72ThPbehGptr0HUeuquLwu/uYPjKL6KdHLjSBYlcn2fUL+46cssV5jViLbMZWeUgOy1dwPyrH/MFS/xTU/dq4KKWAGT1piY4IGKlAYHsDCWQ+bgNZD8M+XV1Wh94G2eX/Exhzh2HlziQtvGAc+b+kmojslpswHzdQUl90FgIiWXb0MsN5qd/o+u/nkZvt138RdjXs2t+l4AO+HJ3isnawP2Pd5O9sy2oDSz9stPawHYX0GEwF+vo3F/i/pUr/CRK9q8ogPU6V+crpK9lA3Y4Qw+tI/fZLtQH+iKW/KTGG83lDPx5A7nftKH+U8rWxSlEIPRYUs86iz7oQLJfOZH8m6+d3GS49TaOaqYpGddDOS0UH3iQwXPOgaYq96skbNNI6dEHGbnoKhTWaJtgvsEX2hremEG35TGumPijEi2PY76wnPwnmEWsJ7elEfX18TKFzbejhBGh0D6EeZOCj1rrU1XN4rbqRYOhKQfDQpdQESuLXYgdRf6+DWS/nEW/vS9iv9QKYbWRFrxrB1AfaYA9ijEThUQ4S43RdtQzcpjbu1lwmmLrr6fEe+mpIWuhS3yuyVp3FUSMqQprA18XsTawP78cVFuUi1v3rx7De3iE/J9tv097aolCQwOkkkHwBMz4dVgCbz1A6eP9OG9oRC2OO6erjdWgLgzG1JXAYZXsekVO9mPcDvQbriK34JOY0xR5IZn2jRthYYATtoW2zJ2cqe2Ldl20yjB65TUUf/M3FM2+YlgVeBJr2MbIR75G6b5HULTMLu1MgqpAlA0bv3OKpW9QEWkBUoOYMQfvB6JM3R/En6VqfEgcUEpR+OkApjdd3kU19TmVPF8J3rKBJS1CeVOjLDHl4Kar5aJxSH9EnrUxwkJZS4Tl9LIM9IP5YisqUpbyjoSzKIEp1H4O3q3d5L60kewzAh5Df4cuh09MbE+pRIG2lQWS8mFT4ZWxAG77mtCJ4f4sYjawD6kxG6UN0rcBS7q68ckwIYH601hl/PmZwnRI9ECyukxCBSWUZwQh8MbSwriw2iZezPWc8UTuddN3wzDmz2JkqCTcxMYdu02oI1KoP24ie/ZG9lgUyhiJg7Qyp2I5M1nBpPJ3VntN288CTkOhBnF5Pi94yV+m5n7cJIgLuxsyjeSObEM9SVx0EV2qXitKbPO3L2HgUYkdkuBdcRHW+JD4ArOM4a0K82MhGI7KKyfPNQZeBrUXjB9DDbPEqqF4hMz9i9m8qQQfE0FYicJVC+Hs4n66H2+DEMnGzNTbJpzFeuuC7kCd5qL+uIHcbZvIntVDZlUPmb1FSbecZ37B9ZiHf47Gq0vKnzmA1fzMwnIxsFOzgS0ptIy5sn0cgxhY5qGsmT+eSjRe5uqzQ2UxTxB0iArjOWeEsL//Qf6rA3h/isI8UEsoK5clRthBXSixiZW6bS3RuHhOFrSihcPwr93kvrOe3ClryT1/C11LrVGhIjkjY9mGElUsZ2YpWK6G4UN+9yRzc57CBt2aM1SM8jt28CsH821bC7QsaXG1kcJ8YxzzlpjxIbY+jpL6wN+1Qe/1DF84P0bf5/vJntqKfvpoEByt59IKuJLBvm5y5zehvlEIYnRit8c+gxnAiJaWakWtclCrxtGM4w0rxge6yVkO6cqQxoj1qkMaOF8r2swFwvmsUFdHdQMT0/27lCV3G/JzatVO4MPnRpWM2fWosz345Vw3yGbvakXvjzeQvTGDflV/hSEwogQWrZxJwx4dqNcDrx/CUMTke8gNVbKJfSK8llHhSKhADs7/bIlE95uXkExTMYVvpPOZCnX4cKDFlx3AsnWX5I9BvE0teDdZpWDWdow2a1DdTv9dTyb7lxb0s2IoRT73WBMcGlDC9P0+rH9MHcK+W703jG9En6fh+rmecWGW8lL6vrmB3PGdqKOjxo3u6HIioEUpt8kGvqKWQrU50GY3JRVD0pkKc/3C6guRXkW4MZpA32RwB1OoDik7WAUl2k8cm0DdqHiwECQhVDcON0HFMtVR9P1qPdkfdaKPHZjjhBCByPk8vGMEc2gj5KTcWyVKlh232xRB+5mUycg6qCwzhFyw0p1q4qJIMKdw0ae3oVLC5hhFwIuwEJJYhbpe4sHCGo7MLhy7cHy3Ar4oISXWLkasgHOaWRtH4VpM7w3DeL/qiE4LUzM8YOMTx5g4bQiztmWGbbIZ5I5dcLQoGyLsxU08k0OuUd0nn78IMmyED8y38KkobsG92NoD6tdRagNHhCOlGTXmR1HcvyFdjcHLalSTxBkmltyawZ/TjejzRjFjqRi0MLWAAk/q+ebIry2iTkmhhH9wRnRA28kZIwrhTGWMlTN1HAOYIMF2sHU33Q20LdDwWqFkiLqzMlaIK9T35lB5srs4c/VgEKguCSJR3deShCALyXFbfeobf/db1/MwpIUB55xxTElqHM9le8Lg8ScxsnkCfZyLGW4MSkpVRTG1i7xYZmd0JPJ1G4QkXCyiXVbxioIwvum6agy2kPx5AvPQAF1/sLIjklLpYmTRThS/GiKMOV5I70MTcFV7kHwxpxuoE8EVK/Fyem8YwjtbOFHt5qQaiqmMbT9+rwpHxWMzEVAJ5gLWtN/w+g5UVzHIiFIRqV/UODywmN7f2lk460JChEDghpSyVeoXkgwSlbxanlMUFaG8KcHJkx9XFVXdOYe0MMvY+scJ+EpHkBAyp1bAsE17svXeEdQxCjNsLYGJS69+EWdc+lmSE+ifD+ANpWJk3O9svAjVgHD/SaWb22J4DlKJF39WsBqM8PBpCpf0YzaJu36ulcDDoSRK4Eryn+jHrJGCAzqQPbuEdT9RABPMKmwCR0iM+ZZCDO0nLOCu4fuSlVuGwqGmCDMZU6ive5a4LOq5YvGTklUunPJnFrVWs3B4oGC6wVpXAxeNBx8ZwuSFFmauKRtE6RbhvBe9twxjXlHC65ZKLaIEznXbEvw7tD984sWfWjfw7VGzgXcG2SyM+NnI0dy/O6gEkmAWLPvCwycsCx7qQlsVas4VrcOtEricvvMG4exmcNKBcjrvN5uJAphgtiEma9NN9iWtqGdKAkWUTFpZ0G1a/YSH8tkH5jKLNhRMLg2/HMY8KtmFUXeFASWM8TpQey2mcHQ1Codby6LQbWiHVOfkx9V10aykb4OLuqS1Dlw0grDe5p7kfzuC94JRvNtyqJS4qec6VjFBgDC7y4O2CrKB5XxxA6uZun8LeA9vIX+PfBbFYj9JV6NaGmKwFOzi8LV47VdfCUJ5qslnGsZ/LqP3ywOYPzdLTlYdzOPDrZxZQu8nBjCvU7AlE2w23XqQg5UiUQATzDZ8IargdJnZMXZ4wv0n8Ti/XU7vQ+IqmOPdoU9JsoyeUQPXSqHDOBYKUfpEYSuh3ia/hpUuqtU2alp5O/XZPN4jLYFbzquXLMK9GXjsQfIvH8CsTsGYuGtk42CFdLJ4z/FCoyAj/783osIglSLkZwP654N4g5W6gUP3r4GfC19o3NqsCrclII9OxpDAkiLWikHET4wTzlUD51BHUFbO7En+6jFKh45ibpS4QLv5n5eKYKIAJpg1hJQn61nwZAd1pNTHjcmjpzTq22FtWOYelond+85gTNoC+e4IxlhKmINEIZS4QuoYYcmiJWwaUajznDqyioTJNLJTX0zfheN4B4/BjxpRSoS0tQjKLr5aQdwJYiLuexeXoPTpHmztMfDrSt3AQciFIYW+Ie65wfmJC3gHMLVmHlhG3y9G8K6X+Vsv1nxllcCVDP5jD/qOHke9voB5qNMvfOsrgmY+KYPRFlEpsea60Y6I5dgUBsd4sY/IEJ7/qG3ezae3Fcx+inu5I/xehQLA7vzNSW2oRrsgE+Gerrg2B/B6myn5QrzKFrMZFQ9fQf9fxTJp6Sr8+LOI71JKBSkXc8ZOKiSYCvum5orWUvp+OIy5vc0mXkR95u3bWs32WouwaAmO9MlCeo8rwotHMT8Ri0InSgiftbD7WwEt7ZZDxlIotP0j7vNU65iNPqwGKhyXsRdF6waWjd91Yb3UmO/UlXjVUXi0QPOd9rKx2uFMbhpmpQ/j3Gu27zdD+R+LeSCopqPOG8eM21pfsedl2F6hcKm2DDTB5uR7G0kfOIR3egnuFnkuyqBQfTHZZokV9OWM/X3O5Ux4RDDjGlSLOHukKuM0Bgr7N/+7Zd61KH8lqVja0IYrXRO8q53C9VMH0gy4IxgxDkeAas9M316/zfZnWkqn1r3MrQk8jE4HwbbpKDb9kn1bcUk6LaWD20c2M4o5tYASyZ6OsgMpgdOJYivmRqkbabn/5lwBDC2RYqnQqG82wmFjkIrqG5EyQJIMouF1j5G5UDHwqHVPueHf07bsT5RRH8wSIdCtLWVFyI+m4dwC5q50QIMT66YupIJxFKk+bByYqdQ6it7bgNuk3u8w5gQPjjRwQCu6UQK5/YwkewRSeVIOzMUWPnwvwWPUJyThScalVFBxIsoM+Z6H8cuHDcUQtnajZxw/G9gdbUa3lALaqEgQ2dGOYgLvZytZP1aJ7DB4TWl05Of1giSBSvtQ5rByI875qfO+WNm89+/nRbxf+GzjNS4iIZu5gKi7728byH1uAep9vb4VNx5cu15Ju6vdPmxykWLTCPAlOTaz4LBRzHEevEzB02TDaRNGpsiYSTkz1zUGp3+foiPSQPFPf0Bns1As+CHmO7W4pRso/vleFA323B0rf0VSLCwM8Mq1v0IXJ3xqzukg53gqRZfbT6pYLDP9pWs8xn91PXphFtxphrbo32mN290d1CveSZt3ZTjo8YIQlEOxFG1Sl4rBy5JBHwfSye4YzpFteE2jmF65fZRFVnYqwhXoob8lHTzT+pPVRGiJdClenyd9ngMLixFJrQUljNuBlnqQxwOX3Wvfk+h9CvrkXdtC9xF1QBHmekYlzMrhROuiWULf79eR+2IG9d/DEs4YT8i6sjgrkLFXdYQCWtopxNGLyd8HyPHhHjJ7FXD2H8E8w8GsLMFSDQulbBuYrH3RsjO1oZ2zCrcIqVr34UxlRhEzIJYN6cNy35eM/QlIK1QpbgZumA2s2NrTTe76NBw5EVhUoiSO+eNg2N/kOtfIZ5XIDg/VXoTIzyunlEB7aCE5iAWNLhShP8acx5IKVzTvPZSsqHHu5xUDGdVPjSExoKLcDlD6WB/OkSnUYiFPjpMQpCbXq9HaVobCLw6wB1t/Dfz6YZ7U2E7vk8YwzxyGpziw0qAWmWATlFHQFqx9SogtGuZqx6e6yZWZjNKsAibYiJW7HMqfH/7z7PRbQeCXoSlmARNR/MakLyN9d3zK3cq1Wa6543ktk16yCvN4n11K/p0S/CqDil0Ea1ne3MxY1hN5FRG2yP3QQnqH4t7vcTLZLtJNI0E8TyQojBpCe/uyeRN1jEqeLXy+IuNFoT8IP5NFbyOLFkzgSpBx5OuNYdSebO1VMmlriDDzTwTfAXTtEWf8TH3ucQoTUtuXGsNaBH0rdJnv+QJmHctTHuOdcd59tTCOpyfo7X2yb8ytT5lhGMs2xZQZg3gj+5KPrfBbC7i5n4Vti/A64ow1mQ8Sw7cXWzZXmjS2gSUtDRQ649xXxvYIW/NSRjHOvR6Gxk4W5KTNcc6T+21ma68kucS9XwMLcnHGeSCv0sVl9GyTV7XGVnIdBtVWiZyRsVciNSCxy9QWatLzsHM5I2FDq8G5F9iXTOsgqZY4c2mWFUD/a9EN0r4VLdpY8iqwWOuom8cybuWobd7VFcAE1UG4SM11OxJEVwbluN3SCdUD31iCBAl2DdlqrHyZcvgxsPX2HBFd6jZksMqIrMxVgjgJI7s3KjZxVDKYZ8IZVW+TZweuqhlZ8bd/vkqvN5vvqRocYLPdr9Moe7Nv7puHY322ZcZcy47Znoe7+v0quc98kzNqmvC+avImzhQ1DeRMMC8wq7EHdb6w1dWzzYd3NR/aGAP1m3lRX5ibeKU5GmtzsEHZpe+3q7ZxPj5LPXCpJUiQIEGCBAkSJJhFJApgggQJEiRIkCDBboZEAUyQIEGCBAkSJNjNkCiACRIkSJAgQYIEuxkSBTBBggQJEiRIkIDdC/8fLHDx7bRMsfYAAAAASUVORK5CYII=";
+  // Page identity: local logo (no hotlink) and the page title in the header.
+  const bar = document.querySelector('header.bar');
+  const logo = bar && bar.querySelector('.ym-logo');
+  if (logo) { logo.src = LOGO; logo.removeAttribute('width'); logo.removeAttribute('height'); }
+  const brand = bar && bar.querySelector('.ym-brand');
+  if (brand && !bar.querySelector('.ym-title')) {
+    brand.insertAdjacentHTML('afterend', '<div class="ym-title"><b>貨量動能戰情室</b></div>');
+  }
+
+  // 歸戶進度: fold the three single-number cards into one card in the left column.
+  const top = document.querySelector('.home .progress-panel .top-cards');
+  if (top && !top.querySelector('.progress-group')) {
+    const cards = [...top.querySelectorAll('.summary-card')];
+    if (cards.length) {
+      const group = document.createElement('div');
+      group.className = cards[0].className.replace('summary-card', 'progress-group').replace('duns-card', '') ;
+      group.classList.add('summary-card-surface');
+      group.innerHTML = '<div class="pg-head">歸戶進度</div>';
+      top.prepend(group);
+      cards.forEach((c) => group.append(c));
+    }
+  }
+
+  // Panel title for the graph (an earlier script sets it to 「歸戶判讀」).
+  const aTitle = document.querySelector('.home .analysis-panel > .p-h h2');
+  if (aTitle) aTitle.textContent = 'Ontology 關聯圖 · 宏遠電子集團';
+  // Comparison section: title styled like a panel title, unit as grey meta on the right.
+  const cTitle = document.querySelector('.home .comparison > h3');
+  if (cTitle && !cTitle.querySelector('small')) cTitle.innerHTML = '<span>單一託運人 vs 家族歸戶</span><small>TEU／月</small>';
+
+  // Comparison (方案 1): the sentence explains why, the two cards carry the numbers.
+  // Card labels match the chart legend; direction shown as ▲ / ▼ in the shared up / down colours.
+  const advice = document.querySelector('.home .compare-advice p');
+  if (advice) advice.textContent = '只看提單上的台灣母公司，會被誤判為流失風險；歸戶到企業家族後其實在成長，只是出貨地移到越南與墨西哥。';
+  const cards = document.querySelectorAll('.home .compare-numbers > section');
+  if (cards.length === 2 && !cards[0].dataset.v1) {
+    [['只看台灣母公司', 'down', '▼', '5.5%'], ['家族歸戶（3 個法人）', 'up', '▲', '10.5%']].forEach(([label, dir, arrow, v], i) => {
+      cards[i].dataset.v1 = '1';
+      cards[i].querySelector('h4').textContent = label;
+      const big = cards[i].querySelector('.big');
+      big.classList.add(dir);
+      big.innerHTML = `<i class="dir" aria-label="${dir === 'up' ? '上升' : '下降'}">${arrow}</i>${v}`;
+    });
+  }
+
+  // Remove fixed heights set by earlier layout scripts.
+  document.querySelectorAll('.home .signal-panel, .home .analysis-panel').forEach((el) => (el.style.height = ''));
+
+  // Readable type: lift every text below 12px (and 12–13px body text a little), keep larger display numbers as they are.
+  const KEEP = '#v-fam .k-title, #fLegend, #cmpLegend, .reading-key, #v-fam #fSub, #v-fam .tree-slot, .home .compare-advice p, #v-fam .insight-card p, #v-fam .fv-grid .p-h, #v-fam .family-section-title, #v-fam .insight-label, #v-fam .kl, #v-fam .member-slot, .st-l, .o1, .home #detail, #feed .kind, .home .comparison > h3, .home .progress-group .pg-head2, .home .progress-group .pg-item, .home .stock-name, .home .momentum-head, .home .summary-card h3, .home .compare-advice h4, .home .compare-numbers h4, .home .reading-key, .home #cmpLegend';
+  const lift = (root) => {
+    root.querySelectorAll('body *').forEach((el) => {
+      if (el.closest('svg') || el.dataset.r18) return;
+      if (el.closest(KEEP)) return; // headings follow the heading system in CSS
+      if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return;
+      const fs = parseFloat(getComputedStyle(el).fontSize);
+      if (!fs || fs >= 14) return;
+      const next = fs < 10 ? 12 : fs < 11 ? 12.5 : fs < 12 ? 13 : 14;
+      el.style.setProperty('font-size', next + 'px', 'important');
+      el.dataset.r18 = '1';
+    });
+  };
+  // 歸戶判讀 node boxes are fixed width: shrink only the labels that would overflow their box.
+  const fitGraph = () => document.querySelectorAll('.graph .nd').forEach((g) => {
+    const r = g.querySelector('rect'); if (!r) return;
+    const right = +r.getAttribute('x') + +r.getAttribute('width') - 10;
+    g.querySelectorAll('text').forEach((t) => {
+      if (t.dataset.fit) return; t.dataset.fit = '1';
+      let fs = parseFloat(getComputedStyle(t).fontSize), n = 0;
+      while (+t.getAttribute('x') + t.getComputedTextLength() > right && fs > 11 && n++ < 16) t.style.setProperty('font-size', (fs -= 0.5) + 'px', 'important');
+    });
+  });
+  // Direction by arrow, not by sign: ▲ up, ▼ down, – flat (within ±2%). The signed value stays in the tooltip.
+  const flatLabel = () => document.querySelectorAll('.stock-change:not([data-dir])').forEach((el) => {
+    const raw = el.textContent.trim();
+    el.dataset.dir = '1';
+    el.title = (PERIOD ? PERIOD.short : '近 3 月 vs 前 3 月') + ' ' + raw;
+    const v = raw.replace(/^[+−-]/, '');
+    if (el.classList.contains('flat')) el.innerHTML = `<i class="dir" aria-label="持平">–</i>${v}`; // flat keeps its value, e.g. –0.1%
+    else el.innerHTML = `<i class="dir" aria-label="${el.classList.contains('up') ? '上升' : '下降'}">${el.classList.contains('up') ? '▲' : '▼'}</i>${v}`;
+  });
+  const fitTrend = () => document.querySelectorAll('.home .stock-chart svg:not([preserveAspectRatio="none"])').forEach((v) => v.setAttribute('preserveAspectRatio', 'none'));
+  // Ontology 關聯圖: relationships named once in the column header (解析為 → / 隸屬 →) instead of on every edge;
+  // the three 法人 run straight into the family node and the supply edge gets its own line, so nothing shares a trunk.
+  const routeGraph = () => {
+    const svg = document.querySelector('.home #graph svg');
+    if (!svg || svg.dataset.routed) return;
+    svg.dataset.routed = '1';
+    const NS = 'http://www.w3.org/2000/svg';
+    const P = (id) => svg.querySelector(`[data-edge="${id}"]`), L = (id) => svg.querySelector(`[data-edge-label="${id}"]`);
+    ['r1e1', 'r2e2', 'r3e3', 'e1f', 'e2f', 'e3f'].forEach((id) => L(id) && (L(id).style.display = 'none'));
+    [['解析為 →', 322], ['隸屬 →', 652]].forEach(([txt, x]) => {
+      const t = document.createElementNS(NS, 'text');
+      t.textContent = txt;
+      Object.entries({ x, y: 30, class: 'stage-flow', 'text-anchor': 'middle' }).forEach(([k, v]) => t.setAttribute(k, v));
+      svg.appendChild(t);
+    });
+    // anchors in viewBox units: 法人 right edge x=602 (y 106/212/318) · 晶采 left-centre (702,96) · family left edge x=702 (y 178–260)
+    const set = (id, d) => P(id) && P(id).setAttribute('d', d);
+    set('e1f', 'M602 114 L700 207'); set('e2f', 'M602 212 L700 219'); set('e3f', 'M602 318 L700 231');
+    set('upe1', 'M702 96 L604 98');
+    const chip = (t) => { // label on its own small surface so it never paints over a line
+      const b = t.getBBox(), r = document.createElementNS(NS, 'rect');
+      Object.entries({ x: b.x - 5, y: b.y - 2, width: b.width + 10, height: b.height + 4, rx: 4, class: 'el-chip' }).forEach(([k, v]) => r.setAttribute(k, v));
+      t.parentNode.insertBefore(r, t);
+    };
+    const lab = (id, x, y, anchor) => { const t = L(id); if (!t) return; t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', anchor); chip(t); };
+    // centred on the line: the chip's surface interrupts the line, so the label reads as part of the edge
+    lab('upe1', 653, 101, 'middle'); lab('fdn', 832, 289, 'middle');
+    // arrowheads keep one size: by default they scale with stroke width, so they grew when a path was highlighted
+    svg.querySelectorAll('marker').forEach((m) => {
+      m.setAttribute('markerUnits', 'userSpaceOnUse');
+      m.setAttribute('markerWidth', '8.1'); m.setAttribute('markerHeight', '8.1'); // = 6 × the 1.35 resting stroke
+    });
+  };
+  // The graph SVG scales with the column; --u converts on-screen px to viewBox units so node titles stay a true 13px.
+  let unitObs = null, unitSvg = null;
+  const graphUnit = () => {
+    const svg = document.querySelector('.home #graph svg'); if (!svg) return;
+    if (svg !== unitSvg) { // watch the graph's own size (window resize, column changes, tab switches)
+      unitSvg = svg; unitObs && unitObs.disconnect();
+      unitObs = new ResizeObserver(() => graphUnit()); unitObs.observe(svg);
+    }
+    const w = svg.getBoundingClientRect().width; if (!w) return;
+    const u = (svg.viewBox.baseVal.width / w).toFixed(4);
+    if (svg.style.getPropertyValue('--u') === u) return;
+    svg.style.setProperty('--u', u);
+    // scale changed: undo any earlier shrink-to-fit and measure again at the new size
+    svg.querySelectorAll('.nd text[data-fit]').forEach((t) => { t.style.removeProperty('font-size'); delete t.dataset.fit; });
+    fitGraph();
+  };
+  // Direction everywhere = ▲ / ▼ / – + unsigned value, coloured up / down / flat (flat = within ±2%).
+  // Replaces "+10.5%" / "−5.5%" left over in the family tab, the feed sentences and the graph's family node.
+  const PCT = /([+−-])\s?(\d+(?:\.\d+)?)%/;
+  const PCT_ANY = /([+−-]?)\s?(\d+(?:\.\d+)?)%/; // status chips may show an unsigned 0.0%
+  const dirOf = (sign, v) => (Math.abs(v) <= 2 ? 'flat' : sign > 0 ? 'up' : 'down');
+  const GLYPH = { up: '▲', down: '▼', flat: '–' };
+  const dirify = () => {
+    // family tab member status: <span class="st up2"><i></i>強勁成長 +27.4%</span>
+    document.querySelectorAll('.st:not([data-dir])').forEach((el) => {
+      const m = el.textContent.match(PCT_ANY); if (!m) return;
+      const cls = el.className, d = /up/.test(cls) ? 'up' : /dn/.test(cls) ? 'down' : /flat/.test(cls) ? 'flat' : dirOf(m[1] === '+' ? 1 : -1, +m[2]);
+      const label = el.textContent.replace(m[0], '').trim();
+      el.dataset.dir = d; el.title = el.textContent.trim();
+      // grade as a tag first, then ▲ value — values line up on the right edge of the column
+      el.innerHTML = `${label ? `<small class="st-l">${label}</small>` : ''}<span class="st-v"><b class="dir-g">${GLYPH[d]}</b>${m[2]}%</span>`;
+    });
+    // family tab KPI: <div class="kn"><i class="ki"></i>+10.5%</div>
+    document.querySelectorAll('.kn:not([data-dir])').forEach((el) => {
+      if (!el.querySelector('.ki')) return;
+      const m = el.textContent.match(PCT); if (!m) return;
+      const d = dirOf(m[1] === '+' ? 1 : -1, +m[2]);
+      el.dataset.dir = d; el.title = el.textContent.trim();
+      el.innerHTML = `<b class="dir-g">${GLYPH[d]}</b>${m[2]}%`;
+    });
+    // sentences in the feed
+    document.querySelectorAll('#feed p:not([data-dir])').forEach((p) => {
+      p.dataset.dir = '1';
+      p.innerHTML = p.innerHTML.replace(new RegExp(PCT.source, 'g'), (all, sg, v) => {
+        const d = dirOf(sg === '+' ? 1 : -1, +v);
+        return `<span class="dir-t" data-dir="${d}">${GLYPH[d]} ${v}%</span>`;
+      });
+    });
+    // graph family node: "3 個法人 · 貨量 +10.5%" (stays grey like the other node notes)
+    document.querySelectorAll('.home #graph .nd text').forEach((t) => {
+      const m = t.textContent.match(PCT); if (!m) return;
+      const d = dirOf(m[1] === '+' ? 1 : -1, +m[2]);
+      t.textContent = t.textContent.replace(m[0], `${GLYPH[d]} ${m[2]}%`);
+    });
+  };
+  // 企業家族 tab (方案 A): narrower chart, wider right column. Member table keeps every field of the original —
+  // 國家 and 角色 move under the entity name so 法人 / D-U-N-S / 近 12 月 TEU / 近 3 月變化 / 家族占比 fit.
+  const famTab = () => {
+    const ph = document.querySelector('#v-fam .fv-grid .p-h');
+    if (ph && !ph.dataset.v2) {
+      ph.dataset.v2 = '1';
+      const h = ph.querySelector('h2'), sm = ph.querySelector('small');
+      if (h) h.textContent = '家族成員貨量';
+      if (sm) sm.textContent = 'TEU／月';
+    }
+    document.querySelectorAll('#v-fam .member-slot tbody tr:not([data-v2])').forEach((tr) => {
+      const td = tr.children; if (td.length < 8) return;
+      tr.dataset.v2 = '1';
+      const sub = [td[2].textContent.trim(), td[3].textContent.trim()].filter(Boolean).join(' · ');
+      if (sub) td[0].insertAdjacentHTML('beforeend', `<small class="m-sub">${sub}</small>`);
+    });
+    // chart axis + end labels at 12px on screen, whatever width the chart has (overview + family charts)
+    document.querySelectorAll('#cmpChart svg, #fChart svg').forEach((svg) => {
+      const w = svg.getBoundingClientRect().width; if (!w || !svg.viewBox.baseVal.width) return;
+      const px = (12 * svg.viewBox.baseVal.width / w).toFixed(2) + 'px';
+      svg.querySelectorAll('.ax, .endl').forEach((t) => t.style.getPropertyValue('font-size') !== px && t.style.setProperty('font-size', px, 'important'));
+    });
+  };
+  // 判讀建議 starts level with the comparison chart's top grid line
+  const alignAdvice = () => {
+    const svg = document.querySelector('.home #cmpChart svg'), adv = document.querySelector('.home .compare-advice');
+    if (!svg || !adv || !svg.viewBox.baseVal.height) return;
+    const ys = [...svg.querySelectorAll('line')].map((l) => +l.getAttribute('y1')).filter((y) => !isNaN(y));
+    if (!ys.length) return;
+    const k = svg.getBoundingClientRect().height / svg.viewBox.baseVal.height;
+    const gap = Math.round(Math.min(...ys) * k) + 'px';
+    if (adv.style.marginTop !== gap) adv.style.setProperty('margin-top', gap, 'important');
+  };
+  window.addEventListener('resize', famTab);
+  window.addEventListener('resize', alignAdvice);
+  // the chart is laid out while its tab is hidden; re-measure when the tab opens and whenever the chart resizes
+  const famView = document.getElementById('v-fam');
+  if (famView) {
+    new MutationObserver(() => { if (!famView.hidden) requestAnimationFrame(famTab); }).observe(famView, { attributes: true, attributeFilter: ['hidden'] });
+    ['fChart', 'cmpChart'].forEach((id) => { const el = document.getElementById(id); if (el) new ResizeObserver(() => famTab()).observe(el); });
+  }
+  // Chart legends live on the title row, right-aligned: [title  unit] ............ [— series  — series]
+  const legendsToTitle = () => {
+    const cmpH = document.querySelector('.home .comparison > h3'), cmpL = document.getElementById('cmpLegend');
+    if (cmpH && cmpL && cmpL.parentElement !== cmpH) cmpH.appendChild(cmpL);
+    const famH = document.querySelector('#v-fam .fv-grid .p-h'), famL = document.getElementById('fLegend');
+    if (famH && famL && famL.parentElement !== famH) famH.appendChild(famL);
+  };
+  // Period wording: say which months are compared instead of "近 3 月 vs 前 3 月" (derived from the data's month list).
+  const PERIOD = (() => {
+    const m = typeof MONTHS !== 'undefined' ? MONTHS : null; if (!m || m.length < 6) return null;
+    const f = (a, b) => `${a.slice(0, 4)}/${a.slice(5)}–${b.slice(5)}`;
+    return { now: f(m[m.length - 3], m[m.length - 1]), prev: f(m[m.length - 6], m[m.length - 4]), short: `${m[m.length - 3].slice(5)}–${m[m.length - 1].slice(5)} vs ${m[m.length - 6].slice(5)}–${m[m.length - 4].slice(5)}` };
+  })();
+  const kpiTitles = () => {
+    if (!PERIOD) return;
+    // 企業家族 KPI cards: title on top, figure, then a plain note
+    document.querySelectorAll('#v-fam .kstrip .kcard:not(.insight-card)').forEach((card, i) => {
+      const box = card.querySelector('.kn')?.parentElement; if (!box || box.querySelector('.k-title')) return;
+      const kl = box.querySelector('.kl');
+      box.insertAdjacentHTML('afterbegin', `<div class="k-title">${i === 0 ? '家族貨量' : '貨量動能'}</div>`);
+      if (kl) kl.textContent = i === 0 ? '近 12 個月合計' : `${PERIOD.now} 比 ${PERIOD.prev}`;
+    });
+    // 總覽 重點客戶動能: right-hand period note
+    const mh = document.querySelector('.home .momentum-head span');
+    if (mh && mh.textContent !== PERIOD.short) mh.textContent = PERIOD.short;
+  };
+  kpiTitles(); legendsToTitle(); alignAdvice(); famTab(); graphUnit(); routeGraph(); dirify(); flatLabel(); fitTrend(); lift(document); fitGraph();
+
+  // Views re-render on tab / family / theme changes — lift new text as it appears.
+  let pending = 0;
+  new MutationObserver(() => { cancelAnimationFrame(pending); pending = requestAnimationFrame(() => { kpiTitles(); legendsToTitle(); alignAdvice(); routeGraph(); graphUnit(); dirify(); famTab(); flatLabel(); fitTrend(); lift(document); fitGraph(); }); })
+    .observe(document.querySelector('main') || document.body, { childList: true, subtree: true });
 })();
 </script>
+<script id="r18-progress">
+// 歸戶進度: rebuild as label / note / number columns so every row lines up with 重點客戶動能. Order follows the 歸戶 flow.
+(() => {
+  const g = document.querySelector('.home .progress-group'); if (!g || g.dataset.v2) return;
+  const num = (label) => { const c = [...g.querySelectorAll('.summary-card')].find((x) => x.querySelector('h3')?.textContent.includes(label)); const v = c?.querySelector('.duns-value, .single-value'); return v ? v.firstChild.textContent.trim() : ''; };
+  const items = [
+    ['提單原始名稱', '託運人／收貨人', num('提單原始名稱'), '筆'],
+    ['D-U-N-S 法人', '比對率 94.2%<button type="button" class="pg-info" data-tip="312 筆待確認" aria-label="312 筆待確認">i</button>', num('D-U-N-S'), '個'],
+    ['企業家族', '重點家族 3 / 5 成長', num('企業家族'), '個'],
+  ];
+  g.dataset.v2 = '1';
+  g.innerHTML = '<div class="pg-head2"><h3>歸戶進度</h3><span>截至 2026-09</span></div><div class="pg-list">' +
+    items.map(([b, s, n, u]) => `<div class="pg-item"><span><b>${b}</b><small>${s}</small></span><span class="pg-num">${n}<small>${u}</small></span></div>`).join('') + '</div>';
+})();
+</script>
+<script id="r18-trace">
+// Ontology 關聯圖 selection motion: the path lights up stage by stage along the 歸戶 flow
+// (提單 → 法人 → 家族 → 下游), then the graph settles.
+// With the OS "reduce motion" setting on, the path only fades in.
+(() => {
+  const T = 360;                       // ms per stage
+  const ENDS = { r1e1: ['r1', 'e1'], r2e2: ['r2', 'e2'], r3e3: ['r3', 'e3'], upe1: ['up', 'e1'], e1f: ['e1', 'f'], e2f: ['e2', 'f'], e3f: ['e3', 'f'], fdn: ['f', 'dn'] };
+  const STAGE = { r1e1: 0, r2e2: 0, r3e3: 0, upe1: 1, e1f: 1, e2f: 1, e3f: 1, fdn: 2 };
+  let run = 0;
+  const clear = (svg) => {
+    svg.querySelectorAll('.flow-edge').forEach((p) => {
+      ['stroke-dasharray', 'stroke-dashoffset', 'transition', 'animation', 'opacity'].forEach((k) => p.style.removeProperty(k));
+      if (p.dataset.marker) { p.setAttribute('marker-end', p.dataset.marker); delete p.dataset.marker; }
+    });
+    svg.querySelectorAll('.nd.trace-wait').forEach((n) => n.classList.remove('trace-wait'));
+  };
+  const trace = () => {
+    const svg = document.querySelector('.home #graph svg'); if (!svg) return;
+    const id = ++run; clear(svg);
+    const sel = svg.querySelector('.nd.on');
+    const edges = [...svg.querySelectorAll('.flow-edge.active')].filter((p) => p.dataset.edge in STAGE);
+    if (!sel || !edges.length) return;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // compact the stages actually used, so a short path doesn't wait on empty steps
+    const used = [...new Set(edges.map((p) => STAGE[p.dataset.edge]))].sort((a, b) => a - b);
+    const st = (p) => used.indexOf(STAGE[p.dataset.edge]);
+    const imp = (el, k, v) => el.style.setProperty(k, v, 'important');
+
+    // nodes on the path wait until the line reaches them (a source node lights as its line starts)
+    const when = {};
+    edges.forEach((p) => {
+      const [a, b] = ENDS[p.dataset.edge], s = st(p);
+      when[a] = Math.min(when[a] ?? Infinity, s * T);
+      when[b] = Math.min(when[b] ?? Infinity, (s + 1) * T);
+    });
+    when[sel.dataset.n] = 0;
+
+    if (reduce) { // fade only
+      edges.forEach((p) => { imp(p, 'animation', 'none'); imp(p, 'transition', 'none'); imp(p, 'stroke-dashoffset', '0'); if (p.classList.contains('sc')) imp(p, 'stroke-dasharray', '5 4'); imp(p, 'opacity', '0'); p.getBoundingClientRect(); imp(p, 'transition', 'opacity .3s ease'); imp(p, 'opacity', '1'); });
+      return;
+    }
+    Object.entries(when).forEach(([n, t]) => {
+      const g = svg.querySelector(`.nd[data-n="${n}"]`); if (!g || t === 0) return;
+      g.classList.add('trace-wait');
+      setTimeout(() => id === run && g.classList.remove('trace-wait'), t);
+    });
+    edges.forEach((p) => {
+      const len = p.getTotalLength(), delay = st(p) * T;
+      imp(p, 'animation', 'none');
+      if (p.getAttribute('marker-end')) { p.dataset.marker = p.getAttribute('marker-end'); p.removeAttribute('marker-end'); }
+      imp(p, 'transition', 'none');
+      if (p.classList.contains('sc')) { // supply-chain edges stay dashed: they fade in instead of being drawn
+        imp(p, 'stroke-dasharray', '5 4'); imp(p, 'stroke-dashoffset', '0'); imp(p, 'opacity', '0');
+        p.getBoundingClientRect(); // commit the start state before transitioning
+        imp(p, 'transition', `opacity ${T}ms ease ${delay}ms`); imp(p, 'opacity', '1');
+      } else {
+        imp(p, 'stroke-dasharray', `${len}`); imp(p, 'stroke-dashoffset', `${len}`);
+        p.getBoundingClientRect();
+        imp(p, 'transition', `stroke-dashoffset ${T}ms cubic-bezier(.22,1,.36,1) ${delay}ms`); imp(p, 'stroke-dashoffset', '0');
+      }
+      setTimeout(() => { if (id === run && p.dataset.marker) { p.setAttribute('marker-end', p.dataset.marker); delete p.dataset.marker; } }, delay + T);
+    });
+  };
+  // Click anywhere outside the cards (or press Esc) to clear the selection. The graph only clears when the
+  // selected card is clicked again, so re-send that click; the node-detail text stays selectable.
+  const deselect = () => {
+    const on = document.querySelector('.home #graph .nd.on');
+    if (on) on.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  };
+  document.addEventListener('click', (e) => {
+    if (!e.isTrusted || !e.target.closest) return;
+    if (e.target.closest('.home #graph .nd') || e.target.closest('.home #detail')) return;
+    deselect();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') deselect(); });
+  // Node detail: row 1 = type tag · name · id · key figure (▲ / ▼ in the shared colours), row 2 = one sentence.
+  // [tag colour, type, name, id, figure label, figure value, direction, sentence]
+  const DETAIL = {
+    r1: ['grey', '提單名稱', 'HONG YUAN ELEC CO LTD', '託運人', 'B/L', '1,284 筆', '', '提單上的原始寫法之一。同一家公司在不同提單上可能有十幾種寫法，系統先清洗再比對。'],
+    r2: ['grey', '提單名稱', 'HONGYUAN ELECTRONICS VN', '託運人', 'B/L', '962 筆', '', '越南工廠出貨時使用的英文名稱，表面上看不出與台灣宏遠的關係。'],
+    r3: ['grey', '提單名稱', 'HY ELECTRONICA MX SA', '託運人', 'B/L', '418 筆', '', '墨西哥子公司的西文名稱縮寫，以地址與鄧白氏比對服務確認身分，信心分數 0.97。'],
+    e1: ['blue', '法人實體', '宏遠電子（台灣）', 'D-U-N-S 65-482-1937', '近 3 月', '5.5%', 'down', '法定名稱：宏遠電子股份有限公司，同時是家族的 Global Ultimate。'],
+    e2: ['blue', '法人實體', '宏遠越南・海防廠', 'D-U-N-S 66-103-5528', '近 3 月', '27.4%', 'up', '法定名稱：Hong Yuan Electronics Vietnam。'],
+    e3: ['blue', '法人實體', '宏遠墨西哥・蒙特雷廠', 'D-U-N-S 81-277-4405', '近 3 月', '44.8%', 'up', '法定名稱：HY Electrónica de México。'],
+    f:  ['blue', '企業家族', '宏遠電子集團', 'Global Ultimate 65-482-1937', '近 3 月', '10.5%', 'up', '三個法人歸到同一家族後，結論和只看台灣母公司相反：家族其實在成長。'],
+    up: ['orange', '上游供應商', '晶采材料', 'D-U-N-S 65-319-6610', '原料櫃量 近 2 月', '22%', 'up', '由「晶采為託運人、宏遠為收貨人」的進口貨載推導出供貨關係。原料進口量通常領先成品出口數週，可當作預警。'],
+    dn: ['orange', '下游買方', 'Northbay Retail Inc.', 'D-U-N-S 04-882-3315', '', '', '', '家族三座工廠的主要收貨人。買方的訂單變化會沿供應鏈影響宏遠的出貨量。'],
+  };
+  const renderDetail = () => {
+    const det = document.querySelector('.home #detail'), on = document.querySelector('.home #graph .nd.on');
+    if (!det || !on || det.hidden) return;
+    const d = DETAIL[on.dataset.n]; if (!d) return;
+    const [tone, type, name, id, label, value, dir, text] = d;
+    const arrow = dir ? `<i aria-label="${dir === 'up' ? '上升' : '下降'}">${dir === 'up' ? '▲' : '▼'}</i>` : '';
+    const figure = value ? `<span class="d-metric"><small>${label}</small><b class="${dir}">${arrow}${value}</b></span>` : '';
+    det.classList.add('v2');
+    det.innerHTML = `<div class="d-row"><span class="d-tag ${tone}">${type}</span><span class="d-name">${name}</span><span class="d-id">${id}</span>${figure}</div><p class="d-desc">${text}</p>`;
+  };
+  const fire = (e) => { if (e.target.closest && e.target.closest('.home #graph .nd')) setTimeout(() => { trace(); renderDetail(); }, 0); };
+  document.addEventListener('click', fire);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fire(e); });
+})();
+</script>
+<script id="r18-ontology">
+// Ontology 模型: object cards (icon + colour per type) and a plain relation table that are linked both ways —
+// A: click a card to keep only its relations (click it again, click elsewhere or press Esc to clear);
+// B: hover / focus a relation row to light up the two objects it connects.
+(() => {
+  const mv = document.querySelector('#v-model .mv'); if (!mv || mv.dataset.v2) return;
+  mv.dataset.v2 = '1';
+  const svg = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const ICON = {
+    ship: svg('<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>'),
+    party: svg('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>'),
+    ent: svg('<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>'),
+    fam: svg('<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>'),
+  };
+  const OBJ = {
+    ship: ['貨載', 'Shipment', 'B/L 號碼、裝卸港、開航日、TEU、HS code'],
+    party: ['當事人', 'Party', '提單上的原始名稱、地址、角色（託運人／收貨人）'],
+    ent: ['法人實體', 'LegalEntity', 'D-U-N-S、國家、產業別（SIC）、營運狀態'],
+    fam: ['企業家族', 'CorporateFamily', '以 Global Ultimate D-U-N-S 為鍵，彙總成員貨量'],
+  };
+  const REL = [['ship', 'shipper / consignee', '託運／收貨', 'party', ''], ['party', 'resolvesTo', '解析為', 'ent', ''], ['ent', 'parent', '母公司', 'ent', ''], ['ent', 'memberOf', '隸屬', 'fam', ''], ['ent', 'suppliesTo', '供貨給', 'ent', 'sc']];
+  const obj = (k) => `<span class="o-obj" style="--c:var(--o-${k})">${ICON[k]}${OBJ[k][0]}</span>`;
+  mv.className = 'mv o1';
+  mv.innerHTML = `
+    <section class="o-panel" aria-labelledby="o-h-obj"><div class="o-head"><h2 id="o-h-obj">物件類型</h2></div>
+      <div class="o-cards">${Object.keys(OBJ).map((k) => `<div class="o-card" role="button" tabindex="0" aria-pressed="false" data-k="${k}" style="--c:var(--o-${k})"><span class="o-ico">${ICON[k]}</span><div><b>${OBJ[k][0]}</b><span class="o-code">${OBJ[k][1]}</span><p>${OBJ[k][2]}</p></div></div>`).join('')}</div></section>
+    <section class="o-panel" aria-labelledby="o-h-rel"><div class="o-head"><h2 id="o-h-rel">關聯類型</h2></div>
+      <div class="o-body"><table class="o-table"><thead><tr><th>從</th><th>關聯</th><th>到</th></tr></thead><tbody>${REL.map(([a, code, zh, b, sc]) => `<tr class="o-tr" tabindex="0" data-a="${a}" data-b="${b}"><td>${obj(a)}</td><td><span class="o-rel-code ${sc}">${code}</span><span class="o-rel-zh">${zh}</span></td><td>${obj(b)}</td></tr>`).join('')}</tbody></table></div></section>`;
+  const cards = [...mv.querySelectorAll('.o-card')], rows = [...mv.querySelectorAll('.o-tr')];
+  let picked = null, hovered = null;
+  const paint = () => {
+    cards.forEach((c) => c.classList.remove('on', 'hi', 'dim'));
+    rows.forEach((r) => r.classList.remove('hover', 'dim'));
+    if (hovered) { // B wins while hovering
+      const ends = [hovered.dataset.a, hovered.dataset.b];
+      rows.forEach((r) => r.classList.add(r === hovered ? 'hover' : 'dim'));
+      cards.forEach((c) => c.classList.add(ends.includes(c.dataset.k) ? 'hi' : 'dim'));
+      if (picked) cards.find((c) => c.dataset.k === picked)?.classList.add('on');
+    } else if (picked) { // A
+      cards.forEach((c) => c.classList.add(c.dataset.k === picked ? 'on' : 'dim'));
+      rows.forEach((r) => { if (r.dataset.a !== picked && r.dataset.b !== picked) r.classList.add('dim'); });
+    }
+    cards.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.k === picked)));
+  };
+  const pick = (k) => { picked = picked === k ? null : k; paint(); };
+  cards.forEach((c) => {
+    c.addEventListener('click', () => pick(c.dataset.k));
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c.dataset.k); } });
+  });
+  rows.forEach((r) => {
+    const on = () => { hovered = r; paint(); }, off = () => { if (hovered === r) { hovered = null; paint(); } };
+    r.addEventListener('mouseenter', on); r.addEventListener('mouseleave', off);
+    r.addEventListener('focus', on); r.addEventListener('blur', off);
+  });
+  document.addEventListener('click', (e) => { if (picked && !e.target.closest('.o-card')) { picked = null; paint(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && picked) { picked = null; paint(); } });
+})();
+</script>
+<script id="r18-motion">
+// Entrance motion. A: when a tab opens, its cards fade up 8px in reading order (40ms apart).
+// B: then the data settles in — chart lines draw, list rows fade in one by one (numbers stay still).
+// Switching family on 企業家族 replays B only. With "reduce motion" on, cards just fade (150ms).
+(() => {
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CARDS = {
+    'v-home': '.progress-group, .momentum-card, .analysis-panel, .signal-panel',
+    'v-fam': '.fv-h, .kstrip .kcard, .fv-grid > .p, .fv-grid .family-side',
+    'v-model': '.process-map, .o-panel',
+  };
+  const LINES = {
+    'v-home': '#cmpChart svg path, .momentum-card .dense-line',
+    'v-fam': '#fChart svg path, .kstrip .kc svg path',
+    'v-model': '',
+  };
+  const ROWS = {
+    'v-home': '#feed > li',
+    'v-fam': '#v-fam .member-slot tbody tr, #v-fam .tree-slot li, #v-fam .tree-slot .tree-row',
+    'v-model': '.o-tr',
+  };
+  const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const inReadingOrder = (els) => els.filter(shown).sort((a, b) => {
+    const A = a.getBoundingClientRect(), B = b.getBoundingClientRect();
+    return Math.abs(A.top - B.top) > 8 ? A.top - B.top : A.left - B.left;
+  });
+  const imp = (el, k, v) => el.style.setProperty(k, v, 'important');
+
+  // B · draw a line left → right (dashed lines and filled areas fade instead, so their look is kept)
+  const drawLine = (p, delay) => {
+    const cs = getComputedStyle(p);
+    if (cs.stroke === 'none' || cs.fill !== 'none' || (cs.strokeDasharray && cs.strokeDasharray !== 'none')) {
+      p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay, easing: 'ease-out', fill: 'backwards' }); return;
+    }
+    const len = p.getTotalLength(); if (!len) return;
+    imp(p, 'transition', 'none'); imp(p, 'stroke-dasharray', `${len}`); imp(p, 'stroke-dashoffset', `${len}`);
+    p.getBoundingClientRect();
+    imp(p, 'transition', `stroke-dashoffset 700ms ${EASE} ${delay}ms`); imp(p, 'stroke-dashoffset', '0');
+    setTimeout(() => ['transition', 'stroke-dasharray', 'stroke-dashoffset'].forEach((k) => p.style.removeProperty(k)), delay + 760);
+  };
+  const dataIn = (view, start) => {
+    const id = view.id;
+    if (LINES[id]) view.querySelectorAll(LINES[id]).forEach((p) => p.closest('svg') && shown(p.closest('svg')) && drawLine(p, start));
+    if (LINES[id]) view.querySelectorAll('#cmpChart svg circle, #fChart svg circle, #cmpChart svg .endl, #fChart svg .endl')
+      .forEach((c) => c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, delay: start + 620, fill: 'backwards' }));
+    if (ROWS[id]) inReadingOrder([...view.querySelectorAll(ROWS[id])]).forEach((r, i) =>
+      r.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: start + i * 35, easing: EASE, fill: 'backwards' }));
+  };
+  const enter = (view) => {
+    if (!view || !CARDS[view.id]) return;
+    const cards = inReadingOrder([...view.querySelectorAll(CARDS[view.id])]);
+    if (reduce()) { cards.forEach((c) => c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, easing: 'ease-out', fill: 'backwards' })); return; }
+    cards.forEach((c, i) => c.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: i * 40, easing: EASE, fill: 'backwards' }));
+    dataIn(view, 160);
+  };
+  const afterRender = (fn) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(fn, 0)));
+
+  // tab switches: a view becomes visible when its hidden attribute is removed
+  const views = [...document.querySelectorAll('main .view')];
+  const viewObs = new MutationObserver((list) => list.forEach((m) => { if (m.attributeName === 'hidden' && !m.target.hidden) afterRender(() => enter(m.target)); }));
+  views.forEach((v) => viewObs.observe(v, { attributes: true, attributeFilter: ['hidden'] }));
+  // family switch on 企業家族: data only
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('#famChips button');
+    if (b && !reduce()) afterRender(() => dataIn(document.querySelector('#v-fam'), 0));
+  });
+  // first screen: right away, or once the password gate is gone
+  const first = () => afterRender(() => enter(views.find((v) => !v.hidden)));
+  if (document.getElementById('ym-gate')) {
+    const gateObs = new MutationObserver(() => { if (!document.getElementById('ym-gate')) { gateObs.disconnect(); first(); } });
+    gateObs.observe(document.body, { childList: true });
+  } else first();
+})();
+</script>
+<script id="r18-light-only">
+// Light theme only: the dark-mode toggle is removed, and a dark choice saved earlier is cleared so nobody gets stuck in it.
+(() => {
+  try { localStorage.removeItem('warroom.theme.v2'); } catch (e) {}
+  const light = () => { if (document.documentElement.dataset.theme !== 'light') document.documentElement.dataset.theme = 'light'; };
+  light();
+  new MutationObserver(light).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.querySelectorAll('.theme-toggle').forEach((b) => b.remove());
+})();
+</script>
+
+
+
+
+
 </body>
 </html>
