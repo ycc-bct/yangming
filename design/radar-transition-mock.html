@@ -1,0 +1,157 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>示意 · 風險雷達轉場</title>
+<link rel="stylesheet" href="../fonts.css"><link rel="stylesheet" href="../design-tokens.css">
+<style>
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:14px/1.55 var(--ym-font-ui);overflow:hidden}
+.hdr{height:56px;display:flex;align-items:center;gap:28px;padding:0 24px;border-bottom:1px solid var(--ym-line);background:var(--ym-surface-1)}
+.hdr b{font-size:16px}.hdr nav{display:flex;gap:4px;margin-left:12px}.hdr nav a{padding:6px 12px;font-size:13px;color:var(--ym-text-muted);border-bottom:2px solid transparent;cursor:pointer}.hdr nav a.on{color:var(--ym-text);border-color:var(--ym-brand)}
+.hdr .right{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ym-text-muted)}
+.hint{position:fixed;left:24px;bottom:16px;font-size:12px;color:var(--ym-text-muted);background:var(--ym-surface-2);border:1px solid var(--ym-line);border-radius:8px;padding:8px 12px;z-index:5}
+.hint kbd{font:11px var(--ym-font-data);border:1px solid var(--ym-line-strong);border-radius:4px;padding:0 5px;margin:0 2px}
+.screen{position:absolute;inset:56px 0 0;transition:opacity .25s var(--ym-ease)}.screen.hide{opacity:0;pointer-events:none}
+.card{background:var(--ym-surface-1);border:1px solid var(--ym-line);border-radius:8px}
+.card h3{margin:0;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3 small{margin-left:auto;font-weight:400;font-size:12px;color:var(--ym-text-muted);font-family:var(--ym-font-data)}
+/* ---- 首頁 ---- */
+#home{display:grid;grid-template-columns:268px 1fr 268px;gap:12px;padding:12px 24px}
+.col{display:flex;flex-direction:column;gap:12px}
+.map{position:relative;border-radius:8px;background:radial-gradient(ellipse at 50% 45%,#1a1f2a,#101010 70%);border:1px solid var(--ym-line);overflow:hidden}
+.map .tl{position:absolute;left:16px;right:16px;bottom:14px;display:flex;align-items:center;gap:14px;background:#111113e6;border:1px solid var(--ym-line);border-radius:8px;padding:10px 14px}
+.tl .play{width:28px;height:28px;border-radius:50%;border:1px solid var(--ym-line-strong);display:grid;place-items:center;color:var(--ym-text-muted);font-size:11px}
+.tl .date{font:600 16px var(--ym-font-data)}.tl .sub{font-size:12px;color:var(--ym-text-muted)}.tl .now{margin-left:auto;font-size:12px;color:var(--ym-accent);cursor:pointer}
+.tl .track{position:relative;flex:1;height:4px;background:var(--ym-surface-3);border-radius:2px}.tl .track i{position:absolute;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--ym-text);transform:translateX(-50%);transition:left .3s var(--ym-ease)}
+.radar-card{padding:14px;cursor:pointer}.radar-card:hover{border-color:var(--ym-line-strong)}
+.rbox{position:relative;width:240px;height:240px;margin:6px auto 0}
+.status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 0;padding-top:6px;border-top:1px solid var(--ym-line);font-size:12px}.status b{font-weight:600}.status span{flex-basis:100%;color:var(--ym-text-muted);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 6px;border-radius:4px;font-size:11px;font-weight:700;color:#fff;background:color-mix(in srgb,var(--ym-risk-crit) 22%,transparent)}.chip i{font-style:normal;color:var(--ym-risk-crit);font-size:9px}
+.kpi{padding:14px}.kpi .row{display:flex;justify-content:space-between;font-size:12px;color:var(--ym-text-muted);padding:6px 0;border-top:1px solid var(--ym-line)}.kpi .row b{color:var(--ym-text);font-family:var(--ym-font-data)}
+.feed{padding:14px;flex:1}.feed .it{padding:8px 0;border-top:1px solid var(--ym-line);font-size:12px;color:var(--ym-text-2)}.feed .it small{display:block;color:var(--ym-text-muted);font-family:var(--ym-font-data)}
+/* ---- 風險情報 ---- */
+#intel{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:36px 32px}
+.bigradar{padding:18px}.bigradar .rb{position:relative;width:640px;height:640px;margin:10px auto 0;max-width:100%}
+.lbl{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:17px;white-space:nowrap;transition:opacity .2s}
+.bigradar.focus .lbl{opacity:.35}.bigradar.focus .lbl.on{opacity:1}
+.right .card{padding:16px;margin-bottom:16px}.right .card p{margin:6px 0 0;font-size:12px;color:var(--ym-text-muted)}
+.matrix{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.matrix i{height:38px;border-radius:4px;background:var(--ym-surface-3)}
+.matrix i.c{background:color-mix(in srgb,var(--ym-risk-crit) 40%,transparent)}.matrix i.h{background:color-mix(in srgb,var(--ym-risk-high) 35%,transparent)}.matrix i.m{background:color-mix(in srgb,var(--ym-risk-mid) 30%,transparent)}.matrix i.l{background:color-mix(in srgb,var(--ym-risk-low) 25%,transparent)}
+.toast{position:fixed;left:50%;top:72px;transform:translate(-50%,-12px);opacity:0;background:var(--ym-surface-2);border:1px solid var(--ym-line-strong);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--ym-text-2);box-shadow:var(--ym-shadow);display:flex;gap:12px;align-items:center;transition:all .25s var(--ym-ease);z-index:20}
+.toast.show{opacity:1;transform:translate(-50%,0)}.toast b{font-family:var(--ym-font-data);color:var(--ym-text)}.toast a{color:var(--ym-accent);cursor:pointer;margin-left:4px}
+/* ---- 飛行複本 ---- */
+#fly{position:fixed;left:0;top:0;width:240px;height:240px;z-index:10;pointer-events:none;display:none;transform-origin:0 0;will-change:transform,opacity}
+#fly.go{display:block}
+.rr .arc{fill:none;stroke-width:2.6;stroke-linecap:round;opacity:.9}.rr .ring{fill:none;stroke:var(--ym-line-strong);stroke-width:.6}.rr .axis{stroke:var(--ym-line);stroke-width:.4}
+.rr .sweep{stroke:#fff;stroke-width:.7;opacity:.7}
+.rr .arc.dim{opacity:.25}
+.rr .tag{font-size:5.2px;font-weight:700;fill:var(--ym-text);text-anchor:middle}
+.dim-bg{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s;z-index:9}.dim-bg.on{opacity:.35}
+@media (prefers-reduced-motion:reduce){#fly{display:none!important}.screen{transition:none}}
+</style></head><body>
+<div class="hdr"><b>航運風險戰情室</b><nav><a id="nav-home" class="on">全球態勢</a><a id="nav-intel">風險情報</a><a>航線方案評估</a><a>決策報告</a><a>貨量動能</a></nav><div class="right">資料時點 2026/06/30 · YM</div></div>
+
+<!-- 首頁 -->
+<section id="home" class="screen">
+ <div class="col">
+  <div class="card radar-card" id="radarCard">
+   <h3>風險雷達</h3>
+   <div class="rbox"><svg id="miniRadar" viewBox="0 0 100 100" width="240" height="240"></svg></div>
+   <div class="status"><b>整體警戒</b><em class="chip"><i>■</i>危急</em><span>航道安全：荷莫茲海峽通行量年減 97%</span></div>
+  </div>
+  <div class="card kpi"><h3>關鍵指標</h3><div class="row">荷莫茲通行量 <b>12 艘/日</b></div><div class="row">380cst 裂解價差 <b>+4.5</b></div><div class="row">政策不確定性 <b>186</b></div></div>
+ </div>
+ <div class="map"><div class="tl"><div class="play">▶</div><div><div class="date" id="tlDate">2026/01/03</div><div class="sub" id="tlSub">距今 178 天前</div></div><div class="track"><i id="knob" style="left:30%"></i></div><a class="now" id="tlNow">回到現在</a></div></div>
+ <div class="col"><div class="card feed"><h3>訊號動態 <small>截至目前共 24 則</small></h3><div class="it"><small>2026/06/28</small>荷莫茲海峽通行量年減 97%，升為危急</div><div class="it"><small>2026/06/20</small>美中暫緩加徵關稅 90 天</div><div class="it"><small>2026/06/12</small>曼德海峽通行量年減 35%</div><div class="it"><small>2026/06/02</small>亞歐航線改道好望角，亞歐航程 多 10～14 天</div></div></div>
+</section>
+
+<!-- 風險情報 -->
+<section id="intel" class="screen hide">
+ <div class="card bigradar" id="bigCard"><h3>航海風險雷達 <small>資料時點 2026/06/30</small></h3>
+  <div class="rb"><svg id="bigRadar" viewBox="0 0 100 100" width="640" height="640" style="opacity:0;transition:opacity .25s"></svg>
+   <div class="lbl" data-k="safety" style="left:62%;top:8%">航道安全</div><div class="lbl" data-k="policy" style="left:93%;top:50%">政策與關稅</div><div class="lbl" data-k="fuel" style="left:50%;top:95%">燃油成本</div><div class="lbl" data-k="ports" style="left:7%;top:58%">港口與內陸</div><div class="lbl" data-k="countries" style="left:28%;top:12%">國家風險</div>
+  </div>
+ </div>
+ <div class="right">
+  <div class="card"><h3>風險總覽 <small>資料時點 2026/06/30</small></h3><p>五類風險中以航道安全最嚴重，建議優先檢視亞歐航線備援方案。</p><div class="matrix"><i class="c"></i><i class="m"></i><i></i><i class="l"></i><i class="m"></i><i class="h"></i><i class="m"></i><i></i><i class="l"></i><i class="m"></i><i class="m"></i><i class="l"></i><i></i><i class="l"></i><i class="l"></i></div></div>
+  <div class="card"><h3>航道安全</h3><p>荷莫茲海峽通行量年減 97%，曼德海峽年減 35%。</p></div>
+  <div class="card"><h3>燃油成本</h3><p>裂解價差 3 個月高點 +4.5，油價平穩。</p></div>
+ </div>
+</section>
+
+<div class="dim-bg" id="dim"></div>
+<svg id="fly" viewBox="0 0 100 100" class="rr"></svg>
+<div class="toast" id="toast">風險情報顯示最新資料 <b>2026/06/30</b>，已離開時間軸所選的 <b id="toastDate">2026/01/03</b><a id="toastClose">知道了</a></div>
+<div class="hint">點「風險雷達」卡片或任一扇區 → 轉場。<kbd>R</kbd> 重置回首頁（時間軸在過去）</div>
+
+<script>
+const AXES=[{k:'safety',cat:'航道安全',deg:-54,lv:'crit'},{k:'policy',cat:'政策與關稅',deg:18,lv:'none'},{k:'fuel',cat:'燃油成本',deg:90,lv:'mid'},{k:'ports',cat:'港口與內陸',deg:162,lv:'low'},{k:'countries',cat:'國家風險',deg:234,lv:'mid'}];
+const COL={crit:'var(--ym-risk-crit)',high:'var(--ym-risk-high)',mid:'var(--ym-risk-mid)',low:'var(--ym-risk-low)',none:'var(--ym-risk-none)'};
+const pt=(d,r)=>{const a=(d-90)*Math.PI/180;return [50+r*Math.cos(a),50+r*Math.sin(a)]};
+function arc(d,R){const [x1,y1]=pt(d-33.5,R),[x2,y2]=pt(d+33.5,R);return `M${x1} ${y1}A${R} ${R} 0 0 1 ${x2} ${y2}`}
+function ring(svg,R,withTags,focus){
+  let s='';
+  for(const r of [R*.33,R*.66]) s+=`<circle class="ring" cx="50" cy="50" r="${r}" stroke-dasharray="1 1.4"/>`;
+  s+=`<circle class="ring" cx="50" cy="50" r="${R}"/>`;
+  for(const a of AXES){const [x,y]=pt(a.deg+36,R);s+=`<line class="axis" x1="50" y1="50" x2="${x}" y2="${y}"/>`}
+  for(const a of AXES){s+=`<path class="arc ${focus&&focus!==a.k?'dim':''}" data-k="${a.k}" d="${arc(a.deg,R+3)}" stroke="${COL[a.lv]}"/>`}
+  // dots
+  const dots=[[-54,.78],[-62,.6],[-40,.5],[90,.45],[234,.52],[150,.3],[20,.2]];
+  for(const [d,f] of dots){const [x,y]=pt(d,R*f);s+=`<circle cx="${x}" cy="${y}" r="1.1" fill="#fff" opacity=".9"/>`}
+  const [sx,sy]=pt(-30,R);s+=`<line class="sweep" x1="50" y1="50" x2="${sx}" y2="${sy}"/>`;
+  if(withTags) for(const a of AXES){const [x,y]=pt(a.deg,R+11);s+=`<text class="tag" x="${x}" y="${y+1.8}">${a.cat.length>4?a.cat.slice(0,2)+'…':a.cat}</text>`}
+  svg.innerHTML=s;
+}
+const mini=document.getElementById('miniRadar'),big=document.getElementById('bigRadar'),fly=document.getElementById('fly');
+ring(mini,27,false);ring(big,36,false);
+// 蜘蛛圖（Janet 風格）給落地後的大雷達
+function spider(svg,focus){let s='';for(const r of [12,24,36]) s+=`<polygon fill="none" stroke="var(--ym-line-strong)" stroke-width=".4" points="${AXES.map(a=>pt(a.deg,r).join(',')).join(' ')}"/>`;
+  for(const a of AXES){const [x,y]=pt(a.deg,36);s+=`<line stroke="var(--ym-line)" stroke-width=".4" x1="50" y1="50" x2="${x}" y2="${y}"/>`}
+  const val={safety:.95,policy:.3,fuel:.55,ports:.35,countries:.5};
+  s+=`<polygon fill="color-mix(in srgb,var(--ym-accent) 18%,transparent)" stroke="var(--ym-accent)" stroke-width=".8" points="${AXES.map(a=>pt(a.deg,36*val[a.k]).join(',')).join(' ')}"/>`;
+  for(const a of AXES){const [x,y]=pt(a.deg,36*val[a.k]);s+=`<circle cx="${x}" cy="${y}" r="${focus===a.k?2.2:1.4}" fill="${COL[a.lv]}" opacity="${focus&&focus!==a.k?.35:1}"/>`}
+  for(const a of AXES){s+=`<path fill="none" stroke="${COL[a.lv]}" stroke-width="2.2" stroke-linecap="round" opacity="${focus&&focus!==a.k?.25:.9}" d="${arc(a.deg,40)}"/>`}
+  svg.innerHTML=s;}
+spider(big);
+
+let past=true; // 時間軸是否在過去
+const $=id=>document.getElementById(id);
+function sectorAt(e){const r=mini.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*100-50,y=(e.clientY-r.top)/r.height*100-50;if(Math.hypot(x,y)>31)return null;let a=Math.atan2(y,x)*180/Math.PI+90;let best=null;for(const ax of AXES){let d=((a-ax.deg)%360+540)%360-180;if(Math.abs(d)<=36)best=ax.k}return best}
+mini.addEventListener('mousemove',e=>{const k=sectorAt(e);mini.querySelectorAll('.arc').forEach(p=>p.classList.toggle('dim',!!k&&p.dataset.k!==k))});
+mini.addEventListener('mouseleave',()=>mini.querySelectorAll('.arc').forEach(p=>p.classList.remove('dim')));
+
+let busy=false;
+$('radarCard').addEventListener('click',async e=>{
+  if(busy)return;busy=true;const focus=sectorAt(e);
+  const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // 1. 時間軸先回到現在（0.3s）
+  if(past){ $('knob').style.left='100%';$('tlDate').textContent='2026/06/30';$('tlSub').textContent='今天 · 資料時點';$('tlNow').style.opacity=0;await wait(reduced?0:320);}
+  if(reduced){ gotoIntel(focus);busy=false;return;}
+  // 2. 複本從小雷達位置飛到大雷達位置
+  const from=mini.getBoundingClientRect();
+  ring(fly,27,false,focus);fly.classList.add('go');
+  fly.style.transition='none';fly.style.transform=`translate(${from.left}px,${from.top}px) scale(${from.width/240})`;fly.style.opacity=1;
+  $('dim').classList.add('on');
+  mini.style.visibility='hidden';
+  await frame();
+  // 切頁（背景淡出淡入），同時取得目的地位置
+  $('home').classList.add('hide');$('intel').classList.remove('hide');$('nav-home').classList.remove('on');$('nav-intel').classList.add('on');
+  const to=big.getBoundingClientRect();
+  fly.style.transition='transform .55s cubic-bezier(.2,.8,.2,1)';
+  fly.style.transform=`translate(${to.left}px,${to.top}px) scale(${to.width/240})`;
+  await wait(380);$('dim').classList.remove('on');
+  await wait(200);
+  // 3. 落地：環淡出，蜘蛛圖淡入，並高亮被點的類別
+  spider(big,focus);big.style.opacity=1;fly.style.transition='opacity .25s';fly.style.opacity=0;
+  setFocus(focus);
+  await wait(260);fly.classList.remove('go');mini.style.visibility='';
+  if(past){showToast();}
+  busy=false;
+});
+function gotoIntel(focus){$('home').classList.add('hide');$('intel').classList.remove('hide');spider(big,focus);big.style.opacity=1;setFocus(focus);if(past)showToast()}
+function setFocus(k){$('bigCard').classList.toggle('focus',!!k);document.querySelectorAll('#intel .lbl').forEach(l=>l.classList.toggle('on',l.dataset.k===k))}
+function showToast(){$('toast').classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>$('toast').classList.remove('show'),6000)}
+$('toastClose').onclick=()=>$('toast').classList.remove('show');
+$('tlNow').onclick=()=>{past=false;$('knob').style.left='100%';$('tlDate').textContent='2026/06/30';$('tlSub').textContent='今天 · 資料時點';$('tlNow').style.opacity=0};
+function reset(){past=true;$('home').classList.remove('hide');$('intel').classList.add('hide');$('nav-home').classList.add('on');$('nav-intel').classList.remove('on');big.style.opacity=0;$('toast').classList.remove('show');$('knob').style.left='30%';$('tlDate').textContent='2026/01/03';$('tlSub').textContent='距今 178 天前';$('tlNow').style.opacity=1;setFocus(null)}
+$('nav-home').onclick=reset;$('nav-intel').onclick=()=>{if($('intel').classList.contains('hide'))gotoIntel(null)};
+addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R')reset()});
+const wait=ms=>new Promise(r=>setTimeout(r,ms)),frame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+</script>
+</body></html>

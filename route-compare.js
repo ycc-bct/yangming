@@ -71,7 +71,7 @@
  window.routeViews=function(i,matrix){
   const tabs=[['net','風險網路'],['compare','方案比較'],['map','地圖']];
   const panel=(k,html)=>`<div class="rv-panel" data-rv-panel="${k}" ${ui.tab===k?'':'hidden'}>${html}</div>`;
-  return `<section class="route-view"><div class="rv-head"><p class="rv-crumb">航線方案評估 <span aria-hidden="true">›</span> <b>${escapeHTML(routes[i].name)}・${escapeHTML(routes[i].via)}</b></p><div class="rv-tabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" data-rv-tab="${k}" aria-selected="${ui.tab===k}">${l}</button>`).join('')}</div></div>${panel('net',routeNetwork(i,matrix,'',''))}${panel('compare',compareView(i))}${panel('map',mapView(i))}</section>`;
+  return `<section class="route-view"><div class="rv-head"><div class="rv-tabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" data-rv-tab="${k}" aria-selected="${ui.tab===k}">${l}</button>`).join('')}</div></div>${panel('net',routeNetwork(i,matrix,'',''))}${panel('compare',compareView(i))}${panel('map',mapView(i))}</section>`;
  };
 
  window.bindRouteViews=function(){

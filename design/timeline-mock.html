@@ -1,0 +1,42 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>示意 · 時間軸控制列</title><link rel="stylesheet" href="../fonts.css"><link rel="stylesheet" href="../design-tokens.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:14px/1.5 var(--ym-font-ui)}
+.wrap{padding:24px 28px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:15px;margin:0 0 2px}.lead{color:var(--ym-text-muted);font-size:12.5px;margin:0 0 8px}
+.num{font-family:var(--ym-font-data);font-variant-numeric:tabular-nums}
+.bar{display:flex;align-items:center;gap:14px;height:52px;padding:0 16px 0 12px;border:1px solid var(--ym-line);border-radius:8px;background:var(--ym-surface-1);width:1100px}
+.track{flex:1;position:relative;height:28px}.track i{position:absolute;left:0;right:0;top:13px;height:2px;background:#3f3f46;border-radius:1px}.track b{position:absolute;top:7px;width:3px;height:14px;background:var(--ym-text);border-radius:2px}.track em{position:absolute;top:18px;font:11px var(--ym-font-data);color:var(--ym-text-muted);font-style:normal}
+.track .fut{position:absolute;top:13px;height:2px;background:repeating-linear-gradient(90deg,#3f3f46 0 4px,transparent 4px 8px)}
+.track .ev{position:absolute;top:9px;width:8px;height:8px;transform:rotate(45deg);border-radius:1px}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:30px;min-width:30px;padding:0 10px;border:1px solid var(--ym-line);border-radius:6px;background:none;color:var(--ym-text);font:500 12px var(--ym-font-ui);gap:6px}
+.btn.icon{width:32px;padding:0;border-radius:50%}.btn.ghost{border-color:transparent;color:var(--ym-text-muted)}.btn.link{border:0;color:var(--ym-accent);padding:0 4px}
+.seg{display:inline-flex;border:1px solid var(--ym-line);border-radius:6px;overflow:hidden}.seg button{height:30px;padding:0 10px;border:0;background:none;color:var(--ym-text-muted);font:500 12px var(--ym-font-ui)}.seg button.on{background:var(--ym-surface-3);color:var(--ym-text)}.seg button+button{border-left:1px solid var(--ym-line)}
+.date{display:flex;flex-direction:column;line-height:1.15}.date b{font:600 16px var(--ym-font-data)}.date span{font-size:11px;color:var(--ym-text-muted)}
+.chip{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;font-size:11px;font-weight:600}
+.chip.today{color:var(--ym-risk-low);background:color-mix(in srgb,var(--ym-risk-low) 14%,transparent)}.chip.past{color:var(--ym-accent);background:color-mix(in srgb,var(--ym-accent) 14%,transparent)}.chip.play{color:var(--ym-risk-mid);background:color-mix(in srgb,var(--ym-risk-mid) 14%,transparent)}
+.pill{display:inline-flex;align-items:center;height:34px;border:1px solid var(--ym-line);border-radius:17px;padding:0 6px 0 4px;gap:4px;background:var(--ym-surface-2)}
+.pill .btn.icon{width:26px;height:26px;border:0;background:var(--ym-surface-3)}.pill .sp{color:var(--ym-text-muted);font:11px var(--ym-font-data);padding:0 6px;border-left:1px solid var(--ym-line);height:18px;display:flex;align-items:center}
+.row{display:flex;gap:16px;align-items:center}
+.note{font-size:12px;color:var(--ym-text-muted);margin-top:6px}
+</style></head><body><div class="wrap">
+
+<div><h1>現況</h1><p class="lead">播放、速度、日期、回到現在四個元件並排，一樣大小；在「今天」時「回到現在」反灰但仍佔位。</p>
+<div class="bar"><button class="btn icon">▶</button><button class="btn num" style="min-width:36px">1×</button><b class="num" style="font-size:16px">2026/04/14</b><button class="btn">↶ 回到現在</button>
+<div class="track"><i></i><span class="fut" style="left:72%;right:0"></span><span class="ev" style="left:14%;background:var(--ym-risk-mid)"></span><span class="ev" style="left:58%;background:var(--ym-risk-crit)"></span><b style="left:60%"></b><em style="left:0">2025/01</em><em style="left:72%">今天</em><em style="right:0">2026/10</em></div></div></div>
+
+<div><h1>A · 日期為主，狀態用標籤，「回到現在」只在需要時出現（建議）</h1><p class="lead">左側：播放鈕 + 日期（大）+ 狀態小字；日期旁一個標籤說明狀態（今天／回放 2025 年／播放中）。速度併進播放鈕旁的小切換。「回到現在」在今天時不顯示，離開今天才以文字連結出現，不佔位。</p>
+<div class="bar"><button class="btn icon">▶</button><div class="date"><b>2026/04/14</b><span>距今 77 天前</span></div><span class="chip past">回放</span><button class="btn link">回到現在 ↶</button>
+<div class="track"><i></i><span class="fut" style="left:72%;right:0"></span><span class="ev" style="left:14%;background:var(--ym-risk-mid)"></span><span class="ev" style="left:58%;background:var(--ym-risk-crit)"></span><b style="left:60%"></b><em style="left:0">2025/01</em><em style="left:72%">今天</em><em style="right:0">2026/10</em></div><div class="seg"><button class="on">1×</button><button>2×</button></div></div>
+<p class="note">在今天時：</p>
+<div class="bar"><button class="btn icon">▶</button><div class="date"><b>2026/06/30</b><span>資料時點</span></div><span class="chip today">今天</span>
+<div class="track"><i></i><span class="fut" style="left:72%;right:0"></span><span class="ev" style="left:14%;background:var(--ym-risk-mid)"></span><span class="ev" style="left:58%;background:var(--ym-risk-crit)"></span><b style="left:72%"></b><em style="left:0">2025/01</em><em style="left:72%">今天</em><em style="right:0">2026/10</em></div><div class="seg"><button class="on">1×</button><button>2×</button></div></div></div>
+
+<div><h1>B · 播放控制收成一顆膠囊，日期獨立</h1><p class="lead">播放 + 速度做成一顆膠囊（像影音播放器），日期單獨放、字大；「回到現在」是膠囊右邊的圖示鈕，今天時隱藏。</p>
+<div class="bar"><div class="pill"><button class="btn icon">▶</button><span class="sp">1×</span></div><div class="date"><b>2026/04/14</b><span>距今 77 天前</span></div><button class="btn icon ghost" title="回到現在">↶</button>
+<div class="track"><i></i><span class="fut" style="left:72%;right:0"></span><span class="ev" style="left:14%;background:var(--ym-risk-mid)"></span><span class="ev" style="left:58%;background:var(--ym-risk-crit)"></span><b style="left:60%"></b><em style="left:0">2025/01</em><em style="left:72%">今天</em><em style="right:0">2026/10</em></div></div></div>
+
+<div><h1>C · 控制全部放右側，左側只剩日期</h1><p class="lead">左側一個大日期 + 狀態標籤，所有操作（播放、速度、回到現在）集中在軌道右端。視覺最安靜，但操作離日期較遠。</p>
+<div class="bar"><div class="date"><b style="font-size:18px">2026/04/14</b><span>距今 77 天前</span></div><span class="chip play">播放中</span>
+<div class="track"><i></i><span class="fut" style="left:72%;right:0"></span><span class="ev" style="left:14%;background:var(--ym-risk-mid)"></span><span class="ev" style="left:58%;background:var(--ym-risk-crit)"></span><b style="left:60%"></b><em style="left:0">2025/01</em><em style="left:72%">今天</em><em style="right:0">2026/10</em></div><button class="btn icon">❚❚</button><div class="seg"><button class="on">1×</button><button>2×</button></div><button class="btn ghost">↶ 回到現在</button></div></div>
+
+</div></body></html>

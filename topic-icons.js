@@ -20,7 +20,7 @@
 
  function apply(root){
   // HTML：導覽、燈號、卡片標題、矩陣欄位、篩選鈕、狀態列
-  root.querySelectorAll('.topic-nav a, .status-topic, .risk-card-heading h3, .heat-col span, .feed-filters button[data-filter], .risk-heatmap th, .risk-status-matrix .status-topic, .intelligence-topic h3, .overview-summary-list strong, #issueType, .page-title h1').forEach(el=>{
+  root.querySelectorAll('.topic-nav a, .status-topic, .sig-cat, .risk-card-heading h3, .heat-col span, .feed-filters button[data-filter], .risk-heatmap th, .risk-status-matrix .status-topic, .intelligence-topic h3, .overview-summary-list strong, #issueType, .page-title h1').forEach(el=>{
    if(el.querySelector(':scope>.topic-ic'))return;
    const key=NAME[el.dataset.filter]||NAME[ownText(el)];if(!key)return;
    el.prepend(icon(key));el.classList.add('has-topic-ic');

@@ -1,0 +1,103 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>示意 · 首頁風險雷達</title><link rel="stylesheet" href="../fonts.css"><link rel="stylesheet" href="../design-tokens.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:14px/1.5 var(--ym-font-ui)}
+.wrap{padding:28px 32px;display:flex;gap:40px;align-items:flex-start}
+h1{font-size:18px;margin:0 0 4px}.lead{color:var(--ym-text-muted);font-size:13px;margin:0 0 18px;max-width:560px}
+.card{width:300px;background:var(--ym-surface-1);border:1px solid var(--ym-line);border-radius:8px;padding:12px 0 6px}
+.card h2{margin:0;padding:0 14px 6px;font-size:14px;font-weight:600}
+.ic{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.chip{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 6px;border-radius:4px;font-size:11px;font-weight:700}.chip i{font-style:normal;font-size:9px}
+.c-crit{color:#fff;background:color-mix(in srgb,var(--ym-risk-crit) 20%,transparent)}.c-crit i{color:var(--ym-risk-crit)}
+.c-mid{color:color-mix(in srgb,var(--ym-risk-mid) 70%,white);background:color-mix(in srgb,var(--ym-risk-mid) 14%,transparent)}.c-mid i{color:var(--ym-risk-mid)}
+.c-low{color:color-mix(in srgb,var(--ym-risk-low) 70%,white);background:color-mix(in srgb,var(--ym-risk-low) 14%,transparent)}.c-low i{color:var(--ym-risk-low)}
+.c-none{color:var(--ym-text-muted);background:var(--ym-surface-3)}.c-none i{color:var(--ym-text-muted)}
+.box{position:relative;width:100%;aspect-ratio:1}
+.box>svg{position:absolute;inset:0;width:100%;height:100%}
+.tag{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.2}
+.tag.above{transform:translate(-50%,-100%)}.tag.below{transform:translate(-50%,0)}
+.tag .n{display:inline-flex;align-items:center;gap:4px}
+/* sweep */
+.sweep{position:absolute;left:50%;top:50%;width:var(--d);height:var(--d);margin:calc(var(--d)/-2) 0 0 calc(var(--d)/-2);border-radius:50%;
+ background:conic-gradient(from 0deg,transparent 0 300deg,color-mix(in srgb,var(--ym-accent) 0%,transparent) 300deg,color-mix(in srgb,var(--ym-accent) 28%,transparent) 360deg);
+ animation:spin 6s linear infinite;mask:radial-gradient(circle,transparent 7%,#000 8%)}
+.sweep::after{content:"";position:absolute;left:50%;top:0;width:1px;height:50%;background:linear-gradient(to top,color-mix(in srgb,var(--ym-accent) 30%,transparent),var(--ym-accent));transform-origin:bottom;transform:translateX(-50%) rotate(0deg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dot{fill:var(--ym-accent);stroke:#101010;stroke-width:1.2}
+.dot.hit{animation:ping 6s linear infinite}
+@keyframes ping{0%,8%{filter:brightness(1.9) drop-shadow(0 0 3px var(--ym-accent))}20%,100%{filter:none}}
+.note{font-size:12px;color:var(--ym-text-muted);max-width:300px;margin-top:10px}
+.big .card{width:460px}.big .tag{font-size:13px}.big .chip{height:20px;font-size:12px}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><symbol id="i-lane" viewBox="0 0 24 24"><path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"/></symbol><symbol id="i-policy" viewBox="0 0 24 24"><path d="M10 18v-7"/><path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></symbol><symbol id="i-fuel" viewBox="0 0 24 24"><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-6.998a2 2 0 0 0-.59-1.42L18 5"/><path d="M14 21V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v16"/><path d="M2 21h13"/><path d="M3 9h11"/></symbol><symbol id="i-port" viewBox="0 0 24 24"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></symbol><symbol id="i-country" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/></symbol></svg>
+<div class="wrap">
+<div>
+ <h1>首頁風險雷達 · 示意</h1>
+ <p class="lead">拿掉「點擊放大」文案與紅點閃爍。加入掃描線繞行（6 秒一圈）、刻度錶圈、雙層外環；五個點同色同大小（accent 藍），掃描線掃過時短暫亮一下；等級靠外側標籤表示。整張卡片仍可點擊進入風險情報。</p>
+ <div class="card">
+  <h2>風險雷達</h2>
+  <div class="box" style="--d:62%">
+   <svg viewBox="0 0 100 100">
+    <defs><radialGradient id="g" cx="50%" cy="50%"><stop offset="0" stop-color="#1b2433"/><stop offset=".7" stop-color="#131720"/><stop offset="1" stop-color="#111113"/></radialGradient></defs>
+    <!-- 錶圈：刻度（每 3° 一格，每 30° 粗） -->
+    <g id="ticks" stroke="#3f3f46" stroke-width=".35">
+     <script>/* static ticks rendered below */</script>
+    </g>
+    <circle cx="50" cy="50" r="35" fill="none" stroke="#3f3f46" stroke-width=".5"/>
+    <circle cx="50" cy="50" r="31" fill="url(#g)" stroke="var(--ym-accent)" stroke-opacity=".75" stroke-width=".6"/>
+    <circle cx="50" cy="50" r="20.5" fill="none" stroke="#3f3f46" stroke-width=".45" stroke-dasharray="1.2 1.4"/>
+    <circle cx="50" cy="50" r="11" fill="color-mix(in srgb,var(--ym-risk-crit) 9%,transparent)" stroke="var(--ym-risk-crit)" stroke-opacity=".35" stroke-width=".45" stroke-dasharray="1.2 1.4"/>
+    <g stroke="#3f3f46" stroke-width=".4"><path d="M50 50L68.2 24.9M50 50L79.5 59.6M50 50L50 81M50 50L20.5 59.6M50 50L31.8 24.9"/></g>
+    <text x="50" y="51.2" font-size="3.4" fill="#8a8a92" text-anchor="middle" font-family="Inter,Noto Sans TC">行動區</text>
+    <!-- 五個點：同色同大小 -->
+    <circle class="dot hit" style="animation-delay:-.2s" cx="54.7" cy="43.5" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-1.6s" cx="77.1" cy="58.8" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-2.6s" cx="50" cy="69.2" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-3.7s" cx="25.8" cy="57.8" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-5s" cx="38.6" cy="34.3" r="2.1"/>
+   </svg>
+   <div class="sweep"></div>
+   <div class="tag above" style="left:68%;top:19%"><span class="n"><svg class="ic"><use href="#i-lane"/></svg>航道安全</span><span class="chip c-crit"><i>■</i>危急</span></div>
+   <div class="tag below" style="left:84%;top:62%"><span class="n"><svg class="ic"><use href="#i-policy"/></svg>政策與關稅</span><span class="chip c-none"><i>●</i>無訊號</span></div>
+   <div class="tag below" style="left:50%;top:84%"><span class="n"><svg class="ic"><use href="#i-fuel"/></svg>燃油成本</span><span class="chip c-mid"><i>▲</i>中</span></div>
+   <div class="tag below" style="left:16%;top:62%"><span class="n"><svg class="ic"><use href="#i-port"/></svg>港口與內陸</span><span class="chip c-low"><i>●</i>低</span></div>
+   <div class="tag above" style="left:32%;top:19%"><span class="n"><svg class="ic"><use href="#i-country"/></svg>國家風險</span><span class="chip c-mid"><i>▲</i>中</span></div>
+  </div>
+ </div>
+ <p class="note">掃描線：6 秒一圈，淡藍扇形拖尾；掃到點時點亮 0.5 秒後回復。整體 60fps 的 CSS 動畫，不吃 GPU。</p>
+</div>
+<div class="big">
+ <h1>放大看細節</h1>
+ <p class="lead">錶圈刻度每 3° 一格、每 30° 加粗；外環雙線（灰 + 藍）；內圈行動區淡紅虛線。</p>
+ <div class="card">
+  <h2>風險雷達</h2>
+  <div class="box" style="--d:62%">
+   <svg viewBox="0 0 100 100">
+    <defs><radialGradient id="g2" cx="50%" cy="50%"><stop offset="0" stop-color="#1b2433"/><stop offset=".7" stop-color="#131720"/><stop offset="1" stop-color="#111113"/></radialGradient></defs>
+    <g class="ticks2" stroke="#3f3f46" stroke-width=".35"></g>
+    <circle cx="50" cy="50" r="35" fill="none" stroke="#3f3f46" stroke-width=".5"/>
+    <circle cx="50" cy="50" r="31" fill="url(#g2)" stroke="var(--ym-accent)" stroke-opacity=".75" stroke-width=".6"/>
+    <circle cx="50" cy="50" r="20.5" fill="none" stroke="#3f3f46" stroke-width=".45" stroke-dasharray="1.2 1.4"/>
+    <circle cx="50" cy="50" r="11" fill="color-mix(in srgb,var(--ym-risk-crit) 9%,transparent)" stroke="var(--ym-risk-crit)" stroke-opacity=".35" stroke-width=".45" stroke-dasharray="1.2 1.4"/>
+    <g stroke="#3f3f46" stroke-width=".4"><path d="M50 50L68.2 24.9M50 50L79.5 59.6M50 50L50 81M50 50L20.5 59.6M50 50L31.8 24.9"/></g>
+    <text x="50" y="51.2" font-size="3.4" fill="#8a8a92" text-anchor="middle" font-family="Inter,Noto Sans TC">行動區</text>
+    <circle class="dot hit" style="animation-delay:-.2s" cx="54.7" cy="43.5" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-1.6s" cx="77.1" cy="58.8" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-2.6s" cx="50" cy="69.2" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-3.7s" cx="25.8" cy="57.8" r="2.1"/>
+    <circle class="dot hit" style="animation-delay:-5s" cx="38.6" cy="34.3" r="2.1"/>
+   </svg>
+   <div class="sweep" style="animation-delay:-2s"></div>
+   <div class="tag above" style="left:68%;top:19%"><span class="n"><svg class="ic"><use href="#i-lane"/></svg>航道安全</span><span class="chip c-crit"><i>■</i>危急</span></div>
+   <div class="tag below" style="left:84%;top:62%"><span class="n"><svg class="ic"><use href="#i-policy"/></svg>政策與關稅</span><span class="chip c-none"><i>●</i>無訊號</span></div>
+   <div class="tag below" style="left:50%;top:84%"><span class="n"><svg class="ic"><use href="#i-fuel"/></svg>燃油成本</span><span class="chip c-mid"><i>▲</i>中</span></div>
+   <div class="tag below" style="left:16%;top:62%"><span class="n"><svg class="ic"><use href="#i-port"/></svg>港口與內陸</span><span class="chip c-low"><i>●</i>低</span></div>
+   <div class="tag above" style="left:32%;top:19%"><span class="n"><svg class="ic"><use href="#i-country"/></svg>國家風險</span><span class="chip c-mid"><i>▲</i>中</span></div>
+  </div>
+ </div>
+</div>
+</div>
+<script>
+// 錶圈刻度
+document.querySelectorAll('#ticks, .ticks2').forEach(g=>{let h='';for(let i=0;i<120;i++){const a=i*3*Math.PI/180,major=i%10===0,r1=33.2,r2=major?35.6:34.6;h+=`<line x1="${50+r1*Math.cos(a)}" y1="${50+r1*Math.sin(a)}" x2="${50+r2*Math.cos(a)}" y2="${50+r2*Math.sin(a)}" ${major?'stroke="#71717a" stroke-width=".5"':''}/>`}g.innerHTML=h});
+</script>
+</body></html>

@@ -1,0 +1,173 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>示意 · 全球態勢三欄分工</title><link rel="stylesheet" href="../fonts.css"><link rel="stylesheet" href="../design-tokens.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:14px/1.5 var(--ym-font-ui)}
+.num{font-family:var(--ym-font-data);font-variant-numeric:tabular-nums}.muted{color:var(--ym-text-muted)}.small{font-size:12px}
+.ic{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:var(--ym-text-muted)}
+.top{height:48px;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--ym-line);font-size:13px}.top b{color:#e60012;font-size:15px}.top .nav{display:flex;gap:18px;margin-left:auto;color:var(--ym-text-muted)}.top .nav span:first-child{color:var(--ym-text);border-bottom:2px solid var(--ym-brand);padding:14px 0}
+.note{margin:14px 20px 0;padding:10px 14px;border:1px dashed var(--ym-line-strong);border-radius:8px;font-size:12px;color:var(--ym-text-muted)}
+.page{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:12px;padding:14px 20px 20px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--ym-surface-1);border:1px solid var(--ym-line);border-radius:8px;overflow:hidden}
+.card h2{margin:0;padding:12px 14px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}.card h2 .tag{margin-left:auto;font-size:11px;font-weight:500;color:var(--ym-text-muted);border:1px solid var(--ym-line);border-radius:4px;padding:1px 6px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:700;white-space:nowrap}.chip i{font-style:normal;font-size:10px}
+.c-crit{color:#fff;background:color-mix(in srgb,var(--ym-risk-crit) 20%,transparent)}.c-crit i{color:var(--ym-risk-crit)}
+.c-high{color:color-mix(in srgb,var(--ym-risk-high) 70%,white);background:color-mix(in srgb,var(--ym-risk-high) 16%,transparent)}.c-high i{color:var(--ym-risk-high)}
+.c-mid{color:color-mix(in srgb,var(--ym-risk-mid) 70%,white);background:color-mix(in srgb,var(--ym-risk-mid) 14%,transparent)}.c-mid i{color:var(--ym-risk-mid)}
+.c-low{color:color-mix(in srgb,var(--ym-risk-low) 70%,white);background:color-mix(in srgb,var(--ym-risk-low) 14%,transparent)}.c-low i{color:var(--ym-risk-low)}
+.c-none{color:var(--ym-text-muted);background:var(--ym-surface-3)}.c-none i{color:var(--ym-text-muted)}
+/* 左：燈號手風琴 */
+.light{border-top:1px solid var(--ym-line)}
+.lh{display:flex;align-items:center;gap:7px;padding:10px 14px;cursor:pointer}.lh b{font-size:14.5px;margin-right:auto}.lh .caret{color:var(--ym-text-muted);font-size:11px;margin-left:6px}
+.ll{padding:0 14px 10px;font-size:12px;color:var(--ym-text-muted)}
+.light.open{background:var(--ym-surface-2);box-shadow:inset 3px 0 0 var(--ym-accent)}
+.light.open .lh .ic{color:var(--ym-text)}
+.feed{border-top:1px solid var(--ym-line);padding:6px 14px 10px}
+.feed .fh{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ym-text-muted);padding:6px 0}
+.fi{padding:8px 0;border-top:1px solid var(--ym-line);font-size:13px}.fi .m{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ym-text-muted);margin-bottom:2px}.fi .m .k{border:1px solid var(--ym-line);border-radius:3px;padding:0 5px}
+.opts{margin:8px -14px -10px;padding:10px 14px;background:var(--ym-surface-1);border-top:1px solid var(--ym-line)}.opts h4{margin:0 0 6px;font-size:12px;color:var(--ym-text-muted);font-weight:600}.opts li{font-size:12.5px;margin:3px 0 3px 14px;color:var(--ym-text-2)}
+/* 中：地圖 */
+.map{position:relative;aspect-ratio:768/519;background:#0d0d0f url(mock-map.jpg) center/cover}
+.routes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 14px 14px}
+.rt{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--ym-line);border-radius:6px;font-size:12.5px}.rt b{font-size:13px}.rt .r{display:flex;justify-content:space-between;align-items:center}.rt .s{font-size:11.5px;color:var(--ym-text-muted)}
+.rt.sel{border-color:var(--ym-accent);background:color-mix(in srgb,var(--ym-accent) 10%,transparent)}
+/* 右：詳情 */
+.ph{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ym-line);font-size:12px;color:var(--ym-text-muted)}.ph .x{margin-left:auto;display:flex;gap:10px}
+.sec{padding:12px 14px;border-bottom:1px solid var(--ym-line)}.sec h3{margin:0 0 8px;font-size:12px;color:var(--ym-text-muted);font-weight:600;letter-spacing:.3px}
+.ttl{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ttl .via{font-size:13px;font-weight:400;color:var(--ym-text-muted)}
+.cp{display:grid;grid-template-columns:14px 1fr auto auto;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--ym-line);font-size:13px}.cp:first-of-type{border:0}.cp .sh{font-size:11px;text-align:center}.cp .v{font-size:12.5px}.cp .y{font-size:12px}
+.cmp{width:100%;border-collapse:collapse;font-size:12.5px}.cmp th{font-weight:500;color:var(--ym-text-muted);text-align:left;padding:4px 0;font-size:11.5px}.cmp td{padding:5px 0;border-top:1px solid var(--ym-line)}.cmp td:not(:first-child),.cmp th:not(:first-child){text-align:right}.cmp .hl{color:var(--ym-risk-crit)}.cmp .ok{color:var(--ym-risk-low)}
+.sig{padding:6px 0;border-top:1px solid var(--ym-line);font-size:12.5px}.sig:first-of-type{border:0}.sig .m{font-size:11px;color:var(--ym-text-muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px}.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--ym-line);font:500 13px var(--ym-font-ui);color:var(--ym-text)}.btn.p{background:var(--ym-brand);border-color:var(--ym-brand);color:#fff}
+.ki{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-top:1px solid var(--ym-line)}.ki b{font:600 22px var(--ym-font-data)}.ki b small{font:12px var(--ym-font-ui);color:var(--ym-text-muted);margin-left:4px}.ki span{font-size:12px;color:var(--ym-text-muted)}
+.spark{height:28px;background:linear-gradient(to top,color-mix(in srgb,var(--ym-accent) 18%,transparent),transparent);border-bottom:1.5px solid var(--ym-accent);border-radius:2px;margin-top:4px;opacity:.8}
+.tl{height:44px;margin:0 20px 20px;border:1px solid var(--ym-line);border-radius:8px;display:flex;align-items:center;gap:14px;padding:0 14px;font-size:12px;color:var(--ym-text-muted)}.tl .bar{flex:1;height:3px;background:var(--ym-line-strong);border-radius:2px;position:relative}.tl .bar i{position:absolute;left:92%;top:-5px;width:4px;height:13px;background:var(--ym-text);border-radius:2px}
+.lab{position:absolute;top:-10px;left:12px;font-size:11px;color:var(--ym-accent);background:var(--ym-bg);padding:0 6px;border:1px solid var(--ym-accent);border-radius:4px}
+.col{position:relative}
+.mini{position:relative;width:300px;height:300px;margin:0 auto 6px}.mini>svg{display:block;width:300px;height:300px}
+.axl{position:absolute;display:flex;flex-direction:column;align-items:flex-start;gap:3px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.2}.axl .ic{width:14px;height:14px;color:var(--ym-text)}.axl .chip{height:18px;font-size:11px;padding:0 6px}.axl.r{align-items:flex-end}
+
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 20px 20px}
+.fr{position:relative;height:170px;border:1px solid var(--ym-line);border-radius:8px;background:var(--ym-surface-1);display:flex;gap:8px;padding:12px;font-size:12px;color:var(--ym-text-muted)}
+.fr span{position:absolute;left:12px;bottom:10px}
+.fr .l{width:70px;display:flex;flex-direction:column;gap:6px}.fr .l .row5{flex:1;background:repeating-linear-gradient(to bottom,var(--ym-surface-3) 0 6px,transparent 6px 12px);border-radius:3px}
+.fr .m{flex:1;background:var(--ym-surface-2);border-radius:6px;margin-bottom:28px}.fr .rr{width:60px;background:var(--ym-surface-2);border-radius:6px;margin-bottom:28px}
+.fr .r{border-radius:50%;background:radial-gradient(circle,#1a2230,#101217);border:1px solid var(--ym-accent)}
+.fr .l2{width:140px}.fr .cards{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:28px}.fr .cards i{background:var(--ym-surface-2);border-radius:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px}
+.two>div{position:relative}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><symbol id="i-lane" viewBox="0 0 24 24"><path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"/></symbol><symbol id="i-policy" viewBox="0 0 24 24"><path d="M10 18v-7"/><path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></symbol><symbol id="i-fuel" viewBox="0 0 24 24"><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-6.998a2 2 0 0 0-.59-1.42L18 5"/><path d="M14 21V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v16"/><path d="M2 21h13"/><path d="M3 9h11"/></symbol><symbol id="i-port" viewBox="0 0 24 24"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></symbol><symbol id="i-country" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/></symbol></svg>
+
+<div class="top"><b>YANG MING</b><span>航運風險戰情室</span><div class="nav"><span>全球態勢</span><span>風險情報</span><span>航線方案評估</span><span>決策報告</span></div></div>
+<div class="note">示意：三欄各管一件事 — 左「依主題」、中「依地理」、右「依你點的東西」。左欄：簡化雷達（五類與等級直接標在圖上）＋關鍵指標；訊號動態與可討論選項移到風險情報；右欄為點選「亞洲—北歐 · 繞好望角」的狀態。下方：右欄未選取狀態、點擊雷達放大進入風險情報的過渡。</div>
+
+<div class="page">
+ <!-- 左 -->
+ <div class="col"><span class="lab">左欄 · 風險雷達 + 關鍵指標</span>
+  <div class="card">
+   <h2>風險雷達 <span class="tag">點擊放大 → 風險情報</span></h2>
+   <div class="mini">
+    <svg viewBox="0 0 300 300">
+     <defs><radialGradient id="g" cx="50%" cy="50%"><stop offset="0" stop-color="#1a2230"/><stop offset="1" stop-color="#101217"/></radialGradient></defs>
+     <circle cx="150" cy="150" r="98" fill="url(#g)" stroke="var(--ym-accent)" stroke-opacity=".7"/>
+     <circle cx="150" cy="150" r="66" fill="none" stroke="#3f3f46" stroke-dasharray="3 4"/>
+     <circle cx="150" cy="150" r="36" fill="color-mix(in srgb,var(--ym-risk-crit) 10%,transparent)" stroke="var(--ym-risk-crit)" stroke-opacity=".35" stroke-dasharray="3 4"/>
+     <g stroke="#3f3f46"><path d="M150 150L208 70M150 150L243 180M150 150L150 248M150 150L57 180M150 150L92 70"/></g>
+     <text x="150" y="153" text-anchor="middle" font-size="9" fill="#8a8a92">行動區</text>
+     <circle cx="168" cy="125" r="7" fill="var(--ym-risk-crit)" stroke="#101010" stroke-width="2"><animate attributeName="r" values="7;9;7" dur="1.6s" repeatCount="indefinite"/></circle>
+     <circle cx="222" cy="173" r="5.5" fill="var(--ym-risk-none)" stroke="#101010" stroke-width="2"/>
+     <circle cx="150" cy="208" r="6" fill="var(--ym-risk-mid)" stroke="#101010" stroke-width="2"/>
+     <circle cx="70" cy="176" r="5.5" fill="var(--ym-risk-low)" stroke="#101010" stroke-width="2"/>
+     <circle cx="112" cy="110" r="6" fill="var(--ym-risk-mid)" stroke="#101010" stroke-width="2"/>
+    </svg>
+    <!-- 軸標：圖示 + 名稱 + 等級，直接標在圖上 -->
+    <div class="axl" style="left:176px;top:30px"><svg class="ic"><use href="#i-lane"/></svg>航道安全<span class="chip c-crit"><i>■</i>危急</span></div>
+    <div class="axl" style="left:214px;top:188px"><svg class="ic"><use href="#i-policy"/></svg>政策與關稅<span class="chip c-none"><i>●</i>無訊號</span></div>
+    <div class="axl" style="left:104px;top:256px"><svg class="ic"><use href="#i-fuel"/></svg>燃油成本<span class="chip c-mid"><i>▲</i>中</span></div>
+    <div class="axl r" style="right:214px;top:188px"><svg class="ic"><use href="#i-port"/></svg>港口與內陸<span class="chip c-low"><i>●</i>低</span></div>
+    <div class="axl r" style="right:176px;top:30px"><svg class="ic"><use href="#i-country"/></svg>國家風險<span class="chip c-mid"><i>▲</i>中</span></div>
+   </div>
+  </div>
+  <div class="card">
+   <h2>關鍵指標 <span class="tag">示意數據</span></h2>
+   <div class="ki" style="border:0"><span>荷莫茲通行量</span><b class="num">2.3<small>艘/日</small></b><span>比去年同期 −97%</span><div class="spark"></div></div>
+   <div class="ki"><span>380cst 裂解價差</span><b class="num">−2.0<small>USD/Barrel</small></b><span>仍為負值</span><div class="spark"></div></div>
+   <div class="ki"><span>貿易政策不確定性</span><b class="num">186<small>Index</small></b><span>近三個月 −15%</span><div class="spark"></div></div>
+  </div>
+ </div>
+
+ <!-- 中 -->
+ <div class="col"><span class="lab">中欄 · 依地理（不變）</span>
+  <div class="card"><div class="map"></div>
+   <div class="routes">
+    <div class="rt"><div class="r"><b>亞洲—北歐</b><span class="chip c-crit"><i>■</i>危急</span></div><span class="s">經蘇伊士 · 荷莫茲年減 97%</span></div>
+    <div class="rt sel"><div class="r"><b>亞洲—北歐</b><span class="chip c-mid"><i>▲</i>中</span></div><span class="s">繞好望角 · 麻六甲年減 14%</span></div>
+    <div class="rt"><div class="r"><b>亞洲—中東</b><span class="chip c-crit"><i>■</i>危急</span></div><span class="s">經荷莫茲 · 年減 97%</span></div>
+    <div class="rt"><div class="r"><b>亞洲—美西</b><span class="chip c-low"><i>●</i>低</span></div><span class="s">跨太平洋 · 不經主要咽喉點</span></div>
+    <div class="rt"><div class="r"><b>亞洲—美東</b><span class="chip c-low"><i>●</i>低</span></div><span class="s">經巴拿馬 · 年減 5%</span></div>
+    <div class="rt"><div class="r"><b>亞洲—南美西岸</b><span class="chip c-low"><i>●</i>低</span></div><span class="s">不經主要咽喉點</span></div>
+   </div>
+  </div>
+ </div>
+
+ <!-- 右 -->
+ <div class="col"><span class="lab">右欄 · 依你點的東西</span>
+  <div class="card">
+   <div class="ph"><span>航線</span><span class="x"><span>✕</span><span>⊟</span></span></div>
+   <div class="sec"><div class="ttl">亞洲—北歐 <span class="via">· 繞好望角</span><span class="chip c-mid"><i>▲</i>中</span></div><div class="small muted" style="margin-top:4px">備援航線（虛線）· 2026/02/28 起常態化</div></div>
+   <div class="sec"><h3>沿線咽喉點</h3>
+    <div class="cp"><span class="sh" style="color:var(--ym-risk-mid)">▲</span><span>麻六甲海峽</span><span class="v num">211.7 艘/日</span><span class="y num" style="color:var(--ym-risk-mid)">−14%</span></div>
+    <div class="cp"><span class="sh" style="color:var(--ym-risk-none)">●</span><span>好望角</span><span class="v num">89 艘/日</span><span class="y num muted">−4%</span></div>
+   </div>
+   <div class="sec"><h3>備援比較 · 對 經蘇伊士</h3>
+    <table class="cmp"><tr><th></th><th>經蘇伊士</th><th>繞好望角</th></tr>
+    <tr><td>航程</td><td class="num">28 天</td><td class="num hl">+10–14 天</td></tr>
+    <tr><td>燃油</td><td class="num">基準</td><td class="num hl">+18%</td></tr>
+    <tr><td>咽喉點</td><td class="num hl">3（1 危急）</td><td class="num ok">2（0 危急）</td></tr>
+    <tr><td>航線等級</td><td><span class="chip c-crit" style="height:18px"><i>■</i>危急</span></td><td><span class="chip c-mid" style="height:18px"><i>▲</i>中</span></td></tr></table>
+   </div>
+   <div class="sec"><h3>最近相關訊號</h3>
+    <div class="sig"><div class="m num">2026-04-20 · 航道安全</div>亞歐航程平均增加 12 天，繞行好望角常態化</div>
+    <div class="sig"><div class="m num">2026-03-15 · 航道安全</div>曼德海峽通行量年減 35%，升為高</div>
+    <div class="sig"><div class="m num">2026-03-05 · 燃油成本</div>裂解價差轉正，備援方案燃油成本上修</div>
+   </div>
+   <div class="btns"><span class="btn p">＋ 加入報告</span><span class="btn">前往航線方案評估</span><span class="btn">在關聯圖查看</span></div>
+  </div>
+ </div>
+</div>
+
+<div class="tl"><span>▶ 1×</span><span class="num" style="color:var(--ym-text)">2026/06/30</span><span>回到現在</span><div class="bar"><i></i></div><span>時間軸（不變）</span></div>
+
+<div class="note" style="margin-top:0">點擊雷達 → 放大過渡 → 風險情報（雷達停在左側，右側主題卡淡入）</div>
+<div class="strip">
+ <div class="fr"><div class="l"><div class="r" style="width:54px;height:54px"></div><div class="row5"></div></div><div class="m"></div><div class="rr"></div><span>① 首頁：點左欄雷達</span></div>
+ <div class="fr"><div class="r" style="position:absolute;left:30px;top:24px;width:120px;height:120px;box-shadow:0 0 0 2px var(--ym-accent)"></div><span style="margin-top:auto">② 雷達原地放大，其他欄位淡出</span></div>
+ <div class="fr"><div class="l2"><div class="r" style="width:120px;height:120px"></div></div><div class="cards"><i></i><i></i><i></i><i></i></div><span>③ 風險情報：右側主題卡淡入</span></div>
+</div>
+<div class="two">
+ <div><span class="lab">右欄 · 未選取狀態</span>
+  <div class="card" style="max-width:340px">
+   <div class="ph"><span>最新訊號</span><span class="x muted">跨類 · 最近 5 則</span></div>
+   <div class="sec">
+    <div class="sig"><div class="m num">2026-06-10 · 國家風險</div>阿根廷維持 DB6a，建議極度限制曝險</div>
+    <div class="sig"><div class="m num">2026-05-20 · 政策與關稅</div>貿易政策不確定性回落至 180，近三個月 −40%</div>
+    <div class="sig"><div class="m num">2026-04-20 · 航道安全</div>亞歐航程平均增加 12 天，繞行好望角常態化</div>
+    <div class="sig"><div class="m num">2026-04-15 · 國家風險</div>德國下調供應展望，中東戰事致供應受限</div>
+    <div class="sig"><div class="m num">2026-03-20 · 政策與關稅</div>美國宣布臨時 10% 全球進口關稅</div>
+    <div class="small muted" style="padding-top:8px">全部訊號與可討論選項在風險情報 →</div>
+   </div>
+   <div class="sec small muted">點地圖上的航線、咽喉點，這裡會顯示詳情。</div>
+  </div>
+ </div>
+ <div><span class="lab">右欄 · 點咽喉點／警示（維持三段式）</span>
+  <div class="card" style="max-width:340px">
+   <div class="ph"><span>咽喉點</span><span class="x"><span>✕</span></span></div>
+   <div class="sec"><div class="ttl">荷莫茲海峽 <span class="chip c-crit"><i>■</i>危急</span></div><div class="small muted" style="margin-top:4px"><span class="num">2.3 艘/日 · −97%</span> · 訊號提前 10 個月</div></div>
+   <div class="sec"><h3>這是什麼</h3><div style="font-size:13px">2025/04 國家風險報告首次警示荷莫茲周邊擾動；2026/02/28 以伊戰爭爆發後封鎖機率升至約 100%。</div></div>
+   <div class="sec"><h3>代表什麼</h3><div style="font-size:13px">繞行將成常態，重點是能否把延誤與成本控制在可預期區間。</div></div>
+   <div class="sec"><h3>可以做什麼</h3><div style="font-size:13px">航線改為主幹＋備援設計；高價值船留在風險可控航線；戰爭與航線風險預先條款化。</div></div>
+   <div class="btns"><span class="btn p">＋ 加入報告</span><span class="btn">在關聯圖查看</span></div>
+  </div>
+ </div>
+</div>
+</body></html>

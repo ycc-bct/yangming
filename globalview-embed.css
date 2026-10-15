@@ -33,3 +33,38 @@ body.gv-intro header{transform:translateY(-100%);opacity:0}
 #pageContent svg[data-hover]{cursor:crosshair}
 #pageContent .country-point{transition:r 120ms}#pageContent .country-point:hover{r:9}
 #pageContent .intelligence-distribution>div{cursor:default}#pageContent .intelligence-distribution>div:hover i{filter:brightness(1.25)}
+
+/* 風險情報：訊號動態／可討論選項（topic-signals.js）；主題狀態卡與首頁燈號重複，隱藏 */
+.risk-status-matrix{display:none}
+.signal-grid{margin-top:20px}
+.sig-list{list-style:none;margin:0;padding:0}.sig-item{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-top:1px solid var(--border)}.sig-item:first-child{border-top:0;padding-top:4px}
+.sig-meta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted-foreground)}.sig-cat{font-family:var(--font-ui)}
+.sig-kind{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-ui)}.sig-kind i{width:7px;height:7px;border-radius:50%}.sig-kind.t-event i{background:var(--ym-type-event)}.sig-kind.t-indicator i{background:var(--ym-type-indicator)}.sig-kind.t-route i{background:var(--ym-type-route)}.sig-kind.t-country i{background:var(--ym-type-country)}
+.sig-title{font-size:13.5px;color:var(--foreground)}
+.opt-list{margin:0;padding-left:18px}.opt-list li{font-size:13.5px;margin:6px 0;color:#d4d4d8}
+.card-signals{margin:14px 0 10px;padding-top:10px;border-top:1px solid var(--border)}.card-signals-head{font-size:12px;color:var(--muted-foreground);margin:6px 0 2px}.card-signals .sig-item{padding:6px 0}.card-signals .sig-title{font-size:13px}.card-opt{margin:2px 0 0;font-size:13px;color:#d4d4d8}
+
+/* 航海風險雷達：聚焦主題時其他退暗（radar-focus.js） */
+.risk-radar-panel .radar-status-arc,.risk-radar-panel .radar-signal,.risk-radar-panel .radar-topic-label{transition:opacity 200ms cubic-bezier(.2,.7,.2,1)}
+.risk-radar-panel.radar-focus .radar-status-arc.is-dim{opacity:.28}
+.risk-radar-panel.radar-focus .radar-status-arc.is-focus{stroke-width:9}
+.risk-radar-panel.radar-focus .radar-signal.is-dim{opacity:.25}
+.risk-radar-panel.radar-focus .radar-topic-label.is-dim{opacity:.4}
+
+/* 雷達軸標與標題同字級（radar-focus.js 依縮放比例換算） */
+.risk-radar-panel .radar-topic-label text{font-size:var(--radar-label-fs,17px)!important;font-weight:600}
+
+/* 情報總覽卡：主題名稱固定寬度，讓狀態標籤對齊 */
+.risk-overview-card .risk-card-heading h3{min-width:92px}
+
+/* 航線方案評估：拿掉麵包屑，三個檢視分頁靠左 */
+.rv-head{justify-content:flex-start}
+
+/* 情報總覽卡：圖表撐滿右欄（和分布長條同寬），說明小字維持一行 */
+.risk-workspace-main .risk-overview-focus{grid-template-columns:auto minmax(0,1fr) 262px}
+.risk-workspace-main .risk-overview-focus>.risk-card-chart svg{width:100%;height:auto;max-height:none}
+.risk-workspace-main .risk-overview-focus>small{white-space:nowrap;min-height:0}
+.risk-workspace-main .risk-overview-focus>small .cap-time{display:inline;margin-left:6px}
+
+/* 航海風險雷達：右上角資料時點（取代原本的藍色膠囊樣式） */
+.risk-radar-heading>span.radar-asof{border:0;padding:0;border-radius:0;color:var(--ym-text-muted);font:400 12px/1.3 var(--ym-font-data);font-variant-numeric:tabular-nums;letter-spacing:0;white-space:nowrap;align-self:flex-start;margin-top:10px}
