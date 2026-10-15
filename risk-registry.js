@@ -3,7 +3,8 @@
    Thresholds are PROVISIONAL until the business confirms them; change them only here. */
 const RISK_STALE_DAYS=60;
 const RISK_THRESHOLDS_PROVISIONAL=true;
-const RISK_STATUS={act:{label:'行動',rank:3},watch:{label:'觀察',rank:2},normal:{label:'正常',rank:1},info:{label:'未設門檻',rank:0}};
+// Topic status uses the global view's five-level scale and comes from RISK_SHARED (risk-shared.js).
+const RISK_STATUS={crit:{label:'危急',rank:4},high:{label:'高',rank:3},mid:{label:'中',rank:2},low:{label:'低',rank:1},none:{label:'無訊號',rank:0}};
 
 const RISK_SIGNALS={
  'safety.hormuz':{name:'荷莫茲封鎖事件市場機率',unit:'%',asOf:'2026-03',source:'Polymarket（簡報圖表重建）',
@@ -60,9 +61,9 @@ function riskWorstFreshness(list){
  return list.reduce((w,f)=>!w||order[f.state]>order[w.state]||(f.state===w.state&&(f.days||0)>(w.days||0))?f:w,null);
 }
 function riskTopicStatus(topic,scope={}){
- const signals=RISK_TOPIC_SIGNALS[topic].map(id=>riskSignal(id,scope));
- const status=signals.reduce((s,x)=>RISK_STATUS[x.status].rank>RISK_STATUS[s].rank?x.status:s,'info');
- return {status,signals,freshness:riskWorstFreshness(signals.map(s=>s.freshness))};
+ // Status, line and lead are the global view's light for this topic; signals keep their values for charts and the radar.
+ const light=RISK_SHARED.lights[topic]||{level:'none',line:''},signals=RISK_TOPIC_SIGNALS[topic].map(id=>riskSignal(id,scope));
+ return {status:light.level,line:light.line,lead:light.lead||'',signals,freshness:riskWorstFreshness(signals.map(s=>s.freshness))};
 }
 function riskEventCount(f){return PORT_EVENTS.filter(e=>Object.entries(f).every(([k,v])=>e[k]===v)).length}
 function riskTriggerState(topic,index){
@@ -78,7 +79,8 @@ function riskFormat(v,unit){if(v==null)return '—';return unit==='%'?v+'%':v+(u
 function riskDelta(s){if(!s.compare||s.value==null)return '';const d=s.value-s.compare.value;return '較'+s.compare.label+' '+(d>0?'+':d<0?'−':'±')+Math.abs(d)+(s.unit==='%'?' 個百分點':'')}
 
 /* Markup helpers shared by topic pages and the overview. */
-function riskStatusBadge(status){return `<span class="risk-status risk-status-${status}">${RISK_STATUS[status].label}</span>`}
+function riskStatusBadge(status){return `<span class="risk-status risk-status-${status}">${(RISK_STATUS[status]||RISK_STATUS.none).label}</span>`}
+function riskTopicFeed(topic){return RISK_SHARED.feed.filter(f=>f.topic===topic).sort((a,b)=>b.date.localeCompare(a.date))}
 function riskFreshnessTag(f){
  const text=f.state==='stale'?f.label+' · 已逾 '+f.days+' 天':f.label;
  return `<span class="risk-freshness risk-freshness-${f.state}">${f.state==='fresh'?'':'⚠ '}${escapeHTML(text)}</span>`;
@@ -86,7 +88,7 @@ function riskFreshnessTag(f){
 function riskBullet(s){
  if(!s.thresholds||!s.range)return '';
  const [lo,hi]=s.range,pct=v=>Math.min(100,Math.max(0,(v-lo)/(hi-lo)*100)),w=pct(s.thresholds.watch),a=pct(s.thresholds.act);
- return `<div class="risk-bullet" role="img" aria-label="${escapeHTML(s.name)}：目前 ${escapeHTML(riskFormat(s.value,s.unit))}，觀察門檻 ${escapeHTML(riskFormat(s.thresholds.watch,s.unit))}，行動門檻 ${escapeHTML(riskFormat(s.thresholds.act,s.unit))}"><i class="zone-normal" style="width:${w}%"></i><i class="zone-watch" style="width:${a-w}%"></i><i class="zone-act" style="width:${100-a}%"></i><b style="left:${pct(s.value)}%"></b></div>`;
+ return `<div class="risk-bullet" role="img" aria-label="${escapeHTML(s.name)}：目前 ${escapeHTML(riskFormat(s.value,s.unit))}，中門檻 ${escapeHTML(riskFormat(s.thresholds.watch,s.unit))}，危急門檻 ${escapeHTML(riskFormat(s.thresholds.act,s.unit))}"><i class="zone-normal" style="width:${w}%"></i><i class="zone-watch" style="width:${a-w}%"></i><i class="zone-act" style="width:${100-a}%"></i><b style="left:${pct(s.value)}%"></b></div>`;
 }
 
 /* Route advice visuals. impacts restate each tradeoff sentence as glyph chips:

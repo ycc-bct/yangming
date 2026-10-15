@@ -46,3 +46,39 @@
 /* Topic labels are not interactive; signal nodes are. */
 #pageContent .radar-topic-label{cursor:default}#pageContent .radar-topic-label:hover text{fill:currentColor}
 #pageContent .radar-signal{cursor:pointer}
+/* Topic labels: larger, white, clickable (they replace the topic tabs). */
+#pageContent .radar-topic-label{color:#fff;cursor:pointer}
+#pageContent .radar-topic-label text{font-size:17px!important;font-weight:600}
+#pageContent .radar-topic-label svg.radar-ic,.radar-topic-label svg.radar-ic{width:22px!important;height:22px!important}
+#pageContent .radar-topic-label:hover{color:#bfe3ff}
+#pageContent .radar-topic-label.active{color:#8ec5ff}
+#pageContent .radar-topic-label:focus-visible{outline:2px solid #8ec5ff;outline-offset:4px}
+/* Topic tabs replaced by a back link to 情報總覽 + the current topic name. */
+.risk-workspace-main .topic-nav.topic-back{display:flex;align-items:center;gap:10px;min-height:38px;padding:6px 0;margin-bottom:0;overflow:visible}
+.risk-workspace-main .topic-nav .topic-back-link,.topic-back-link{padding:0;border:0;background:none;display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:14px;font-weight:500;text-decoration:none}
+.topic-back-link:hover{color:#bfe3ff;text-decoration:underline;text-underline-offset:4px}
+.topic-back-sep{color:#52525b;font-size:14px}
+.topic-back-current{display:inline-flex;align-items:center;gap:6px;color:#f1f1f1;font-size:14px;font-weight:500}
+.topic-back-current .hub-ic{width:16px;height:16px}
+/* Topic status on the radar: rim arcs per sector (危急 red, 中 amber, 低 green, 無訊號 grey). */
+.radar-status-arc{fill:none;stroke-width:8;stroke-linecap:round}
+.radar-status-arc.arc-act{stroke:#ef4444}.radar-status-arc.arc-watch{stroke:#fbbf24}.radar-status-arc.arc-normal{stroke:#34d399}.radar-status-arc.arc-info{stroke:#52525b}
+/* Radar uses the five-level scale from the shared data (nodes, legend and rim arcs). */
+.radar-signal.tone-crit,.risk-radar-legend .tone-crit{color:#ef4444}
+.radar-signal.tone-high,.risk-radar-legend .tone-high{color:#f97316}
+.radar-signal.tone-mid,.risk-radar-legend .tone-mid{color:#fbbf24}
+.radar-signal.tone-low,.risk-radar-legend .tone-low{color:#34d399}
+.radar-signal.tone-none,.risk-radar-legend .tone-none{color:#8b98a8}
+.radar-signal.tone-none .radar-echo{display:none}
+.radar-status-arc.arc-crit{stroke:#ef4444}.radar-status-arc.arc-high{stroke:#f97316}.radar-status-arc.arc-mid{stroke:#fbbf24}.radar-status-arc.arc-low{stroke:#34d399}.radar-status-arc.arc-none{stroke:#52525b}
+
+
+/* Page padding is 28px 32px on every #pageContent page (id selector outranks the older per-page and min-width rules).
+   Phones keep a narrower 20px 16px. Dependent sizes follow: the sticky radar height (header 64 + 28 top + 28 bottom)
+   and the black mask over the top padding above the sticky topic bar. */
+#pageContent.page-content{padding:28px 32px}
+@media(max-width:760px){#pageContent.page-content{padding:20px 16px}}
+.risk-radar-panel{height:calc(100dvh - 120px)}
+#pageContent.page-content::before{top:-28px;height:28px;margin:-28px -32px 0}
+@media(max-width:900px){.risk-radar-panel{height:auto}}
+@media(max-width:760px){#pageContent.page-content::before{top:-20px;height:20px;margin:-20px -16px 0}}

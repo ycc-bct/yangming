@@ -42,15 +42,40 @@ function riskTopicModel(key,scope={}){
  return model;
 }
 function highRiskCountryRows(){const x=COUNTRY_ROWS.reduce((s,c)=>s+c[4],0)/COUNTRY_ROWS.length,y=COUNTRY_ROWS.reduce((s,c)=>s+c[5],0)/COUNTRY_ROWS.length;return COUNTRY_ROWS.filter(c=>c[4]>x&&c[5]>y)}
-function riskSignalList(model,key,scope={}){const ids=RISK_TOPIC_SIGNALS[key]||[];return `<div class="risk-signal-list">${model.signals.map(([label,value,period,evidence],i)=>{const s=ids[i]?riskSignal(ids[i],scope):null,t=s&&s.thresholds;return `<article${s?` class="risk-signal-${s.status}"`:''}><div class="risk-signal-line"><h3>${escapeHTML(label)}</h3><div class="risk-signal-value">${s?riskStatusBadge(s.status):''}<strong>${escapeHTML(value)}</strong></div></div>${t?riskBullet(s):''}<small>${escapeHTML(period)}</small>${t?`<small class="risk-threshold-line">門檻${RISK_THRESHOLDS_PROVISIONAL?'（暫定）':''}：觀察 ≥ ${escapeHTML(riskFormat(t.watch,s.unit))} · 行動 ≥ ${escapeHTML(riskFormat(t.act,s.unit))}${riskDelta(s)?'　'+escapeHTML(riskDelta(s)):''}</small>`:''}<p>${escapeHTML(evidence)}</p></article>`}).join('')}</div>${RISK_THRESHOLDS_PROVISIONAL?'<p class="risk-provisional-note">門檻為暫定值，待業務確認；資料為簡報圖表重建，非即時觀測。</p>':''}`}
+// riskSignalList is no longer rendered on topic pages (its values repeated the charts); kept for reuse.
+function riskSignalList(model){return `<div class="risk-signal-list">${model.signals.map(([label,value,period,evidence])=>`<article><div class="risk-signal-line"><h3>${escapeHTML(label)}</h3><div class="risk-signal-value"><strong>${escapeHTML(value)}</strong></div></div><small>${escapeHTML(period)}</small><p>${escapeHTML(evidence)}</p></article>`).join('')}</div>`}
+const RISK_FEED_TYPE={'數據':'data','市場':'market','事件':'event','報告':'report','公告':'notice'};
+function riskFeedList(key){const items=riskTopicFeed(key);return items.length?`<ol class="risk-feed">${items.map(f=>`<li><time datetime="${f.date}">${f.date}</time><span class="feed-type feed-${RISK_FEED_TYPE[f.type]||'report'}">${escapeHTML(f.type)}</span><span class="feed-title">${escapeHTML(f.title)}</span></li>`).join('')}</ol>`:'<p class="risk-scope-note">目前沒有此主題的訊號。</p>'}
 function riskLevelTone(level){return level==='危急'||level==='高'?'high':level==='中'?'medium':'low'}
 function riskImpactChips(r){const v=RISK_ROUTE_VISUAL[r.topic+'|'+r.index];if(!v)return '';return `<ul class="route-impacts" aria-label="方案取捨">${v.impacts.map(([label,state])=>`<li class="impact-${state}" title="${escapeHTML(label+RISK_IMPACT_GLYPH[state][1])}"><i aria-hidden="true">${RISK_IMPACT_GLYPH[state][0]}</i><span>${escapeHTML(label)}</span><span class="sr-only">${RISK_IMPACT_GLYPH[state][1]}</span></li>`).join('')}</ul>`}
 // Risk pages show data only. The one way out is 影響航線, which opens 航線方案評估 for that route.
 function riskRouteExits(m){const seen=[...new Set(m.routeIdeas.map(r=>r.index))];if(!seen.length)return '';return `<div class="risk-route-exits"><div class="risk-route-exits-head"><span>影響航線</span><small>前往航線方案評估 ↗</small></div><div class="risk-route-exit-list">${seen.map(i=>`<button type="button" class="risk-route-exit tone-${riskLevelTone(routes[i].level)}" data-open-route="${i}" aria-label="前往航線方案評估：${escapeHTML(routes[i].name+routes[i].via)}"><b>${escapeHTML(routes[i].name)}</b><small>${escapeHTML(routes[i].via)}</small><i aria-hidden="true">↗</i></button>`).join('')}</div></div>`}
-function riskAnalysis(key,scope={}){const m=riskTopicModel(key,scope);return `<section class="risk-analysis" data-analysis-topic="${key}"><div class="risk-analysis-grid">${panel('關鍵訊號',riskSignalList(m,key,scope))}${panel('分析判讀',`<dl class="risk-interpretation"><div><dt>營運影響</dt><dd>${escapeHTML(m.impact)}</dd></div><div><dt>條件式預判</dt><dd>${escapeHTML(m.outlook)}</dd></div><div><dt>後續確認</dt><dd>${escapeHTML(m.watch)}</dd></div></dl>${riskRouteExits(m)}`)}</div></section>`}
+function riskAnalysis(key,scope={}){const m=riskTopicModel(key,scope);return `<section class="risk-analysis" data-analysis-topic="${key}"><div class="risk-analysis-grid">${panel('訊號動態',riskFeedList(key),riskTopicFeed(key).length+' 則')}${panel('分析判讀',`<dl class="risk-interpretation"><div><dt>營運影響</dt><dd>${escapeHTML(m.impact)}</dd></div><div><dt>條件式預判</dt><dd>${escapeHTML(m.outlook)}</dd></div><div><dt>後續確認</dt><dd>${escapeHTML(m.watch)}</dd></div></dl>${riskRouteExits(m)}`)}</div></section>`}
 
 // Keep analysis and affected routes in sync with the evidence filters.
 const updatePortsBeforeIntelligence=updatePorts;
 updatePorts=function(){updatePortsBeforeIntelligence();const area=$('#portArea').value,status=$('#portStage').value,entries=PORT_EVENTS.filter(e=>(area==='全部'||e.area===area)&&(status==='全部'||e.status===status));$('#portsAnalysis').innerHTML=riskAnalysis('ports',{entries,area,status});bindRouteButtons()};
 const updateCountriesBeforeIntelligence=updateCountries;
 updateCountries=function(){updateCountriesBeforeIntelligence();const value=$('#countrySelect').value,countryRows=value==='all'?COUNTRY_ROWS:[COUNTRY_ROWS[+value]];$('#countriesAnalysis').innerHTML=riskAnalysis('countries',{countryRows});bindRouteButtons()};
+
+// Ports: the area/stage filters sit in the event-matrix card header; the event count note is hidden
+// (#portCount stays in the DOM because updatePorts writes to it).
+const renderPortsBeforeIntelligence=renderPorts;
+renderPorts=function(){
+ let html=renderPortsBeforeIntelligence();
+ const bar=html.match(/<div class="page-toolbar">([\s\S]*?)<span id="portCount" class="toolbar-note"><\/span><\/div>/);
+ if(!bar)return html;
+ html=html.replace(bar[0],'');
+ return html.replace('<div class="page-card-head"><h2>港口與內陸事件矩陣</h2></div>',()=>`<div class="page-card-head port-matrix-head"><h2>港口與內陸事件矩陣</h2><div class="port-filters">${bar[1]}<span id="portCount" hidden></span></div></div>`);
+};
+
+// Countries: the country select sits in the header of 國家 × 航運產業風險 (same pattern as the port filters); the toolbar note is dropped.
+const renderCountriesBeforeIntelligence=renderCountries;
+renderCountries=function(){
+ let html=renderCountriesBeforeIntelligence();
+ const bar=html.match(/<div class="page-toolbar">(<label>[\s\S]*?<\/label>)<span class="toolbar-note">[\s\S]*?<\/span><\/div>/);
+ if(!bar)return html;
+ html=html.replace(bar[0],'');
+ return html.replace(/<div class="page-card-head"><h2>國家 × 航運產業風險<\/h2>(<span>[\s\S]*?<\/span>)?<\/div>/,(m,sub)=>`<div class="page-card-head country-head"><h2>國家 × 航運產業風險</h2><div class="port-filters">${bar[1]}</div></div>`);
+};
+

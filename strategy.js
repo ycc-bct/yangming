@@ -3,6 +3,8 @@ const TOPICS=['policy','safety','fuel','ports','countries'];
 const TOPIC_LABELS={policy:'政策與關稅',safety:'航道安全',fuel:'燃油成本',ports:'港口與內陸',countries:'國家風險'};
 const INTELLIGENCE_TOPICS=['safety','policy','fuel','ports','countries'];
 function intelligenceDistribution(rows){const max=Math.max(...rows.map(r=>r[1]),1);return `<div class="intelligence-distribution">${rows.map(([name,value,color])=>`<div><span>${name}</span><i style="--bar-width:${value/max*100}%;--bar-color:${color||'#60a5fa'}"></i><b>${value}</b></div>`).join('')}</div>`}
+// Caption segments never break mid-word; a trailing period (e.g. 2025/11–2026/3) goes on its own line.
+function overviewCaption(text){const parts=text.split(' · '),last=parts.at(-1),dated=/\d/.test(last)&&parts.length>1,head=dated?parts.slice(0,-1):parts;return `<span class="cap-head">${head.map(x=>`<span class="nowrap">${x}</span>`).join(' · ')}</span>${dated?`<span class="cap-time nowrap">${last}</span>`:''}`}
 function renderIntelligence(){
  const countryAverageCRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[4],0)/COUNTRY_ROWS.length;
  const countryAverageSRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[5],0)/COUNTRY_ROWS.length;
@@ -15,7 +17,7 @@ function renderIntelligence(){
   policy:{chart:spark(TPU_MA7,'全球貿易政策不確定性 MA7 指數，2023/9–2026/5','#60a5fa'),caption:'貿易政策不確定性 MA7 · 指數 · 2023/9–2026/5'}
  };
  // Overview: five topic cards; the read-only route × topic grid is kept below but hidden for now.
- const topicCards=`<section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key],model=riskTopicModel(key);return `<article class="risk-overview-card" data-topic="${key}"><div class="risk-overview-focus"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${model.signal}</span></div>${(st=>`<div class="risk-status-row">${riskStatusBadge(st.status)}</div>`)(riskTopicStatus(key))}<h2 class="risk-card-value">${model.headline}</h2><p>${model.description}</p><div class="risk-card-chart">${c.chart}</div><small>${c.caption}</small></div><a href="#${key}">查看主題分析</a></article>`}).join('')}</section>`;
+ const topicCards=`<section class="risk-overview-grid" aria-label="五類風險概況">${INTELLIGENCE_TOPICS.map(key=>{const c=cards[key],model=riskTopicModel(key);return `<article class="risk-overview-card" data-topic="${key}"><div class="risk-overview-focus"><div class="risk-card-heading"><h3>${TOPIC_LABELS[key]}</h3><span>${model.signal}</span></div>${(st=>`<div class="risk-status-row">${riskStatusBadge(st.status)}</div><h2 class="risk-card-value">${escapeHTML(st.line)}</h2>`)(riskTopicStatus(key))}<p>${model.description}</p><div class="risk-card-chart">${c.chart}</div><small>${overviewCaption(c.caption)}</small></div><a href="#${key}">查看主題分析</a></article>`}).join('')}</section>`;
  const heatmap=typeof routeTopicGrid==='function'?`<div class="overview-heatmap" hidden>${routeTopicGrid(-1,riskRouteTopicMatrix(),false)}</div>`:'';
  return topicCards+heatmap;
 }
@@ -27,7 +29,7 @@ const STRATEGY={
  countries:{signal:'新興市場的收益與風險並存',impact:'國家環境與航運產業風險需要分開判讀。',action:'依 CRR／SRR 決定進入順序與曝險配置。'}
 };
 function summaryBlock(key){const v=STRATEGY[key];return `<div class="strategy-summary"><div><small>關鍵訊號</small><p>${v.signal}</p></div><div><small>營運影響</small><p>${v.impact}</p></div><div><small>決策方向</small><p>${v.action}</p></div></div>`}
-function topicNav(active){return `<nav class="topic-nav" aria-label="風險情報主題">${['intelligence','safety','policy','fuel','ports','countries'].map(k=>`<a href="#${k}" ${k===active?'aria-current="page" class="active"':''}>${k==='intelligence'?'情報總覽':TOPIC_LABELS[k]}</a>`).join('')}</nav>`}
+function topicNav(active){const ic={safety:'lane',policy:'policy',fuel:'fuel',ports:'port',countries:'country'}[active],icon=ic?`<svg class="hub-ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ym-ic-${ic}"/></svg>`:'';return active==='intelligence'?`<nav class="topic-nav topic-back" aria-label="風險情報"><span class="topic-back-current" aria-current="page">情報總覽</span></nav>`:`<nav class="topic-nav topic-back" aria-label="風險情報"><a href="#intelligence" class="topic-back-link"><span aria-hidden="true">←</span>情報總覽</a><span class="topic-back-sep" aria-hidden="true">/</span><span class="topic-back-current" aria-current="page">${icon}${TOPIC_LABELS[active]}</span></nav>`}
 // Approximate deck shapes. Raw daily TPU series is unavailable, so MA7 is also a visual reconstruction.
 const TPU_DAILY=[30,45,25,70,40,85,55,65,40,100,70,130,80,170,220,400,260,610,380,900,520,1350,700,1950,880,1100,570,870,430,750,280,500,220,380,180,550,150,340,100,250];
 const TPU_MA7=[35,40,42,45,49,54,56,60,63,70,78,90,100,145,210,300,360,410,480,610,750,840,900,1050,920,810,730,610,490,420,360,310,270,240,250,280,230,190,170,150];

@@ -84,3 +84,93 @@
 .risk-workspace-main>:last-child,.risk-workspace-main>:last-child>:last-child,.risk-workspace-main>:last-child>:last-child>:last-child,.risk-workspace-main>:last-child>:last-child>:last-child>:last-child,
 .risk-workspace-main>:has(+[hidden]:last-child){margin-bottom:0}
 
+/* Overview: five topic cards fit one screen — one card per row, text on the left, chart on the right; the whole card links to the topic. */
+.risk-workspace .risk-workspace-main .risk-overview-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+.risk-workspace-main .risk-overview-card:last-child{grid-column:auto}
+.risk-workspace-main .risk-overview-card{position:relative;transition:border-color .15s,background .15s}
+.risk-workspace-main .risk-overview-card:hover{border-color:#3b5577;background:#141a22}
+.risk-workspace-main .risk-overview-focus{display:grid;grid-template-columns:auto minmax(0,1fr) 220px;grid-template-areas:"name status chart" "value value chart" "desc desc caption";column-gap:12px;row-gap:4px;align-items:center;padding:14px 18px}
+.risk-workspace-main .risk-overview-focus .risk-card-heading{grid-area:name;min-height:0;margin:0}
+.risk-workspace-main .risk-overview-focus .risk-card-heading>span{display:none!important}
+.risk-workspace-main .risk-overview-focus .risk-card-heading h3{margin:0;font-size:13px}
+.risk-workspace-main .risk-overview-focus .risk-status-row{grid-area:status;margin:0;justify-self:start}
+.risk-workspace-main .risk-overview-focus>.risk-card-value{grid-area:value;font-size:18px;line-height:1.4}
+.risk-workspace-main .risk-overview-focus>p{grid-area:desc;margin:0;font-size:12px;line-height:1.6;color:#a1a1aa;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.risk-workspace-main .risk-overview-focus>.risk-card-chart{grid-area:chart;height:auto;margin:0;align-self:center}
+.risk-workspace-main .risk-overview-focus>.risk-card-chart svg{height:52px;max-height:52px}
+.risk-workspace-main .risk-overview-focus>small{grid-area:caption;min-height:0;font-size:10px;line-height:1.4;color:#71717a;text-align:right}
+.risk-workspace-main .risk-overview-focus .intelligence-distribution{gap:4px}
+.risk-workspace-main .risk-overview-card>a{position:absolute;inset:0;padding:0;border:0;font-size:0;color:transparent;z-index:1}
+/* the overlay link stays transparent; older rules gave it a hover background that covered the card */
+.risk-workspace-main .risk-overview-card>a,.risk-workspace-main .risk-overview-card>a:hover{background:transparent!important}
+.risk-workspace-main .risk-overview-card>a:focus-visible{outline:2px solid #93c5fd;outline-offset:2px;border-radius:inherit}
+@media(max-width:650px){.risk-workspace-main .risk-overview-focus{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"name status" "value value" "desc desc" "chart chart" "caption caption"}.risk-workspace-main .risk-overview-focus>small{text-align:left}}
+
+/* Five-level status chips, same scale, shapes and colours as 全球態勢: 危急 ■ red, 高 ◆ orange, 中 ▲ amber, 低 ● green, 無訊號 ● grey. */
+.risk-status:before{content:'';width:7px;height:7px;background:currentColor;border-radius:1px}
+.risk-status-crit{color:#fff;background:#ef444433}.risk-status-crit:before{background:#ef4444}
+.risk-status-high{color:#fdba74;background:#f9731626}.risk-status-high:before{background:#f97316;transform:rotate(45deg) scale(.85)}
+.risk-status-mid{color:#fcd34d;background:#fbbf2424}.risk-status-mid:before{background:#fbbf24;clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0;width:8px}
+.risk-status-low{color:#6ee7b7;background:#34d39924}.risk-status-low:before{background:#34d399;border-radius:50%}
+.risk-status-none{color:#a1a1aa;background:#27272a}.risk-status-none:before{background:#71717a;border-radius:50%}
+.risk-status-row{display:flex;align-items:center;gap:8px}
+.heat-crit{--heat:#ef4444}.heat-high{--heat:#f97316}.heat-mid{--heat:#fbbf24}.heat-low{--heat:#34d399}.heat-none{--heat:#71717a}
+
+/* 訊號動態 on each topic page (same feed as 全球態勢) */
+.risk-feed{list-style:none;margin:0;padding:0}
+.risk-feed li{display:grid;grid-template-columns:96px auto minmax(0,1fr);gap:4px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--border,#303033)}
+.risk-feed li:first-child{border-top:0;padding-top:0}
+.risk-feed time{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:#a1a1aa;font-variant-numeric:tabular-nums}
+.feed-type{padding:2px 8px;border-radius:5px;font-size:12px;font-weight:500;justify-self:start}
+.feed-data{background:#1e3a5f;color:#93c5fd}.feed-market{background:#2e1f4d;color:#c4b5fd}.feed-event{background:#ef444426;color:#fca5a5}.feed-report{border:1px solid #3f3f46;color:#d4d4d8}.feed-notice{background:#3b2f14;color:#fcd34d}
+.feed-title{font-size:13px;line-height:1.6;color:#e4e4e7}
+@media(max-width:650px){.risk-feed li{grid-template-columns:auto minmax(0,1fr)}.feed-title{grid-column:1/-1}}
+/* Overview chart caption: segments stay whole; the period sits on its own line. */
+.risk-workspace-main .risk-overview-focus>small .nowrap{white-space:nowrap}
+.risk-workspace-main .risk-overview-focus>small .cap-time{display:block}
+/* Ports: filters live in the matrix card header */
+.port-matrix-head{flex-wrap:wrap;gap:12px 20px}
+.port-filters{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.port-filters label{display:flex;align-items:center;gap:8px;font-size:12px;color:#a1a1aa;white-space:nowrap}
+#pageContent .port-filters select{width:auto;min-width:112px;min-height:32px;padding:5px 10px;font-size:13px}
+@media(max-width:650px){.port-filters{width:100%}.port-filters label{flex:1}#pageContent .port-filters select{flex:1;min-width:0}}
+
+
+/* 航道安全 ① 咽喉點通行量 */
+.tc-legend{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:6px;font-size:12px;color:#c2c2c8}
+.tc-legend span{display:inline-flex;align-items:center;gap:6px}
+.tc-legend i{display:inline-block;width:18px;height:0;border-top:2px solid #60a5fa}
+.tc-legend .tc-k-prev{border-top-color:#71717a}
+.tc-legend .tc-k-hit{width:9px;height:9px;border:2px solid #f1f1f1;border-radius:50%}
+#pageContent svg.transit-chart{width:100%;height:auto;max-height:none}
+.tc-grid{stroke:#27272a;stroke-width:1}
+.tc-axis{fill:#8b8b94;font-size:11px}
+.tc-area{fill:#3b82f62e}
+.tc-cur{fill:none;stroke:#60a5fa;stroke-width:2;stroke-linejoin:round}
+.tc-prev{fill:none;stroke:#71717a;stroke-width:1.5;stroke-linejoin:round}
+.tc-hit{fill:#101010;stroke:#f1f1f1;stroke-width:2}
+.tc-end{fill:#60a5fa}.tc-end-label{fill:#93c5fd;font-size:12px;font-weight:600}
+.tc-mark{stroke:#52525b;stroke-width:1}
+.tc-mark-dot{fill:#101010;stroke:#a1a1aa;stroke-width:1.2}
+.tc-mark-num{fill:#e4e4e7;font-size:11px;font-weight:600}
+.tc-notes{list-style:none;display:flex;flex-wrap:wrap;gap:6px 20px;margin:6px 0 18px;padding:0;font-size:12px;color:#c2c2c8}
+.tc-notes li{display:inline-flex;align-items:center;gap:6px}
+.tc-notes b{display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid #a1a1aa;border-radius:50%;font-size:11px}
+.chokepoint-table th[scope=row]{font-weight:500;color:#f1f1f1;white-space:nowrap}
+.chokepoint-table th small{margin-left:8px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;color:#71717a;font-weight:400}
+.chokepoint-table td{font-variant-numeric:tabular-nums}
+.chokepoint-table tbody tr.is-focus{background:#ffffff08}
+
+/* 航道安全 ② 質化報告 */
+.report-list{list-style:none;margin:0;padding:0}
+.report-list li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:14px;align-items:baseline;padding:12px 0;border-top:1px solid var(--border,#303033)}
+.report-list li:first-child{border-top:0;padding-top:0}
+.report-list time{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:#a1a1aa}
+.report-body b{display:block;font-size:14px;font-weight:500;color:#f1f1f1;line-height:1.5}
+.report-body small{display:block;margin-top:4px;font-size:12px;line-height:1.7;color:#a1a1aa}
+.report-lead{font-size:13px;color:#a1a1aa;white-space:nowrap}.report-lead.is-lead{color:#f1f1f1;font-weight:600}
+@media(max-width:650px){.report-list li{grid-template-columns:minmax(0,1fr) auto}.report-list time{grid-column:1/-1}}
+
+
+/* Countries: the country select sits in the first card's header, like the port filters */
+.country-head{flex-wrap:wrap;gap:12px 20px}

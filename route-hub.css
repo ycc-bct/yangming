@@ -13,9 +13,8 @@
 .route-capsule:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 .route-capsule-name{display:flex;flex-direction:column;align-items:flex-start;line-height:1.3}
 .route-capsule-name b{font-size:13px;font-weight:600}.route-capsule-name small{font-size:11px;color:#8b98a8}
-.route-capsule-dots{display:flex;gap:4px}
-.route-capsule-dots i{width:7px;height:7px;border-radius:2px;background:#2a2d35}
-.route-capsule-dots i.is-on{background:var(--heat);box-shadow:0 0 6px var(--heat)}
+.route-capsule-level{flex:none;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.route-capsule-level.level-high{background:#ef444426;color:#fca5a5}.route-capsule-level.level-medium{background:#fbbf2420;color:#fcd34d}.route-capsule-level.level-low{background:#38bdf820;color:#7dd3fc}
 
 /* ② question */
 .assessment-watch{display:flex;flex-wrap:wrap;gap:4px 10px;margin:8px 0 0;font-size:13px;line-height:1.7;color:#c2c2c8}
@@ -47,9 +46,10 @@
 
 /* ④ 方案比較 */
 .hub-section-title{margin:0 0 14px;font-size:18px;font-weight:600;color:#f1f1f1}
-.option-delta{display:inline-flex;align-self:flex-start;margin-top:10px;padding:3px 10px;border-radius:999px;background:#ef444420;color:#fca5a5;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
-.option-delta.delta-down{background:#34d39920;color:#6ee7b7}.option-delta.delta-same{background:#27272a;color:#a1a1aa;font-weight:500}
-.assessment-lower:has(>.assessment-inputs:only-child){grid-template-columns:minmax(0,1fr)}
+/* 試算條件 and 記錄評估結論 side by side, equal width and height */
+.assessment-lower{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.assessment-lower>.page-card{margin:0;height:100%;box-sizing:border-box}
+@media(max-width:1100px){.assessment-lower{grid-template-columns:minmax(0,1fr)}}
 .assessment-inputs #assessmentResults{display:none}
 
 /* ⑤ conclusion: collapsed management actions */
@@ -79,3 +79,222 @@
  .evidence-head{display:none}}
 @media(max-width:650px){.evidence-row{grid-template-columns:auto auto;grid-template-areas:"topic status" "exposure exposure" "advice advice" "impacts impacts"}}
 @media(prefers-reduced-motion:reduce){.route-capsule{transition:none}}
+
+/* ── Risk network (route-network.js): core → five topics → evidence arc ── */
+.risk-net{margin:0 0 20px;padding:24px;background:radial-gradient(ellipse at 12% 55%,#0d2440 0,#0f141b 45%,#111113 100%);overflow:hidden}
+.risk-net-head{margin-bottom:0}
+.risk-net-kicker{font-size:12px;color:#609fe4;letter-spacing:.04em}
+.risk-net-head h2{margin:6px 0 0;font-size:24px;font-weight:600;line-height:1.4;color:#f8fafc}
+/* desktop: floating panel shown on hover/focus of a topic card or evidence leaf */
+.net-info{position:absolute;z-index:5;width:300px;padding:14px 16px;border:1px solid #3b5577;border-radius:10px;background:#0c121af2;backdrop-filter:blur(8px);box-shadow:0 16px 40px #000a;font-size:12px;color:#c2c2c8;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s,transform .15s,visibility .15s;pointer-events:none}
+.net-info.is-visible{opacity:1;visibility:visible;transform:none}
+.net-info-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.net-info-head b{font-size:14px;color:#f1f1f1;font-weight:600}
+.net-info p{margin:6px 0 0;line-height:1.7}
+.net-info-exposure{color:#d4d4d8}.net-info-proposal{color:#f1f1f1;font-weight:500;font-size:13px}
+.net-info-trigger span,.net-info-meta{color:#8b98a8}.net-info-trigger span{margin-right:8px}
+.net-info-muted{color:#71717a}
+.net-info .route-impacts{margin-top:10px}
+.risk-net-body{position:relative;display:grid;grid-template-columns:260px 210px minmax(0,1fr);column-gap:130px;align-items:center;margin-top:-12px;padding:0}
+.net-wires,#pageContent svg.net-wires{position:absolute;inset:0;width:100%;height:100%;max-height:none;pointer-events:none;z-index:0;overflow:visible}
+.risk-net-body>:not(.net-wires):not(.net-info){position:relative;z-index:1}
+.wire{fill:none;stroke:#3b5577;stroke-width:1;stroke-opacity:.35}
+.wire-event{stroke-dasharray:3 4}
+.wire.is-on{stroke:#60a5fa;stroke-opacity:.9;stroke-width:1.6}
+.wire-core.is-on{stroke-width:2;filter:drop-shadow(0 0 4px #3b82f6)}
+
+/* core */
+.net-core{display:flex;flex-direction:column;align-items:center;gap:12px}
+.net-core-orb{position:relative;width:220px;height:220px}
+.net-core-orb svg{width:220px;height:220px;display:block;max-height:none}
+#pageContent .net-core-orb svg{width:220px;height:220px;max-height:none}
+.orb-ring{fill:none;stroke:#3b82f6;stroke-opacity:.45;stroke-width:1}
+.orb-ring-dash{stroke-dasharray:2 5;stroke-opacity:.6}
+.orb-sweep{transform-origin:110px 110px;animation:netSweep 8s linear infinite}
+.orb-sweep path{fill:#60a5fa;fill-opacity:.1}
+@keyframes netSweep{to{transform:rotate(360deg)}}
+.net-core-name{position:absolute;left:0;right:0;bottom:-6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.net-core-name b{font-size:15px;font-weight:600;color:#f8fafc}.net-core-name small{font-size:12px;color:#8b98a8}
+.net-core-badges{display:flex;gap:8px;margin-top:12px}
+.net-core-level,.net-core-count{padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600}
+.net-core-level{background:#ef444426;color:#fca5a5}.tone-medium .net-core-level{background:#fbbf2420;color:#fcd34d}.tone-low .net-core-level{background:#38bdf820;color:#7dd3fc}
+.net-core-count{background:#3b82f626;color:#93c5fd}
+.net-core-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.net-option{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid #2a3442;border-radius:10px;background:#111827}
+.net-option.is-alt{border-color:#2f6fbd}
+.net-option small{font-size:11px;color:#8b98a8}.net-option b{font-size:14px;color:#f1f1f1}
+.net-option span{font-size:12px;color:#fcd34d}.net-option span.is-up{color:#fca5a5}.net-option span.is-down{color:#6ee7b7}
+
+/* topics */
+.net-topics{display:flex;flex-direction:column;gap:14px}
+.net-topic{position:relative;display:grid;grid-template-columns:1fr auto;grid-template-areas:"count badge" "name name";gap:4px 8px;padding:12px 14px;border:1px solid #2a3442;border-radius:10px;background:#141820;color:#e4e4e7;font:inherit;text-align:left;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.net-topic-count{grid-area:count;font-size:26px;font-weight:600;line-height:1;color:#f8fafc;font-variant-numeric:tabular-nums}
+.net-topic .risk-status{grid-area:badge;align-self:start}
+.net-topic-name{grid-area:name;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#c2c2c8}
+.net-topic:hover{border-color:#3b5577}
+.net-topic[aria-pressed=true]{border-color:#3b82f6;background:#0d1b2e;box-shadow:0 0 0 1px #3b82f6,0 0 24px #1d4ed855}
+.net-topic.is-empty{opacity:.5}
+.net-topic:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+
+/* evidence arc */
+.net-leaves{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.net-leaf{transform:translateX(var(--arc,0px));transition:opacity .2s}
+.net-leaf button{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:3px 6px;border:0;border-radius:6px;background:transparent;color:#8b8b94;font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.net-leaf button:hover{background:#ffffff08}.net-leaf button:focus-visible{outline:2px solid #93c5fd}
+.net-dot{flex:none;width:7px;height:7px;border-radius:50%;background:#3b5577}
+.net-leaf-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.net-leaf.is-on button{color:#f1f1f1;font-size:13px;font-weight:600}
+.net-leaf.is-on .net-dot{width:9px;height:9px;background:#60a5fa;box-shadow:0 0 8px #60a5fa}
+.net-leaf.is-picked button{background:#3b82f61f}
+.net-level{flex:none;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600}
+.net-level-high{background:#ef444426;color:#fca5a5}.net-level-medium{background:#fbbf2420;color:#fcd34d}.net-level-low{background:#34d39920;color:#6ee7b7}
+.net-badge{flex:none;padding:1px 7px;border-radius:4px;background:#1e3a5f;color:#93c5fd;font-size:11px;font-weight:500}
+.net-badge.stage-occurred{background:#1e3a5f;color:#93c5fd}.net-badge.stage-ongoing{background:#3b2f14;color:#fcd34d}.net-badge.stage-ahead{background:#2e1f4d;color:#c4b5fd}
+.net-spark{flex:none;width:64px;height:18px}
+#pageContent svg.net-spark{width:64px;height:18px;max-height:none}
+.net-spark path{fill:none;stroke:#52525b;stroke-width:1.4}
+.net-leaf.is-on .net-spark path{stroke:#f87171}
+.risk-net-foot{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px;font-size:11px;color:#71717a}
+.risk-net-foot span{display:inline-flex;align-items:center;gap:6px}
+.risk-net-foot i{width:22px;border-top:1.5px solid #60a5fa}.risk-net-foot i.wire-dash{border-top-style:dashed}
+
+@media(max-width:1250px){.risk-net-body{grid-template-columns:220px 190px minmax(0,1fr);column-gap:72px}.net-core-orb,.net-core-orb svg,#pageContent .net-core-orb svg{width:180px;height:180px}}
+@media(max-width:1000px){.risk-net-body{margin-top:16px}.net-wires,#pageContent svg.net-wires{display:none}
+ .net-info{position:static;width:auto;opacity:1;visibility:visible;transform:none;box-shadow:none;pointer-events:auto;z-index:auto}
+ .risk-net-body{display:flex;flex-direction:column;align-items:stretch;gap:16px;min-height:0}
+ .net-topics{flex-direction:row;overflow-x:auto;padding-bottom:4px}.net-topic{flex:none;min-width:150px}
+ .net-leaf{transform:none}.net-leaf:not(.is-on){display:none}}
+@media(prefers-reduced-motion:reduce){.orb-sweep{animation:none}.net-topic,.net-leaf,.net-info{transition:none}}
+
+/* 方案比較: A and B side by side in the left third, map in the right two thirds (1:2) */
+.assessment-layout{grid-template-columns:minmax(0,1fr) minmax(0,2fr);margin-bottom:20px}
+.assessment-layout>#assessmentOptions{order:-1;grid-template-columns:repeat(2,minmax(0,1fr));align-content:stretch;gap:20px}
+.assessment-layout>#assessmentOptions>.option-card{height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch}
+@media(max-width:1100px){.assessment-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.assessment-layout>#assessmentOptions{grid-template-columns:minmax(0,1fr)}}
+/* 天數 above 燃油 inside each option card; one hairline under the figures; B's deltas sit top-right of each figure */
+.assessment-layout>#assessmentOptions .option-metrics{grid-template-columns:minmax(0,1fr);gap:16px;padding-bottom:16px;margin-bottom:14px;border-bottom:1px solid var(--border,#303033)}
+.assessment-layout>#assessmentOptions .option-metrics>div{position:relative}
+.metric-delta{position:absolute;top:2px;right:0;margin-top:8px;padding:2px 8px;border-radius:999px;font-style:normal;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.metric-delta.delta-up{background:#ef444420;color:#fca5a5}.metric-delta.delta-down{background:#34d39920;color:#6ee7b7}.metric-delta.delta-same{background:#27272a;color:#a1a1aa;font-weight:500}
+/* 試算條件 shown open, without the collapse toggle */
+.assessment-inputs .assessment-assumptions>summary{display:none}
+.assessment-inputs .assessment-assumptions{border-top:0;padding-top:0}
+/* 試算條件 + 記錄評估結論 hidden for now (route-hub.js adds [hidden]); no trailing gap after 方案比較 */
+.assessment-lower[hidden]{display:none!important}
+.assessment-layout:has(+.assessment-lower[hidden]){margin-bottom:0}
+.net-level-crit{background:#ef444433;color:#fff}.net-level-high{background:#f9731626;color:#fdba74}.net-level-mid{background:#fbbf2420;color:#fcd34d}.net-level-low{background:#34d39920;color:#6ee7b7}
+
+/* ── 航線方案評估: one route, three views ── */
+.assessment-layout[hidden],.rv-panel[hidden]{display:none!important}
+.route-view{margin:0}
+.rv-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.rv-crumb{margin:0;font-size:14px;color:#a1a1aa}.rv-crumb b{color:#f1f1f1;font-weight:600}.rv-crumb span{margin:0 4px;color:#52525b}
+.rv-tabs{display:inline-flex;padding:3px;border:1px solid #2a3442;border-radius:10px;background:#0f141b}
+.rv-tabs button{padding:7px 16px;border:0;border-radius:7px;background:transparent;color:#a1a1aa;font:inherit;font-size:13px;cursor:pointer}
+.rv-tabs button[aria-selected=true]{background:#1d2a3a;color:#f1f1f1;font-weight:600}
+.rv-tabs button:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.rv-panel>.risk-net{margin-bottom:0}
+
+/* 方案比較 */
+.rc-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 16px;margin-bottom:16px}
+.rc-head h2{margin:0;font-size:22px;font-weight:600;color:#f8fafc}.rc-head span{font-size:13px;color:#8b98a8}
+.rc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(260px,.8fr);gap:20px;align-items:start}
+.rc-card,.rc-box{border:1px solid var(--border,#303033);border-radius:12px;background:var(--card,#111113);padding:22px}
+.rc-card.is-b{border-color:#2f6fbd;box-shadow:0 0 0 1px #2f6fbd33}
+.rc-kicker{font-size:12px;color:#8b98a8;letter-spacing:.04em}.rc-card.is-b .rc-kicker{color:#93c5fd}
+.rc-card h3{margin:8px 0 4px;font-size:22px;font-weight:600;color:#f8fafc}
+.rc-path{margin:0 0 16px;font-size:13px;color:#a1a1aa}
+.rc-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.rc-metrics>div{display:flex;flex-direction:column;gap:2px;padding:12px;border:1px solid #27272a;border-radius:10px;background:#0f1115;min-width:0}
+.rc-metrics strong{font-size:24px;font-weight:600;color:#f8fafc;font-variant-numeric:tabular-nums;line-height:1.2}
+.rc-metrics span{font-size:12px;color:#a1a1aa}
+.rc-metrics em{font-style:normal;font-size:12px;font-weight:600;margin-top:4px}
+.rc-base{color:#71717a!important;font-weight:400!important}.rc-delta.is-up{color:#fca5a5}.rc-delta.is-down{color:#6ee7b7}
+.rc-pending{display:inline-block;margin-top:4px;padding:1px 7px;border:1px dashed #52525b;border-radius:5px;font-size:11px;color:#a1a1aa;font-weight:500}
+.rc-card h4,.rc-box h4{margin:0 0 12px;font-size:14px;font-weight:600;color:#e4e4e7}
+.rc-bars{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:10px}
+.rc-bars li{display:grid;grid-template-columns:72px minmax(0,1fr) 64px;align-items:center;gap:10px}
+.rc-topic{font-size:13px;color:#d4d4d8}
+.rc-bar{height:6px;border-radius:3px;background:#27272a;overflow:hidden}.rc-bar i{display:block;height:100%;border-radius:3px}
+.bar-crit{background:#ef4444}.bar-high{background:#f97316}.bar-mid{background:#fbbf24}.bar-low{background:#34d399}.bar-none{background:#52525b}
+.rc-bars .risk-status{justify-self:end}
+.rc-basis{margin:0;padding-left:18px;font-size:13px;line-height:1.85;color:#c2c2c8}
+.rc-side{display:grid;gap:16px}
+.rc-slider{display:block;margin-bottom:14px}.rc-slider:last-child{margin-bottom:0}
+.rc-slider span{display:flex;justify-content:space-between;font-size:13px;color:#c2c2c8;margin-bottom:6px}.rc-slider b{color:#f1f1f1}
+#pageContent .rc-slider input[type=range]{width:100%;min-height:0;padding:0;border:0;background:none;accent-color:#3b82f6}
+.rc-judge{background:linear-gradient(160deg,#0d1b2e,#111113 70%);border-color:#2f6fbd}
+.rc-judge .rc-kicker{color:#93c5fd}.rc-judge h4{margin-top:6px;font-size:16px;line-height:1.5}
+.rc-facts{margin:0 0 14px;padding-left:18px;font-size:13px;line-height:1.8;color:#c2c2c8}
+.rc-actions{display:flex;flex-wrap:wrap;gap:8px}
+.rc-btn{flex:1;min-width:96px;padding:9px 12px;border:1px solid #3f3f46;border-radius:8px;background:#18181b;color:#e4e4e7;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.rc-btn.is-primary{background:#0b5cc4;border-color:#0b5cc4;color:#fff}.rc-btn:disabled{opacity:.45;cursor:not-allowed}
+.rc-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.rc-status{margin:8px 0 0;font-size:12px;color:#93c5fd;min-height:1em}
+.rc-box p{margin:0 0 6px;font-size:13px;line-height:1.7;color:#c2c2c8}.rc-box small{display:block;margin-top:6px;font-size:12px;color:#71717a}
+.rc-now{color:#93c5fd!important}
+.rc-note{font-size:12px;color:#8b98a8;margin:10px 0 0}
+
+/* 地圖 */
+.rm-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(300px,1fr);gap:20px;align-items:start}
+.rm-map{position:relative;border:1px solid var(--border,#303033);border-radius:12px;background:#0b1118;padding:12px;min-width:0}
+.rm-toggle{display:inline-flex;gap:6px;margin-bottom:10px}
+.rm-toggle button{padding:6px 12px;border:1px solid #2a3442;border-radius:7px;background:#111827;color:#a1a1aa;font:inherit;font-size:13px;cursor:pointer}
+.rm-toggle button[aria-pressed=true]{border-color:#3b82f6;color:#f1f1f1;background:#0d1b2e}
+.rm-side{display:grid;gap:16px}
+.rm-head{display:flex;justify-content:space-between;align-items:baseline}.rm-head span{font-size:12px;color:#71717a}
+.rm-table{width:100%;border-collapse:collapse;font-size:13px}
+.rm-table th{text-align:left;font-weight:500;color:#8b8b94;font-size:12px;padding:8px 6px;border-bottom:1px solid #27272a}
+.rm-table td{padding:10px 6px;border-bottom:1px solid #1f1f23;color:#e4e4e7;font-variant-numeric:tabular-nums}
+.rm-table th:nth-child(2),.rm-table th:nth-child(3),.rm-table td:nth-child(2),.rm-table td:nth-child(3){text-align:right}
+.rm-table tr[data-rc-cp]{cursor:pointer}.rm-table tr[data-rc-cp]:hover,.rm-table tr.is-on{background:#ffffff08}
+.rm-table tr[data-rc-cp]:focus-visible{outline:2px solid #93c5fd;outline-offset:-2px}
+.rm-table .rc-cat{margin-left:6px;font-size:12px;color:#a1a1aa}
+.rm-total td{font-weight:600;border-bottom:0}
+
+@media(max-width:1300px){.rc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-side{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1000px){.rm-grid{grid-template-columns:minmax(0,1fr)}.rc-side{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:700px){.rc-grid{grid-template-columns:minmax(0,1fr)}.rc-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.rc-metrics strong{font-size:19px}.rv-head{flex-direction:column;align-items:flex-start}}
+
+/* 航線方案評估 fits one screen per view: tighter rhythm */
+.route-capsules{margin-bottom:14px;padding-bottom:4px}
+.route-capsule{padding:7px 14px 7px 12px}
+.rv-head{margin-bottom:12px}
+.rv-tabs button{padding:6px 14px}
+.risk-net{padding:16px 20px}
+.risk-net-body{column-gap:120px}
+.net-core{gap:8px}.net-core-badges{margin-top:6px}
+.net-topics{gap:10px}.net-topic{padding:10px 12px}
+.net-leaves{gap:4px}
+.risk-net-foot{margin-top:8px}
+.rc-head{margin-bottom:12px}.rc-head h2{font-size:20px}
+.rc-grid{gap:16px}
+.rc-card,.rc-box{padding:18px}
+.rc-card h3{margin:6px 0 2px;font-size:20px}.rc-path{margin-bottom:12px}
+.rc-metrics{margin-bottom:14px}.rc-metrics.is-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rc-metrics>div{padding:10px 12px}.rc-metrics strong{font-size:22px}
+.rc-card h4,.rc-box h4{margin-bottom:10px}
+.rc-bars{gap:8px;margin-bottom:14px}
+.rc-basis{line-height:1.7}
+.rc-side{gap:16px}
+.rc-slider{margin-bottom:10px}
+.rm-map{padding:10px}
+.rm-table td{padding:8px 6px}
+/* Selected capsule: filled, brighter border and glow */
+.route-capsule[aria-pressed=true]{background:linear-gradient(135deg,#0b5cc4,#0a3f86);border-color:#60a5fa;border-left-color:var(--tone);color:#fff;box-shadow:0 0 0 2px #60a5fa66,0 8px 22px #0b5cc455}
+.route-capsule[aria-pressed=true] .route-capsule-name small{color:#dbeafe}
+.route-capsule[aria-pressed=true] .route-capsule-level{background:#ffffff26;color:#fff}
+/* 風險網路 card fills the screen height (min-height set by route-compare.js); the network sits centred inside */
+.rv-panel>.risk-net{display:flex;flex-direction:column;box-sizing:border-box}
+.rv-panel>.risk-net>.risk-net-body{flex:1}
+/* 方案比較: the side column matches the option cards' height; 本次判讀 fills it with its buttons at the bottom */
+.rc-grid{align-items:stretch}
+.rc-side{display:flex;flex-direction:column}
+.rc-side>.rc-judge{flex:1;display:flex;flex-direction:column}
+.rc-judge .rc-actions{margin-top:auto}
+.rc-judge .rc-status:empty{display:none}
+/* 地圖: the side column matches the map's height; the selected-chokepoint box fills what is left */
+.rm-grid{align-items:stretch}
+.rm-side{display:flex;flex-direction:column}
+.rm-side>#rmDetail{flex:1}
+
