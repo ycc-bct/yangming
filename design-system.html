@@ -1,0 +1,137 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><script src="gate.js?v=warroom-20261014"></script><meta name="viewport" content="width=device-width,initial-scale=1"><title>Design System · 航運風險戰情室</title><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="design-tokens.css?v=ds-20261014">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:var(--ym-fs-body)/1.55 var(--ym-font-ui)}
+a{color:var(--ym-accent);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:var(--ym-fs-page);font-weight:700;margin:0 0 4px}h2{font-size:18px;font-weight:700;margin:40px 0 12px}h3{font-size:var(--ym-fs-section);font-weight:600;margin:20px 0 8px}
+.lead{color:var(--ym-text-muted);margin:0 0 8px}.lead a{margin-right:14px}
+.card{background:var(--ym-surface-1);border:1px solid var(--ym-line);border-radius:var(--ym-radius);padding:20px}
+.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+.sw{border:1px solid var(--ym-line);border-radius:var(--ym-radius);overflow:hidden}.sw i{display:block;height:56px}.sw div{padding:8px 10px;font-size:var(--ym-fs-small)}.sw b{display:block;font-weight:600;font-size:13px}.sw code{color:var(--ym-text-muted);font:12px var(--ym-font-data)}
+.num{font-family:var(--ym-font-data);font-variant-numeric:tabular-nums}
+.muted{color:var(--ym-text-muted)}.small{font-size:var(--ym-fs-small)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ym-line)}th{color:var(--ym-text-muted);font-weight:500;font-size:12px}
+.lv-chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:var(--ym-radius-s);font-size:12px;font-weight:700;white-space:nowrap}
+.lv-chip i{font-style:normal;font-size:10px}
+.lv-crit{color:#fff;background:color-mix(in srgb,var(--ym-risk-crit) 20%,transparent)}.lv-crit i{color:var(--ym-risk-crit)}
+.lv-high{color:color-mix(in srgb,var(--ym-risk-high) 70%,white);background:color-mix(in srgb,var(--ym-risk-high) 16%,transparent)}.lv-high i{color:var(--ym-risk-high)}
+.lv-mid{color:color-mix(in srgb,var(--ym-risk-mid) 70%,white);background:color-mix(in srgb,var(--ym-risk-mid) 14%,transparent)}.lv-mid i{color:var(--ym-risk-mid)}
+.lv-low{color:color-mix(in srgb,var(--ym-risk-low) 70%,white);background:color-mix(in srgb,var(--ym-risk-low) 14%,transparent)}.lv-low i{color:var(--ym-risk-low)}
+.lv-none{color:var(--ym-text-muted);background:var(--ym-surface-3)}.lv-none i{color:var(--ym-text-muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--ym-radius);border:1px solid transparent;font:500 var(--ym-fs-nav) var(--ym-font-ui);color:var(--ym-text);cursor:pointer;background:none}
+.btn-primary{background:var(--ym-brand);color:#fff}.btn-primary:hover{filter:brightness(1.1)}
+.btn-ghost{border-color:var(--ym-line)}.btn-ghost:hover{background:var(--ym-surface-2)}
+.btn-link{padding:0;height:auto;color:var(--ym-accent)}
+.nav{display:flex;gap:8px;border-bottom:1px solid var(--ym-line)}.nav a{padding:10px 12px;font:500 var(--ym-fs-nav) var(--ym-font-ui);color:var(--ym-text-muted);border-bottom:2px solid transparent;margin-bottom:-1px}.nav a.on{color:var(--ym-text);border-color:var(--ym-brand)}.nav a:hover{text-decoration:none;color:var(--ym-text)}
+.tip{display:inline-block;min-width:180px;padding:8px 10px;border:1px solid var(--ym-line);border-radius:var(--ym-radius);background:rgba(24,24,27,.96);box-shadow:var(--ym-shadow);font-size:12px;line-height:1.6}.tip small{display:block;color:var(--ym-text-muted);font-size:11px;margin-bottom:2px}.tip div{display:flex;align-items:center;gap:6px}.tip div i{width:8px;height:8px;border-radius:50%}.tip div b{margin-left:auto;padding-left:12px}
+.type-row{display:grid;grid-template-columns:200px 1fr 140px;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid var(--ym-line)}.type-row code{font:12px var(--ym-font-data);color:var(--ym-text-muted)}
+.kpi{display:flex;flex-direction:column;gap:2px}.kpi b{font:600 var(--ym-fs-kpi) var(--ym-font-data)}.kpi span{font-size:12px;color:var(--ym-text-muted)}
+.do{display:grid;grid-template-columns:1fr 1fr;gap:12px}.do>div{padding:14px 16px;border-radius:var(--ym-radius);border:1px solid var(--ym-line)}.do h4{margin:0 0 6px;font-size:13px}.do .ok h4{color:var(--ym-risk-low)}.do .no h4{color:var(--ym-risk-crit)}.do li{font-size:13px;margin:4px 0 4px 18px}
+svg text{font-family:var(--ym-font-ui);font-size:12px;fill:var(--ym-text-muted)}
+</style></head><body><div class="wrap">
+<h1>Design System</h1>
+<p class="lead">航運風險戰情室共用規範 · 唯一來源 <code>design-tokens.css</code> · 說明 <a href="DESIGN-SYSTEM.md">DESIGN-SYSTEM.md</a> · <a href="index.html">回首頁</a></p>
+
+<h2>1 色彩</h2>
+<h3>介面（中性灰）</h3>
+<div class="grid g5">
+ <div class="sw"><i style="background:var(--ym-bg)"></i><div><b>bg</b><code>#101010</code></div></div>
+ <div class="sw"><i style="background:var(--ym-surface-1)"></i><div><b>surface-1 卡片</b><code>#111113</code></div></div>
+ <div class="sw"><i style="background:var(--ym-surface-2)"></i><div><b>surface-2 次層</b><code>#18181B</code></div></div>
+ <div class="sw"><i style="background:var(--ym-surface-3)"></i><div><b>surface-3 選取</b><code>#27272A</code></div></div>
+ <div class="sw"><i style="background:var(--ym-line-strong)"></i><div><b>line-strong</b><code>#3F3F46</code></div></div>
+ <div class="sw"><i style="background:var(--ym-text)"></i><div><b>text</b><code>#F1F1F1</code></div></div>
+ <div class="sw"><i style="background:var(--ym-text-2)"></i><div><b>text-2 說明</b><code>#D4D4D8</code></div></div>
+ <div class="sw"><i style="background:var(--ym-text-muted)"></i><div><b>text-muted 輔助</b><code>#A1A1AA</code></div></div>
+ <div class="sw"><i style="background:var(--ym-brand)"></i><div><b>brand 陽明藍</b><code>#004EA2</code></div></div>
+ <div class="sw"><i style="background:var(--ym-accent)"></i><div><b>accent 互動</b><code>#60A5FA</code></div></div>
+</div>
+<h3>風險語意（一定搭配形狀＋文字）</h3>
+<div class="grid g5">
+ <div class="sw"><i style="background:var(--ym-risk-crit)"></i><div><b>■ 危急</b><code>#EF4444</code></div></div>
+ <div class="sw"><i style="background:var(--ym-risk-high)"></i><div><b>◆ 高</b><code>#F97316</code></div></div>
+ <div class="sw"><i style="background:var(--ym-risk-mid)"></i><div><b>▲ 中</b><code>#FBBF24</code></div></div>
+ <div class="sw"><i style="background:var(--ym-risk-low)"></i><div><b>● 低／正常</b><code>#34D399</code></div></div>
+ <div class="sw"><i style="background:var(--ym-risk-none)"></i><div><b>● 無訊號</b><code>#A1A1AA</code></div></div>
+</div>
+<h3>資料類型 / 圖表序列</h3>
+<div class="grid g4">
+ <div class="sw"><i style="background:var(--ym-type-event)"></i><div><b>事件</b><code>#F87171</code></div></div>
+ <div class="sw"><i style="background:var(--ym-type-indicator)"></i><div><b>指標 / 序列 3</b><code>#FBBF24</code></div></div>
+ <div class="sw"><i style="background:var(--ym-type-route)"></i><div><b>航線 / 序列 1</b><code>#60A5FA</code></div></div>
+ <div class="sw"><i style="background:var(--ym-type-country)"></i><div><b>國家 / 序列 4</b><code>#A78BFA</code></div></div>
+</div>
+
+<h2>2 字體與字級</h2>
+<div class="card">
+ <div class="type-row"><code>--ym-fs-page 22/700</code><span style="font-size:22px;font-weight:700">全球態勢 Global Situation</span><span class="muted small">頁面標題</span></div>
+ <div class="type-row"><code>--ym-fs-section 14/600</code><span style="font-size:14px;font-weight:600">風險燈號 Risk Lights</span><span class="muted small">卡片標題</span></div>
+ <div class="type-row"><code>--ym-fs-body 14/400</code><span>荷莫茲海峽通行量年減 97%，繞行將成常態；重點是把延誤與成本控制在可預期區間。</span><span class="muted small">內文，行高 1.55</span></div>
+ <div class="type-row"><code>--ym-fs-nav 13/500</code><span style="font-size:13px;font-weight:500">風險情報 · 航線方案評估 · 決策報告</span><span class="muted small">導覽、按鈕</span></div>
+ <div class="type-row"><code>--ym-fs-small 12/400</code><span class="small muted">截至 2026/06/30 · 通行量對比去年同期 · 示意數據</span><span class="muted small">輔助文字、刻度（最小字級）</span></div>
+ <div class="type-row"><code>--ym-fs-kpi 24/600 mono</code><span class="kpi"><b>2.3 <span style="font:12px var(--ym-font-ui)">艘/日</span></b><span>比去年同期 −97%</span></span><span class="muted small">關鍵數字</span></div>
+ <div class="type-row" style="border:0"><code>--ym-font-data</code><span class="num">2026/06/30 · 227.1 艘/日 · −5% · DB4a</span><span class="muted small">數字、日期一律等寬字</span></div>
+</div>
+
+<h2>3 元件</h2>
+<div class="grid g2">
+ <div class="card"><h3 style="margin-top:0">風險等級標籤 <code class="muted" style="font:12px var(--ym-font-data)">.lv-chip</code></h3>
+  <p><span class="lv-chip lv-crit"><i>■</i>危急</span> <span class="lv-chip lv-high"><i>◆</i>高</span> <span class="lv-chip lv-mid"><i>▲</i>中</span> <span class="lv-chip lv-low"><i>●</i>低</span> <span class="lv-chip lv-none"><i>●</i>無訊號</span></p>
+  <p class="small muted">高 22px、圓角 4、12/700；形狀＋文字，色弱與黑白列印都可讀。</p></div>
+ <div class="card"><h3 style="margin-top:0">按鈕</h3>
+  <p><button class="btn btn-primary">登入</button> <button class="btn btn-ghost">情境模擬</button> <button class="btn btn-ghost">↻ 重設</button> <button class="btn btn-link">查看主題分析 →</button></p>
+  <p class="small muted">主要按鈕一頁最多一個，用陽明藍；其餘用幽靈按鈕；文字連結用 accent。</p></div>
+ <div class="card"><h3 style="margin-top:0">導覽</h3>
+  <div class="nav"><a class="on">全球態勢</a><a>風險情報</a><a>航線方案評估</a><a>決策報告</a></div>
+  <p class="small muted">13/500；目前頁白字＋ 2px 陽明藍底線。</p></div>
+ <div class="card"><h3 style="margin-top:0">提示框 <code class="muted" style="font:12px var(--ym-font-data)">.chart-tip</code></h3>
+  <div class="tip"><small>2026/02/07</small><div><i style="background:var(--ym-type-route)"></i>OVX 波動率<b class="num">52</b></div><div><i style="background:var(--ym-series-2)"></i>WTI 期貨<b class="num">68</b></div><div><i style="background:var(--ym-series-3)"></i>Brent 期貨<b class="num">72</b></div></div>
+  <p class="small muted">surface-2 96%、1px line、圓角 8；第一行日期 muted，數值右對齊等寬字。</p></div>
+</div>
+
+<h3>五類風險圖示 <code class="muted" style="font:12px var(--ym-font-data)">.topic-ic</code></h3>
+<div class="card" style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+ <span><svg class="topic-ic"><use href="#ym-ic-lane"/></svg>航道安全 <code class="muted" style="font:12px var(--ym-font-data)">waves</code></span>
+ <span><svg class="topic-ic"><use href="#ym-ic-policy"/></svg>政策與關稅 <code class="muted" style="font:12px var(--ym-font-data)">landmark</code></span>
+ <span><svg class="topic-ic"><use href="#ym-ic-fuel"/></svg>燃油成本 <code class="muted" style="font:12px var(--ym-font-data)">fuel</code></span>
+ <span><svg class="topic-ic"><use href="#ym-ic-port"/></svg>港口與內陸 <code class="muted" style="font:12px var(--ym-font-data)">container</code></span>
+ <span><svg class="topic-ic"><use href="#ym-ic-country"/></svg>國家風險 <code class="muted" style="font:12px var(--ym-font-data)">flag</code></span>
+ <p class="small muted" style="width:100%;margin:0">單色跟隨文字；文字列 14px、軸標／卡片標題 16px；左側 6px。HTML 由 <code>topic-icons.js</code> 自動插入，React 用 <code>TopicIcon</code>。</p>
+</div>
+<h3>圖表</h3>
+<div class="card">
+ <svg viewBox="0 0 640 180" style="width:100%;max-width:640px;display:block">
+  <g stroke="var(--ym-line)" stroke-dasharray="3 4"><path d="M40 20H620M40 70H620M40 120H620"/></g>
+  <text x="8" y="24">150</text><text x="8" y="74">85</text><text x="8" y="124">20</text>
+  <text x="40" y="168">11 月</text><text x="300" y="168">1 月</text><text x="560" y="168">3 月</text>
+  <path d="M430 20V150" stroke="var(--ym-risk-crit)" stroke-dasharray="3 4"/><text x="436" y="32" fill="var(--ym-risk-crit)">2/28 戰爭爆發</text>
+  <polyline fill="none" stroke="var(--ym-type-route)" stroke-width="2" stroke-linejoin="round" points="40,120 120,118 200,112 280,108 360,96 430,60 500,34 560,40 620,46"/>
+  <polyline fill="none" stroke="var(--ym-series-2)" stroke-width="2" stroke-linejoin="round" points="40,130 120,128 200,126 280,124 360,120 430,110 500,84 560,70 620,66"/>
+  <path d="M360 20V150" stroke="var(--ym-text-muted)" stroke-dasharray="3 3"/><circle cx="360" cy="96" r="4.5" fill="var(--ym-type-route)" stroke="var(--ym-bg)" stroke-width="1.5"/><circle cx="360" cy="120" r="4.5" fill="var(--ym-series-2)" stroke="var(--ym-bg)" stroke-width="1.5"/>
+  <circle cx="620" cy="46" r="3" fill="var(--ym-type-route)"/><circle cx="620" cy="66" r="3" fill="var(--ym-series-2)"/>
+ </svg>
+ <p class="small muted">背景透明、格線 line 虛線、刻度 12px muted、線寬 2、終點 3px 實心點；hover 十字線＋圓點＋提示框；事件標記紅色虛線。序列順序：藍 → 綠 → 黃 → 紫。</p>
+</div>
+
+<h2>4 形狀、間距、動態</h2>
+<div class="card"><table><tr><th>項目</th><th>值</th><th>Token</th></tr>
+<tr><td>卡片／按鈕／提示框圓角</td><td class="num">8px</td><td><code class="num">--ym-radius</code></td></tr>
+<tr><td>標籤／小方塊圓角</td><td class="num">4px</td><td><code class="num">--ym-radius-s</code></td></tr>
+<tr><td>間距</td><td class="num">4 的倍數；卡片內距 16–24，卡片間 12</td><td><code class="num">--ym-space</code></td></tr>
+<tr><td>陰影</td><td>只有浮動元素（提示框、選單、對話框）</td><td><code class="num">--ym-shadow</code></td></tr>
+<tr><td>動態</td><td class="num">hover 150ms · 切換 250ms · 進場 800ms</td><td><code class="num">--ym-dur-fast / --ym-dur / --ym-dur-slow</code></td></tr>
+</table></div>
+
+<h2>5 Do / Don't</h2>
+<div class="do">
+ <div class="ok"><h4>Do</h4><ul><li>狀態用形狀＋文字＋顏色三者一起。</li><li>數字用等寬字，對齊到小數點。</li><li>新 CSS 一律 <code class="num">var(--ym-*)</code>。</li><li>示意數據旁邊標「示意數據」和資料區間。</li><li>一頁一個主要按鈕。</li></ul></div>
+ <div class="no"><h4>Don't</h4><ul><li>不要在一般文字、邊線、裝飾用彩色。</li><li>不要把陽明紅拿來表示風險。</li><li>不要有小於 12px 的文字，包含圖表刻度。</li><li>不要寫死色碼或 px 字級。</li><li>不要同一頁用兩種圓角。</li></ul></div>
+</div>
+
+<h2>6 套用</h2>
+<div class="card"><pre class="num" style="margin:0;white-space:pre-wrap;font-size:12px;line-height:1.7">&lt;!-- HTML 頁面：放在所有樣式之後、所有 script 之後 --&gt;
+&lt;link rel="stylesheet" href="design-tokens.css"&gt;
+&lt;script src="design-apply.js"&gt;&lt;/script&gt;
+
+/* GlobalView：?embed=1 自動套 .theme-ym；TS 顏色從 src/lib/theme.ts 的 C 拿 */</pre></div>
+</div><script src="topic-icons.js?v=ic-20261015"></script></body></html>

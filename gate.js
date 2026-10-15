@@ -31,7 +31,7 @@
     var gate = document.createElement("div");
     gate.id = "ym-gate";
     gate.innerHTML =
-      '<form autocomplete="off"><h1>陽明航運情報</h1><p>此預覽需要密碼才能檢視。</p>' +
+      '<form autocomplete="off"><h1>航運風險戰情室</h1><p>此預覽需要密碼才能檢視。</p>' +
       '<input type="password" aria-label="密碼" placeholder="請輸入密碼" required>' +
       '<button type="submit">進入</button><div class="err" role="alert"></div></form>';
     document.body.appendChild(gate);

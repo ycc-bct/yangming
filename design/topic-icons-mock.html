@@ -1,0 +1,90 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>示意 · 五類風險圖示</title><link rel="stylesheet" href="../fonts.css"><link rel="stylesheet" href="../design-tokens.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:var(--ym-bg);color:var(--ym-text);font:14px/1.55 var(--ym-font-ui)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 24px 60px}
+h1{font-size:22px;margin:0 0 4px}.lead{color:var(--ym-text-muted);margin:0 0 24px}
+h2{font-size:14px;font-weight:600;color:var(--ym-text-muted);margin:28px 0 10px;letter-spacing:.3px}
+.ic{display:inline-block;width:1em;height:1em;vertical-align:-.15em;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--ym-surface-1);border:1px solid var(--ym-line);border-radius:8px}
+/* 1 子導覽 */
+.subnav{display:flex;gap:8px;padding:0 24px;height:44px;align-items:stretch;border-bottom:1px solid var(--ym-line)}
+.subnav a{display:flex;align-items:center;gap:6px;padding:0 14px;font-size:13px;color:var(--ym-text-muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.subnav a .ic{font-size:14px}.subnav a.on{color:var(--ym-text);background:#004ea218;border-color:var(--ym-brand)}
+/* 2 燈號 */
+.lights{width:300px;padding:12px 0 0}.lights h3{margin:0 14px 8px;font-size:14px;font-weight:600}
+.light{display:flex;flex-direction:column;gap:3px;padding:9px 14px;border-top:1px solid var(--ym-line)}
+.light.on{background:var(--ym-surface-2);box-shadow:inset 3px 0 0 var(--ym-accent)}
+.lh{display:flex;align-items:center;gap:7px}.lh b{font-size:14.5px}.lh .ic{font-size:14px;color:var(--ym-text-muted)}.light.on .lh .ic{color:var(--ym-text)}
+.lh .chip{margin-left:auto}.ll{font-size:12px;color:var(--ym-text-muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:700}.chip i{font-style:normal;font-size:10px}
+.c-crit{color:#fff;background:color-mix(in srgb,var(--ym-risk-crit) 20%,transparent)}.c-crit i{color:var(--ym-risk-crit)}
+.c-mid{color:color-mix(in srgb,var(--ym-risk-mid) 70%,white);background:color-mix(in srgb,var(--ym-risk-mid) 14%,transparent)}.c-mid i{color:var(--ym-risk-mid)}
+.c-low{color:color-mix(in srgb,var(--ym-risk-low) 70%,white);background:color-mix(in srgb,var(--ym-risk-low) 14%,transparent)}.c-low i{color:var(--ym-risk-low)}
+.c-none{color:var(--ym-text-muted);background:var(--ym-surface-3)}.c-none i{color:var(--ym-text-muted)}
+/* 3 雷達 */
+.radar{position:relative;width:420px;height:420px;margin:0 auto}
+.radar>svg{position:absolute;inset:0}
+.axis{position:absolute;display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;transform:translate(-50%,-50%);white-space:nowrap}.axis .ic{font-size:16px;color:var(--ym-text-muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.filters{display:flex;gap:6px;padding:12px 14px}.filters button{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border:1px solid var(--ym-line);border-radius:4px;background:none;color:var(--ym-text-muted);font:12px var(--ym-font-ui)}.filters button .ic{font-size:13px}.filters button.on{color:var(--ym-text);background:var(--ym-surface-3);border-color:var(--ym-line-strong)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;padding:14px 16px}.legend div{display:flex;align-items:center;gap:8px}.legend .ic{font-size:18px;color:var(--ym-text)}.legend code{font:12px var(--ym-font-data);color:var(--ym-text-muted)}
+.note{font-size:12px;color:var(--ym-text-muted);margin:8px 0 0}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute">
+ <symbol id="i-lane" viewBox="0 0 24 24"><path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"/><path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"/></symbol>
+ <symbol id="i-policy" viewBox="0 0 24 24"><path d="M10 18v-7"/><path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></symbol>
+ <symbol id="i-fuel" viewBox="0 0 24 24"><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-6.998a2 2 0 0 0-.59-1.42L18 5"/><path d="M14 21V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v16"/><path d="M2 21h13"/><path d="M3 9h11"/></symbol>
+ <symbol id="i-port" viewBox="0 0 24 24"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></symbol>
+ <symbol id="i-country" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/></symbol>
+</svg>
+<div class="wrap">
+<h1>示意 · 五類風險圖示</h1>
+<p class="lead">lucide 線條圖示，單色跟隨文字顏色；文字列 14px、雷達軸標 16px；左側、間距 6px。</p>
+
+<h2>圖示對照</h2>
+<div class="card legend">
+ <div><svg class="ic"><use href="#i-lane"/></svg>航道安全 <code>waves</code></div>
+ <div><svg class="ic"><use href="#i-policy"/></svg>政策與關稅 <code>landmark</code></div>
+ <div><svg class="ic"><use href="#i-fuel"/></svg>燃油成本 <code>fuel</code></div>
+ <div><svg class="ic"><use href="#i-port"/></svg>港口與內陸 <code>container</code></div>
+ <div><svg class="ic"><use href="#i-country"/></svg>國家風險 <code>flag</code></div>
+</div>
+
+<h2>1 風險情報 · 子導覽</h2>
+<div class="card"><nav class="subnav">
+ <a>情報總覽</a>
+ <a><svg class="ic"><use href="#i-lane"/></svg>航道安全</a>
+ <a><svg class="ic"><use href="#i-policy"/></svg>政策與關稅</a>
+ <a><svg class="ic"><use href="#i-fuel"/></svg>燃油成本</a>
+ <a><svg class="ic"><use href="#i-port"/></svg>港口與內陸</a>
+ <a class="on"><svg class="ic"><use href="#i-country"/></svg>國家風險</a>
+</nav></div>
+
+<div class="row">
+<div>
+<h2>2 全球態勢 · 風險燈號 + 訊號動態篩選</h2>
+<div class="card lights">
+ <h3>風險燈號</h3>
+ <div class="light on"><div class="lh"><svg class="ic"><use href="#i-lane"/></svg><b>航道安全</b><span class="chip c-crit"><i>■</i>危急</span></div><div class="ll">荷莫茲海峽通行量年減 97%</div></div>
+ <div class="light"><div class="lh"><svg class="ic"><use href="#i-fuel"/></svg><b>燃油成本</b><span class="chip c-mid"><i>▲</i>中</span></div><div class="ll">油價平穩，裂解價差近 3 個月最高 +4.5</div></div>
+ <div class="light"><div class="lh"><svg class="ic"><use href="#i-policy"/></svg><b>政策與關稅</b><span class="chip c-none"><i>●</i>無訊號</span></div><div class="ll">貿易政策不確定性 186，近三個月 −15%</div></div>
+ <div class="light"><div class="lh"><svg class="ic"><use href="#i-port"/></svg><b>港口與內陸</b><span class="chip c-low"><i>●</i>低</span></div><div class="ll">沒有進行中的災害事件</div></div>
+ <div class="light"><div class="lh"><svg class="ic"><use href="#i-country"/></svg><b>國家風險</b><span class="chip c-mid"><i>▲</i>中</span></div><div class="ll">南美七國有 3 國評級在 DB5 以上</div></div>
+</div>
+<div class="card" style="margin-top:12px"><div class="filters">
+ <button class="on"><svg class="ic"><use href="#i-lane"/></svg>航道</button><button><svg class="ic"><use href="#i-fuel"/></svg>燃油</button><button><svg class="ic"><use href="#i-policy"/></svg>政策</button><button><svg class="ic"><use href="#i-port"/></svg>港口</button><button><svg class="ic"><use href="#i-country"/></svg>國家</button>
+</div></div>
+</div>
+<div>
+<h2>3 風險情報 · 雷達軸標</h2>
+<div class="card" style="padding:16px"><div class="radar">
+ <svg viewBox="0 0 420 420"><circle cx="210" cy="210" r="170" fill="none" stroke="var(--ym-accent)" stroke-opacity=".8"/><circle cx="210" cy="210" r="110" fill="none" stroke="var(--ym-line-strong)" stroke-dasharray="3 4"/><circle cx="210" cy="210" r="55" fill="none" stroke="var(--ym-line-strong)" stroke-dasharray="3 4"/><g stroke="var(--ym-line-strong)" stroke-dasharray="3 4"><path d="M210 40V380M40 210H380M90 90l240 240M330 90L90 330"/></g><circle cx="210" cy="210" r="22" fill="var(--ym-surface-2)" stroke="var(--ym-line-strong)"/></svg>
+ <div class="axis" style="left:300px;top:52px"><svg class="ic"><use href="#i-lane"/></svg>航道安全</div>
+ <div class="axis" style="left:372px;top:300px"><svg class="ic"><use href="#i-policy"/></svg>政策與關稅</div>
+ <div class="axis" style="left:210px;top:400px"><svg class="ic"><use href="#i-fuel"/></svg>燃油成本</div>
+ <div class="axis" style="left:52px;top:300px"><svg class="ic"><use href="#i-port"/></svg>港口與內陸</div>
+ <div class="axis" style="left:112px;top:52px"><svg class="ic"><use href="#i-country"/></svg>國家風險</div>
+</div><p class="note">軸標 16px 圖示，顏色 muted、文字維持白色粗體；不隨等級變色。</p></div>
+</div>
+</div>
+</div></body></html>

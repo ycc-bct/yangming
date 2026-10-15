@@ -1,0 +1,106 @@
+/* ============================================================
+   航運風險戰情室 · Design tokens（唯一來源）
+   文件：DESIGN-SYSTEM.md · 範例頁：design-system.html
+   套用方式：在所有樣式之後載入本檔。既有頁面的 --background / --card 等
+   變數會對到這裡的 --ym-*；GlobalView（全球態勢）以 src/styles/tokens.css
+   的 .theme-ym 鏡射同一組值。改顏色、字級、圓角，只改這裡。
+   ============================================================ */
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:swap;src:url(assets/jetbrains-mono-400.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:600;font-display:swap;src:url(assets/jetbrains-mono-600.woff2) format("woff2")}
+
+:root{
+  /* --- 色彩：介面（中性灰） --- */
+  --ym-bg:#101010;            /* 頁面底色 */
+  --ym-surface-1:#111113;     /* 卡片 */
+  --ym-surface-2:#18181B;     /* 卡片內的次層／hover */
+  --ym-surface-3:#27272A;     /* 選取、標籤底 */
+  --ym-line:#27272A;          /* 邊線 */
+  --ym-line-strong:#3F3F46;   /* 需要更明顯的邊線（輸入框、分隔） */
+  --ym-text:#F1F1F1;          /* 主要文字 */
+  --ym-text-2:#D4D4D8;        /* 次要文字（說明句） */
+  --ym-text-muted:#A1A1AA;    /* 輔助文字（單位、時間、標籤） */
+
+  /* --- 色彩：品牌與強調 --- */
+  --ym-brand:#004EA2;         /* 陽明藍：主要按鈕、登入 */
+  --ym-brand-red:#E60012;     /* 陽明紅：只用在 logo */
+  --ym-accent:#60A5FA;        /* 互動強調：連結、選取、游標線、機會 */
+
+  /* --- 色彩：風險語意（必須搭配文字或形狀，不能只靠顏色） --- */
+  --ym-risk-crit:#EF4444;     /* 危急 ■ */
+  --ym-risk-high:#F97316;     /* 高 ◆ */
+  --ym-risk-mid:#FBBF24;      /* 中 ▲ */
+  --ym-risk-low:#34D399;      /* 低／正常 ● */
+  --ym-risk-none:#A1A1AA;     /* 無訊號 ● */
+
+  /* --- 色彩：資料類型（關聯圖、圖表序列） --- */
+  --ym-type-event:#F87171;
+  --ym-type-indicator:#FBBF24;
+  --ym-type-route:#60A5FA;
+  --ym-type-country:#A78BFA;
+  --ym-series-2:#34D399;      /* 圖表第二序列 */
+  --ym-series-3:#FBBF24;      /* 圖表第三序列 */
+
+  /* --- 字體 --- */
+  --ym-font-ui:"Inter","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --ym-font-data:"JetBrains Mono",ui-monospace,monospace;   /* 數字、日期、代碼 */
+
+  /* --- 字級（最小 12px） --- */
+  --ym-fs-page:22px;    /* 頁面標題 700 */
+  --ym-fs-section:14px; /* 區塊標題 600 */
+  --ym-fs-body:14px;    /* 內文 400，行高 1.55 */
+  --ym-fs-nav:13px;     /* 導覽、按鈕 500 */
+  --ym-fs-small:12px;   /* 輔助文字、圖表刻度 */
+  --ym-fs-kpi:24px;     /* 關鍵數字（等寬字 600） */
+  --ym-fs-hero:48px;    /* 開場大數字 */
+
+  /* --- 圓角、間距、陰影 --- */
+  --ym-radius:8px;      /* 卡片、按鈕、提示框 */
+  --ym-radius-s:4px;    /* 標籤、小方塊 */
+  --ym-space:4px;       /* 間距單位：4 的倍數（8/12/16/24） */
+  --ym-shadow:0 10px 28px rgba(0,0,0,.45);
+
+  /* --- 動態 --- */
+  --ym-ease:cubic-bezier(.2,.7,.2,1);
+  --ym-dur-fast:150ms;  /* hover、按下 */
+  --ym-dur:250ms;       /* 展開、切換 */
+  --ym-dur-slow:800ms;  /* 版面進場 */
+
+  /* --- 對應到既有頁面的變數名（不要在新程式碼使用這些舊名） --- */
+  --background:var(--ym-bg);
+  --card:var(--ym-surface-1);
+  --secondary:var(--ym-surface-3);
+  --border:var(--ym-line);
+  --input:var(--ym-line-strong);
+  --foreground:var(--ym-text);
+  --muted-foreground:var(--ym-text-muted);
+  --primary:var(--ym-brand);
+  --font-ui:var(--ym-font-ui);
+  --font-mono:var(--ym-font-data);
+  --radius:var(--ym-radius);
+  --radius-md:var(--ym-radius);
+  --radius-sm:var(--ym-radius-s);
+}
+
+/* --- 基礎套用：讓既有頁面符合系統 --- */
+body{font-family:var(--ym-font-ui)}
+.page-card,.summary-card,.risk-radar-panel,.user-menu,.chart-tip,dialog,.page-toolbar{border-radius:var(--ym-radius)}
+.badge,.topic-nav a,.feed-filters button{border-radius:var(--ym-radius-s)}
+/* 字級下限 12px（design-apply.js 會再檢查一次實際算出來的字級） */
+small,.text-button,.back-button,.badge,.status-trend,.status-signal-name,.heat-corner,.risk-topic-description,#pageContent p,#pageContent svg text,.chart-legend{font-size:var(--ym-fs-small)}
+.text-button,.back-button{font-size:var(--ym-fs-nav)}
+.page-title h1,#pageContent>.page-title h1{font-size:var(--ym-fs-page);font-weight:700}
+.risk-radar-panel h2,.page-card h2,.page-card-head h2{font-size:var(--ym-fs-section);font-weight:600}
+/* 數字用等寬字 */
+.status-value,.status-trend,.heat-count b,.summary-card strong,.chart-value strong,.detail-metrics strong,#overviewSummaryCount,.tl-date,.num{font-family:var(--ym-font-data);font-variant-numeric:tabular-nums}
+#pageContent svg text{font-family:var(--ym-font-ui);font-variant-numeric:tabular-nums}
+
+/* --- 五類風險圖示（topic-icons.js / TopicIcon.tsx）--- */
+/* 覆蓋頁面裡「svg 撐滿寬度」的通用規則 */
+svg.topic-ic,#pageContent svg.topic-ic,.page-content svg.topic-ic{width:14px!important;height:14px!important;display:inline-block!important;max-width:none}
+.topic-ic{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:6px;color:var(--ym-text-muted)}
+.topic-nav a .topic-ic{margin-right:5px}
+.heat-col span .topic-ic{display:block;margin:0 auto 3px}
+.topic-nav a.active .topic-ic,.feed-filters button.active .topic-ic,.status-topic .topic-ic,.risk-card-heading h3 .topic-ic,.heat-col span .topic-ic,.page-title h1 .topic-ic{color:currentColor}
+.page-title h1 svg.topic-ic{width:20px!important;height:20px!important;margin-right:8px}
+.risk-card-heading h3 svg.topic-ic{width:16px!important;height:16px!important}
+.radar-topic-label svg.radar-ic{width:16px!important;height:16px!important;display:inline!important}.radar-topic-label .radar-ic{stroke:#d7dde5}.radar-topic-label.active .radar-ic{stroke:#8ec5ff}
