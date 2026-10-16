@@ -20,7 +20,7 @@
       if (indicator) {
         for (const section of sections()) {
           const link = [...indicator.querySelectorAll('[data-indicator-for]')].find(a => a.dataset.indicatorFor === section.id);
-          if (link) indicator.append(link);
+          if (link) indicator.append(link.closest('.report-indicator-option') || link);
         }
       }
       onChange(sections().map(el => el.dataset.sectionKey));
@@ -79,21 +79,42 @@
     });
   }
   renderReports = function () {
-    return renderBeforeLayout()
-      .replace('<section class="page-card"><div class="page-card-head"><h2>報告設定</h2>', '<section class="page-card report-setup-card"><div class="page-card-head"><h2>報告設定</h2>')
+    const host = document.createElement('div');
+    host.innerHTML = renderBeforeLayout()
       .replace('type="submit" class="page-button">更新預覽', 'type="submit" id="updateReportPreview" form="reportForm" class="page-button">更新')
       .replace('產生報告連結</button>', '產生報告</button>');
+    const grid = host.querySelector('.report-grid');
+    const cards = [...grid.querySelectorAll(':scope>.page-card')];
+    const setup = cards[0], preview = cards[1], form = setup.querySelector('#reportForm');
+    const controls = document.createElement('div');
+    controls.className = 'report-controls';
+    controls.hidden = true;
+    controls.append(form);
+    setup.remove();
+    preview.classList.add('report-preview-shell');
+    preview.querySelector(':scope>.page-card-head')?.remove();
+    const tabs = document.createElement('nav');
+    tabs.className = 'report-route-tabs';
+    tabs.setAttribute('aria-label', '航線報告');
+    tabs.setAttribute('role', 'tablist');
+    tabs.innerHTML = routes.map((route,index)=>{
+      const tone = route.level === '危急' || route.level === '高' ? 'high' : route.level === '中' ? 'medium' : 'low';
+      return `<button type="button" role="tab" class="tone-${tone}" data-report-route="${index}" aria-controls="reportPreview" aria-selected="false"><span class="report-route-copy"><strong>${escapeHTML(route.name)}</strong><small>${escapeHTML(route.via)}</small></span><span class="report-route-level">${escapeHTML(route.level)}</span></button>`;
+    }).join('');
+    preview.prepend(tabs);
+    grid.prepend(controls);
+    return host.innerHTML;
   };
   makeReport = function () {
     makeBeforeLayout();
-    const report = pageState.report, route = routes[report.route];
+    const report = pageState.report;
     const source = document.createElement('div');
     source.innerHTML = report.body;
     const title = source.querySelector('h1'), routeTitle = source.querySelector('h2');
     const brand = source.querySelector('small'), stamp = source.querySelector('p');
     const hero = document.createElement('div');
     hero.className = 'report-cover';
-    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.jpg" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-meta"><span>主要風險節點 · ${escapeHTML(route.node)}</span><span class="report-level" data-level="${escapeHTML(route.level)}">風險 · ${escapeHTML(route.level)}</span></div><div class="report-cover-date"></div></div>`;
+    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.jpg" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-date"></div></div>`;
     hero.querySelector('.report-cover-brand').append(brand);
     hero.querySelector('.report-cover-title').append(title);
     hero.querySelector('.report-cover-route').append(routeTitle);
@@ -105,13 +126,6 @@
     if (risk) {
       risk.classList.add('report-risk-lead');
       hero.after(risk);
-      const news = events.filter(event => event.route === report.route);
-      if (news.length) {
-        const list = document.createElement('div');
-        list.className = 'report-news';
-        list.innerHTML = news.map(event => `<article><div class="report-news-meta"><span>${escapeHTML(event.type)}</span><span>${escapeHTML(event.status)}</span></div><h3>${escapeHTML(event.title)}</h3><p>${escapeHTML(event.impact)}</p><p class="report-news-evidence">${escapeHTML(event.evidence)}</p></article>`).join('');
-        risk.append(list);
-      }
     }
     source.querySelectorAll('.report-summary-copy').forEach(el => {
       const fragments = el.textContent.split(/\n\n/);
@@ -144,6 +158,11 @@
       el.draggable = true;
       el.tabIndex = 0;
       el.setAttribute('aria-label', `Section：${heading.textContent}；可拖曳調整順序`);
+      const dragHint = document.createElement('span');
+      dragHint.className = 'report-drag-hint';
+      dragHint.setAttribute('aria-hidden', 'true');
+      dragHint.innerHTML = '<i>⠿</i><span>拖曳以變更章節順序</span>';
+      el.append(dragHint);
     });
     if (sectionOrder.length) ordered.sort((a,b) => {
       const rank = el => { const index = sectionOrder.indexOf(el.dataset.sectionKey); return index < 0 ? 999 : index; };
@@ -182,13 +201,10 @@
     });
     const indicator = document.createElement('aside');
     indicator.className = 'report-section-indicator';
-    indicator.setAttribute('aria-label', '報告章節進度');
-    indicator.innerHTML = ordered.map(el => `<a href="#${el.id}" data-indicator-for="${el.id}"><span aria-hidden="true"></span><b>${escapeHTML(el.querySelector('h2').textContent)}</b></a>`).join('');
+    indicator.setAttribute('aria-label', '選取章節與查看進度');
+    const sectionControls = [...document.querySelectorAll('.report-sections input')];
+    indicator.innerHTML = `<strong class="report-indicator-head">選取章節</strong>${sectionControls.map(control=>{const label=control.closest('label')?.textContent.trim()||control.value,section=ordered.find(el=>el.dataset.sectionKey===label);return `<label class="report-indicator-option"><input type="checkbox" data-report-section="${escapeHTML(control.value)}" ${control.checked?'checked':''}><a ${section?`href="#${section.id}" data-indicator-for="${section.id}"`:'aria-disabled="true"'}><span aria-hidden="true"></span><b>${escapeHTML(label)}</b></a></label>`}).join('')}`;
     source.append(indicator);
-    const footer = document.createElement('div');
-    footer.className = 'report-credit';
-    footer.textContent = 'Banner 情境照片：使用者提供';
-    source.append(footer);
     report.body = source.innerHTML;
     document.querySelector('#reportPreview').classList.add('report-document');
     document.querySelector('#reportPreview').innerHTML = report.body;
@@ -207,6 +223,11 @@
       const link = document.getElementById('generatedReportLink');
       if (link) link.hidden = true;
     });
+    document.querySelectorAll('[data-report-route]').forEach(tab => {
+      const active = +tab.dataset.reportRoute === report.route;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
   };
   function bindReportIndicator(root) {
     if (!root) return;
@@ -220,6 +241,12 @@
       if (active) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
     });
     links.forEach(link => link.addEventListener('click', () => setActive(link.dataset.indicatorFor)));
+    indicator.querySelectorAll('[data-report-section]').forEach(control => control.addEventListener('change', () => {
+      const source = document.querySelector(`.report-sections input[value="${CSS.escape(control.dataset.reportSection)}"]`);
+      if (!source) return;
+      source.checked = control.checked;
+      makeReport();
+    }));
     setActive(sections[0].id);
     let hideTimer;
     const showDuringScroll = () => {
@@ -315,16 +342,21 @@
     const generateButton = document.querySelector('#generateReport');
     updateButton?.remove();
     generateButton?.remove();
-    const previewCard = document.querySelector('.report-grid>.page-card:nth-child(2)');
-    const previewHeader = previewCard?.querySelector('.page-card-head');
-    if (previewHeader) {
-      const shareButton = document.createElement('button');
-      shareButton.type = 'button';
-      shareButton.className = 'page-button report-share-button';
-      shareButton.textContent = '分享連結';
-      shareButton.addEventListener('click', shareReportLink);
-      previewHeader.append(shareButton);
-    }
+    const pageTitle = document.querySelector('#pageContent>.page-title');
+    pageTitle?.querySelector('.page-breadcrumb')?.remove();
+    pageTitle?.querySelector('p')?.remove();
+    const shareButton = document.createElement('button');
+    shareButton.type = 'button';
+    shareButton.className = 'page-button report-share-button';
+    shareButton.textContent = '分享連結';
+    shareButton.addEventListener('click', shareReportLink);
+    pageTitle?.append(shareButton);
+    document.querySelectorAll('[data-report-route]').forEach(tab => tab.addEventListener('click', () => {
+      const select = document.querySelector('#reportRoute');
+      select.value = tab.dataset.reportRoute;
+      pageState.route = +tab.dataset.reportRoute;
+      makeReport();
+    }));
   };
   if (currentPage === 'reports') renderPage('reports');
 })();
