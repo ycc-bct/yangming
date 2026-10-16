@@ -92,6 +92,23 @@
         cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
       }
       analysis?.querySelector('.risk-route-advice')?.remove();
+      if(topic==='countries'&&!section.querySelector('.report-country-grid')){
+        const chart=section.querySelector(':scope>.country-risk-chart');
+        const tableWrap=section.querySelector(':scope>.table-scroll');
+        if(chart&&tableWrap){
+          const grid=document.createElement('div');
+          grid.className='report-country-grid';
+          const chartCard=document.createElement('section');
+          chartCard.className='page-card report-country-chart-card';
+          const tableCard=document.createElement('section');
+          tableCard.className='page-card report-country-table-card';
+          tableCard.innerHTML='<div class="page-card-head"><h2>國家評級與管理建議</h2></div>';
+          chart.before(grid);
+          chartCard.append(chart);
+          tableCard.append(tableWrap);
+          grid.append(chartCard,tableCard);
+        }
+      }
       if(topic==='safety'&&!section.querySelector('.report-safety-supplement')&&!section.querySelector('.safety-evidence-grid')){
         const supplement=document.createElement('div');
         supplement.className='report-safety-supplement';
