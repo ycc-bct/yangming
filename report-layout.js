@@ -97,21 +97,24 @@
     tabs.className = 'report-route-tabs';
     tabs.setAttribute('aria-label', '航線報告');
     tabs.setAttribute('role', 'tablist');
-    tabs.innerHTML = routes.map((route,index)=>`<button type="button" role="tab" data-report-route="${index}" aria-controls="reportPreview" aria-selected="false"><strong>${escapeHTML(route.name)}</strong><span>${escapeHTML(route.via)}</span></button>`).join('');
+    tabs.innerHTML = routes.map((route,index)=>{
+      const tone = route.level === '危急' || route.level === '高' ? 'high' : route.level === '中' ? 'medium' : 'low';
+      return `<button type="button" role="tab" class="tone-${tone}" data-report-route="${index}" aria-controls="reportPreview" aria-selected="false"><span class="report-route-copy"><strong>${escapeHTML(route.name)}</strong><small>${escapeHTML(route.via)}</small></span><span class="report-route-level">${escapeHTML(route.level)}</span></button>`;
+    }).join('');
     preview.prepend(tabs);
     grid.prepend(controls);
     return host.innerHTML;
   };
   makeReport = function () {
     makeBeforeLayout();
-    const report = pageState.report, route = routes[report.route];
+    const report = pageState.report;
     const source = document.createElement('div');
     source.innerHTML = report.body;
     const title = source.querySelector('h1'), routeTitle = source.querySelector('h2');
     const brand = source.querySelector('small'), stamp = source.querySelector('p');
     const hero = document.createElement('div');
     hero.className = 'report-cover';
-    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.png" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-meta"><span>主要風險節點 · ${escapeHTML(route.node)}</span><span class="report-level" data-level="${escapeHTML(route.level)}">風險 · ${escapeHTML(route.level)}</span></div><div class="report-cover-date"></div></div>`;
+    hero.innerHTML = `<img class="report-cover-photo" src="assets/report-port.png" alt="港口貨櫃船與岸邊起重機"><div class="report-cover-copy"><div class="report-cover-brand"></div><div class="report-cover-title"></div><div class="report-cover-route"></div><div class="report-cover-date"></div></div>`;
     hero.querySelector('.report-cover-brand').append(brand);
     hero.querySelector('.report-cover-title').append(title);
     hero.querySelector('.report-cover-route').append(routeTitle);
@@ -123,13 +126,6 @@
     if (risk) {
       risk.classList.add('report-risk-lead');
       hero.after(risk);
-      const news = events.filter(event => event.route === report.route);
-      if (news.length) {
-        const list = document.createElement('div');
-        list.className = 'report-news';
-        list.innerHTML = news.map(event => `<article><div class="report-news-meta"><span>${escapeHTML(event.type)}</span><span>${escapeHTML(event.status)}</span></div><h3>${escapeHTML(event.title)}</h3><p>${escapeHTML(event.impact)}</p><p class="report-news-evidence">${escapeHTML(event.evidence)}</p></article>`).join('');
-        risk.append(list);
-      }
     }
     source.querySelectorAll('.report-summary-copy').forEach(el => {
       const fragments = el.textContent.split(/\n\n/);
@@ -209,10 +205,6 @@
     const sectionControls = [...document.querySelectorAll('.report-sections input')];
     indicator.innerHTML = `<strong class="report-indicator-head">選取章節</strong>${sectionControls.map(control=>{const label=control.closest('label')?.textContent.trim()||control.value,section=ordered.find(el=>el.dataset.sectionKey===label);return `<label class="report-indicator-option"><input type="checkbox" data-report-section="${escapeHTML(control.value)}" ${control.checked?'checked':''}><a ${section?`href="#${section.id}" data-indicator-for="${section.id}"`:'aria-disabled="true"'}><span aria-hidden="true"></span><b>${escapeHTML(label)}</b></a></label>`}).join('')}`;
     source.append(indicator);
-    const footer = document.createElement('div');
-    footer.className = 'report-credit';
-    footer.textContent = 'Banner 情境照片：使用者提供';
-    source.append(footer);
     report.body = source.innerHTML;
     document.querySelector('#reportPreview').classList.add('report-document');
     document.querySelector('#reportPreview').innerHTML = report.body;
