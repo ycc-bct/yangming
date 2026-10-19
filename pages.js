@@ -4,6 +4,7 @@ const pageState={route:0,scenario:null,report:null};let currentPage='overview';
 const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const prototypeNote='';
 function panel(title,body,sub=''){return `<section class="page-card"><div class="page-card-head"><h2>${title}</h2>${sub?`<span>${sub}</span>`:''}</div>${body}</section>`}
+function namedPanel(title,body,sub='',className=''){return panel(title,body,sub).replace('class="page-card"',`class="page-card ${className}"`)}
 function routeOptions(){return routes.map((r,i)=>`<option value="${i}" ${i===pageState.route?'selected':''}>${r.name} · ${r.via}</option>`).join('')}
 function table(headers,rows){return `<div class="table-scroll"><table class="data-table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
 function emptyData(text){return `<div class="data-empty"><p>${text}</p></div>`}
@@ -76,6 +77,11 @@ const PORT_EVENTS=[
 {area:'歐洲',country:'荷蘭',kind:'施工',status:'前瞻預警',title:'鐵路線 2026 年底起停駛 9 個月施工',impact:'未來內陸運輸可能延誤，需預先規劃替代運輸。',route:0},
 {area:'歐洲',country:'德國',kind:'條件式預警',status:'前瞻預警',title:'若荷莫茲海峽通行進一步放慢',impact:'經濟與物流衝擊將增加。',route:2}];
 function renderPorts(){return `<div class="page-toolbar"><label>區域<select id="portArea"><option>全部</option><option>中南美洲</option><option>歐洲</option></select></label><label>事件階段<select id="portStage"><option>全部</option><option>已發生</option><option>常態化</option><option>前瞻預警</option></select></label><span id="portCount" class="toolbar-note"></span></div>${panel('港口與內陸事件矩陣','<div id="portTable" class="port-matrix-wrap"></div><p class="micro-note">指標說明：事件依已發生、常態化與前瞻預警分類。參考來源：Shipping Related Developments 2026。</p>')}<div id="portsAnalysis">${riskAnalysis('ports')}</div>`}
+function portMatrixMarkup({entries=PORT_EVENTS,countEntries=entries,columns=['已發生','常態化','前瞻預警'],areas=['中南美洲','歐洲'],activeStage='全部',interactive=false}={}){
+ const stages=['已發生','常態化','前瞻預警'];
+ const stageHead=stage=>{const content=`<span>${stage}</span><b>${countEntries.filter(e=>e.status===stage).length}</b>`;return interactive?`<button type="button" class="port-matrix-stage" data-stage="${stage}" aria-pressed="${stage===activeStage}">${content}</button>`:`<div class="port-matrix-stage">${content}</div>`};
+ return `<table class="port-matrix"><caption class="sr-only">港口與內陸事件，依區域與事件階段分組</caption><colgroup><col class="port-region-col">${columns.map(()=>'<col>').join('')}</colgroup><thead><tr><th scope="col">區域</th>${columns.map(stage=>`<th scope="col" class="port-stage-${stages.indexOf(stage)}">${stageHead(stage)}</th>`).join('')}</tr></thead><tbody>${areas.map(region=>`<tr><th scope="row"><span>${region}</span><small>${entries.filter(e=>e.area===region).length} 件事件</small></th>${columns.map(stage=>{const cell=entries.filter(e=>e.area===region&&e.status===stage);return `<td data-stage-label="${stage}" class="port-stage-${stages.indexOf(stage)}"><div class="port-matrix-cell">${cell.length?cell.map(e=>`<article class="port-matrix-event"><span class="port-matrix-country">${escapeHTML(e.country)}<small>${escapeHTML(e.kind)}</small></span><strong>${escapeHTML(e.title)}</strong><span class="port-matrix-impact">${escapeHTML(e.impact)}</span></article>`).join(''):'<p class="port-matrix-empty">無對應事件</p>'}</div></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+}
 function updatePorts(){
  const area=$('#portArea').value,status=$('#portStage').value;
  const inArea=PORT_EVENTS.filter(e=>area==='全部'||e.area===area);
@@ -83,22 +89,29 @@ function updatePorts(){
  $('#portCount').textContent=entries.length+' 個事件';
  const stages=['已發生','常態化','前瞻預警'],columns=status==='全部'?stages:[status];
  const areas=area==='全部'?['中南美洲','歐洲']:[area];
- $('#portTable').innerHTML=`<table class="port-matrix"><caption class="sr-only">港口與內陸事件，依區域與事件階段分組</caption><colgroup><col class="port-region-col">${columns.map(()=>'<col>').join('')}</colgroup><thead><tr><th scope="col">區域</th>${columns.map(stage=>`<th scope="col" class="port-stage-${stages.indexOf(stage)}"><button type="button" class="port-matrix-stage" data-stage="${stage}" aria-pressed="${stage===status}"><span>${stage}</span><b>${inArea.filter(e=>e.status===stage).length}</b></button></th>`).join('')}</tr></thead><tbody>${areas.map(region=>`<tr><th scope="row"><span>${region}</span><small>${entries.filter(e=>e.area===region).length} 件事件</small></th>${columns.map(stage=>{const cell=entries.filter(e=>e.area===region&&e.status===stage);return `<td data-stage-label="${stage}" class="port-stage-${stages.indexOf(stage)}"><div class="port-matrix-cell">${cell.length?cell.map(e=>`<article class="port-matrix-event"><span class="port-matrix-country">${escapeHTML(e.country)}<small>${escapeHTML(e.kind)}</small></span><strong>${escapeHTML(e.title)}</strong><span class="port-matrix-impact">${escapeHTML(e.impact)}</span></article>`).join(''):'<p class="port-matrix-empty">無對應事件</p>'}</div></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+ $('#portTable').innerHTML=portMatrixMarkup({entries,countEntries:inArea,columns,areas,activeStage:status,interactive:true});
  document.querySelectorAll('[data-stage]').forEach(button=>button.onclick=()=>{$('#portStage').value=button.dataset.stage===status?'全部':button.dataset.stage;updatePorts();});
 
 }
-const COUNTRY_FLAGS={墨西哥:'🇲🇽',智利:'🇨🇱',巴西:'🇧🇷',阿根廷:'🇦🇷',哥倫比亞:'🇨🇴',荷蘭:'🇳🇱',德國:'🇩🇪',巴拿馬:'🇵🇦',秘魯:'🇵🇪',英國:'🇬🇧',西班牙:'🇪🇸',義大利:'🇮🇹',美國:'🇺🇸'};
-function countryLabel(value){return String(value??'').split('、').map(name=>{const clean=name.trim();return (COUNTRY_FLAGS[clean]||'')+(COUNTRY_FLAGS[clean]?' ':'')+clean}).join('、')}
+function countryLabel(value){return String(value??'').split('、').map(name=>name.trim()).join('、')}
 const COUNTRY_ROWS=[['智利','DB4a','DB5a','優先進入，長期布局',4,5],['墨西哥','DB4a','DB4c','優先進入，北美延伸',4,4.5],['巴拿馬','DB4a','DB4d','物流樞紐，轉運中心',4,4.75],['秘魯','DB4a','DB5d','選擇性進入，關注 Chancay',4,5.75],['哥倫比亞','DB5','DB5','謹慎評估，限制曝險',5,5],['巴西','DB5a','DB5d','審慎進入，嚴格風控',5,5.75],['阿根廷','DB6a','DB6a','極度限制或避免',6,6]];
 // Keep point labels attached to the ratings in COUNTRY_ROWS. The deck's
 // scatterplot places Peru and Colombia ambiguously; its rating table is the
 // source for their coordinates.
 const COUNTRY_LABELS={
- '智利':{dx:12,dy:20},'墨西哥':{dx:12,dy:29},'巴拿馬':{dx:12,dy:5},
- '秘魯':{dx:-13,dy:-13,anchor:'end'},'哥倫比亞':{dx:14,dy:4},
- '巴西':{dx:14,dy:-8},'阿根廷':{dx:-13,dy:-12,anchor:'end'}
+ '智利':{dx:14,dy:4},'墨西哥':{dx:14,dy:4},'巴拿馬':{dx:14,dy:4},
+ '秘魯':{dx:-14,dy:4,anchor:'end'},'哥倫比亞':{dx:14,dy:4},
+ '巴西':{dx:14,dy:4},'阿根廷':{dx:-14,dy:4,anchor:'end'}
 };
-function renderCountries(){return `<div class="page-toolbar"><label>查看國家<select id="countrySelect"><option value="all">全部國家</option>${COUNTRY_ROWS.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('')}</select></label><span class="toolbar-note">CRR 國家風險 · SRR 航運產業風險</span></div><div class="page-grid equal country-main-grid">${panel('國家 × 航運產業風險','<div id="countryChart"></div><p class="micro-note country-chart-note">CRR 為國家風險、SRR 為航運產業風險，皆為 1–7 級；數字越大風險越高。a–d 在圖上以 0、0.25、0.5、0.75 排序，不表示等距的風險機率。虛線為七國樣本平均，用來劃分四象限，並非官方警示門檻。</p>','CRR / SRR')}${panel('國家評級與管理建議','<div id="countryTable"></div>')}</div><div id="countriesAnalysis">${riskAnalysis('countries')}</div>`}
+function countryRiskGraph(value='all'){
+ const x=n=>90+(n-3.5)*190,y=n=>360-(n-3.5)*115;
+ const averageCRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[4],0)/COUNTRY_ROWS.length;
+ const averageSRR=COUNTRY_ROWS.reduce((sum,row)=>sum+row[5],0)/COUNTRY_ROWS.length;
+ const left=90,right=650,top=38,bottom=360,midX=x(averageCRR),midY=y(averageSRR);
+ const zones=[['caution',left,top,midX-left,midY-top,'審慎評估'],['high',midX,top,right-midX,midY-top,'高風險'],['priority',left,midY,midX-left,bottom-midY,'優先市場'],['opportunity',midX,midY,right-midX,bottom-midY,'機會管理']];
+ return `<svg class="country-risk-chart" viewBox="0 0 700 420" role="img" aria-label="國家與航運產業風險四象限，紅色為高風險，琥珀色為審慎評估，綠色為優先市場，藍色為機會管理"><g>${zones.map(([kind,xx,yy,w,h,label])=>`<rect class="country-zone country-zone-${kind}" x="${xx}" y="${yy}" width="${w}" height="${h}"/><text class="country-zone-label country-zone-label-${kind}" x="${xx+12}" y="${yy+20}">${label}</text>`).join('')}</g><g font-size="12" fill="#a1a1aa">${[4,5,6].map(n=>`<path d="M${x(n)} ${top}V${bottom}M${left} ${y(n)}H${right}" stroke="#3f3f464d"/><text x="${x(n)-10}" y="382">DB${n}</text><text x="42" y="${y(n)+4}">DB${n}</text>`).join('')}<text x="34" y="24">SRR ↑</text><text x="584" y="406">CRR →</text></g><path d="M${midX} ${top}V${bottom}M${left} ${midY}H${right}" stroke="#a1a1aa" stroke-width="1" stroke-dasharray="4 5"/>${COUNTRY_ROWS.map((row,i)=>{const on=value==='all'||+value===i,[kind,zone]=countryQuadrant(row,averageCRR,averageSRR),label=COUNTRY_LABELS[row[0]],cx=x(row[4]),cy=y(row[5]);return `<g opacity="${on?1:.2}" data-country="${escapeHTML(row[0])}"><circle class="country-point country-point-${kind}" cx="${cx}" cy="${cy}" r="8"><title>${escapeHTML(row[0])}：${zone}，CRR ${escapeHTML(row[1])}、SRR ${escapeHTML(row[2])}</title></circle><text class="country-point-label" x="${cx+label.dx}" y="${cy+label.dy}" text-anchor="${label.anchor||'start'}">${escapeHTML(row[0])}</text></g>`}).join('')}</svg>`;
+}
+function renderCountries(){return `<div class="page-toolbar"><label>查看國家<select id="countrySelect"><option value="all">全部國家</option>${COUNTRY_ROWS.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join('')}</select></label><span class="toolbar-note">CRR 國家風險 · SRR 航運產業風險</span></div><div class="page-grid equal country-main-grid">${namedPanel('國家 × 航運產業風險','<div id="countryChart"></div><p class="micro-note country-chart-note">CRR 為國家風險、SRR 為航運產業風險，皆為 1–7 級；數字越大風險越高。a–d 在圖上以 0、0.25、0.5、0.75 排序，不表示等距的風險機率。虛線為七國樣本平均，用來劃分四象限，並非官方警示門檻。</p>','CRR / SRR','country-risk-panel')}${panel('國家評級與管理建議','<div id="countryTable"></div>')}</div><div id="countriesAnalysis">${riskAnalysis('countries')}</div>`}
 function countryQuadrant(row,averageCRR,averageSRR){
  const highCRR=row[4]>averageCRR,highSRR=row[5]>averageSRR;
  if(highCRR&&highSRR)return ['high','高風險地區'];
@@ -112,12 +125,9 @@ function countryRatingBadge(rating){
 }
 function updateCountries(){
  const value=$('#countrySelect').value,rows=value==='all'?COUNTRY_ROWS:[COUNTRY_ROWS[+value]];
- const x=n=>65+(n-3.5)*130,y=n=>280-(n-3.5)*85;
+ $('#countryChart').innerHTML=countryRiskGraph(value);
  const avgX=COUNTRY_ROWS.reduce((a,c)=>a+c[4],0)/COUNTRY_ROWS.length;
  const avgY=COUNTRY_ROWS.reduce((a,c)=>a+c[5],0)/COUNTRY_ROWS.length;
- const left=65,right=430,top=30,bottom=280,midX=x(avgX),midY=y(avgY);
- const zones=[['caution',left,top,midX-left,midY-top,'審慎評估'],['high',midX,top,right-midX,midY-top,'高風險'],['priority',left,midY,midX-left,bottom-midY,'優先市場'],['opportunity',midX,midY,right-midX,bottom-midY,'機會管理']];
- $('#countryChart').innerHTML=`<svg viewBox="0 0 470 330" role="img" aria-label="國家與航運產業風險四象限，紅色為高風險，琥珀色為審慎評估，綠色為優先市場，藍色為機會管理"><g>${zones.map(([kind,xx,yy,w,h,label])=>`<rect class="country-zone country-zone-${kind}" x="${xx}" y="${yy}" width="${w}" height="${h}"/><text class="country-zone-label country-zone-label-${kind}" x="${xx+10}" y="${yy+17}">${label}</text>`).join('')}</g><g font-size="12" fill="#a1a1aa">${[4,5,6].map(n=>`<path d="M${x(n)} 30V280M65 ${y(n)}H430" stroke="#3f3f464d"/><text x="${x(n)-10}" y="300">DB${n}</text><text x="25" y="${y(n)+3}">DB${n}</text>`).join('')}<text x="20" y="18">SRR ↑</text><text x="370" y="322">CRR →</text></g><path d="M${midX} 30V280M65 ${midY}H430" stroke="#a1a1aa" stroke-width="1" stroke-dasharray="4 5"/>${COUNTRY_ROWS.map((c,i)=>{const on=value==='all'||+value===i,[kind,zone]=countryQuadrant(c,avgX,avgY),label=COUNTRY_LABELS[c[0]];return `<g opacity="${on?1:.2}" data-country="${escapeHTML(c[0])}"><circle class="country-point country-point-${kind}" cx="${x(c[4])}" cy="${y(c[5])}" r="7"><title>${escapeHTML(c[0])}：${zone}，CRR ${escapeHTML(c[1])}、SRR ${escapeHTML(c[2])}</title></circle><text x="${x(c[4])+label.dx}" y="${y(c[5])+label.dy}" text-anchor="${label.anchor||'start'}" fill="#f1f1f1" font-size="13">${escapeHTML(c[0])}</text></g>`}).join('')}</svg>`;
  $('#countryTable').innerHTML=table(['國家','CRR','SRR','區域','建議策略'],rows.map(c=>[escapeHTML(c[0]),countryRatingBadge(c[1]),countryRatingBadge(c[2]),`<span class="country-zone-badge country-zone-badge-${countryQuadrant(c,avgX,avgY)[0]}">${countryQuadrant(c,avgX,avgY)[1]}</span>`,escapeHTML(c[3])]));
 }
 

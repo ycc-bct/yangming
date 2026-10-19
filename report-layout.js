@@ -168,31 +168,8 @@
       const rank = el => { const index = sectionOrder.indexOf(el.dataset.sectionKey); return index < 0 ? 999 : index; };
       return rank(a)-rank(b);
     }).forEach(el => source.append(el));
-    const countryFlags = {'墨西哥':'🇲🇽','智利':'🇨🇱','巴西':'🇧🇷','阿根廷':'🇦🇷','哥倫比亞':'🇨🇴','荷蘭':'🇳🇱','德國':'🇩🇪','巴拿馬':'🇵🇦','秘魯':'🇵🇪','英國':'🇬🇧','西班牙':'🇪🇸','義大利':'🇮🇹','美國':'🇺🇸'};
-    const countrySections = new Set(['港口與內陸','國家風險']);
-    ordered.filter(section => countrySections.has(section.querySelector('h2')?.textContent)).forEach(section => {
-      section.querySelectorAll('table tr').forEach((row, index) => {
-        if (index === 0) return;
-        const countryCell = row.querySelector('td');
-        if (!countryCell) return;
-        const countries = countryCell.textContent.trim().split('、').map(country => country.trim());
-        if (!countries.some(country => countryFlags[country])) return;
-        countryCell.replaceChildren();
-        countries.forEach((country, countryIndex) => {
-          if (countryIndex) countryCell.append(document.createTextNode('、'));
-          const label = document.createElement('span');
-          label.className = 'country-label';
-          const flag = document.createElement('span');
-          flag.className = 'country-flag';
-          flag.setAttribute('aria-hidden', 'true');
-          flag.textContent = countryFlags[country] || '';
-          if (flag.textContent) label.append(flag);
-          label.append(document.createTextNode(country));
-          countryCell.append(label);
-        });
-      });
-    });
     source.querySelectorAll('th').forEach(cell => {
+      if (cell.closest('.port-matrix')) return;
       const icon = document.createElement('span');
       icon.className = 'report-table-icon';
       icon.setAttribute('aria-hidden','true');
