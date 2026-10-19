@@ -1,5 +1,499 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><script src="gate.js?v=ym-blue-20261013"></script><meta name="viewport" content="width=device-width,initial-scale=1"><title>陽明航運情報</title><link rel="stylesheet" href="style.css?v=ym-ui-20261013"><link rel="stylesheet" href="pages.css?v=ym-ui-20261013"><link rel="stylesheet" href="strategy.css?v=ym-ui-20261013"><link rel="stylesheet" href="assessment.css?v=ym-ui-20261013"><link rel="stylesheet" href="overview-map.css?v=ym-ui-20261013"><link rel="stylesheet" href="ui-theme.css?v=header-alert-20261014"><link rel="stylesheet" href="ai-assistant.css?v=layout-20261013"><link rel="stylesheet" href="intelligence-model.css?v=p1-20261014"><link rel="stylesheet" href="risk-radar.css?v=stickynav3-20261014"></head><body>
-<header><a class="brand" href="index.html"><img src="assets/logo.png" alt="Yang Ming 陽明海運"></a><div class="product"><span>航運情報</span></div><nav class="primary-nav" aria-label="主選單"><a href="#overview" data-page="overview">戰略總覽</a><a href="#intelligence" data-page="intelligence">風險情報</a><a href="#routes" data-page="routes">航線方案評估</a><a href="#reports" data-page="reports">決策報告</a></nav><div class="header-right"><div class="header-alert" aria-label="整體警戒：危急"><span class="header-alert-label">整體警戒</span><span class="header-alert-level"><span class="header-alert-square" aria-hidden="true"></span>危急</span></div><button id="aiAssistantTrigger" class="ai-trigger" aria-haspopup="dialog" aria-controls="aiAssistant" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></svg>AI 助手</button><span class="header-avatar" role="img" aria-label="使用者頭像：YM" title="YM">YM</span></div></header><div id="topicNavSlot" hidden></div>
-<main class="workspace"><section class="map-column"><div class="map-top"><div><h1>全球航線</h1></div><div class="map-actions"><button id="labelsToggle" aria-pressed="true">國界地名</button><button id="networkToggle" aria-pressed="true">航線圖層</button><button id="reset">↻ 重設</button></div></div><div class="globe-wrap"><canvas id="globe" aria-label="全球航線地圖；拖曳平移、滾輪縮放，也可使用下方航線按鈕選取"></canvas><div class="earth-controls"><button id="north" aria-label="顯示完整地圖"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></button><button id="zoomIn" aria-label="放大地圖"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button><button id="zoomOut" aria-label="縮小地圖"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></button></div><div class="earth-credit">Natural Earth<span>航線與狀態示意</span></div><div class="map-legend"><span><i class="red-dot"></i>風險節點</span><span><i class="cyan-dot"></i>掛靠港</span><span class="route-key">━ 原航線　┄ 備援航線</span><span>船舶動態示意</span></div></div></section>
-<aside class="right-column"><div class="panel-tabs"><span id="panelTitle">需關注事項</span><button id="panelCollapse" aria-label="展開或收合資訊面板">⌄</button></div><div class="panel-scroll"><section id="eventsPanel"><section class="overview-digest" aria-label="本期戰略摘要"><div class="overview-digest-head"><div><small>本期戰略摘要</small><strong>航道、成本與配置</strong></div><span id="overviewSummaryCount"></span></div><ul class="overview-summary-list"><li><a href="#safety"><strong>航道備援</strong><p>荷莫茲與紅海風險優先評估；比較替代掛靠、繞行與交付安排。</p></a></li><li><a href="#fuel"><strong>燃油成本</strong><p>油價需搭配 OVX 與裂解價差；備援方案一併比較航程與燃油支出。</p></a></li><li><a href="#intelligence"><strong>貨流與市場配置</strong><p>核對美線提前出貨訊號，並結合港口、內陸與國家評級安排運力。</p></a></li></ul><a href="#intelligence">查看情報總覽 </a></section><div class="feed-filters"><button class="active" data-filter="全部">全部</button><button data-filter="航道安全">航道</button><button data-filter="燃油成本">燃油</button><button data-filter="政策與關稅">政策</button><button data-filter="港口與內陸">港口</button><button data-filter="國家風險">國家</button></div><div id="eventList"></div></section><section id="routePanel" hidden><button id="backToIssues" class="back-button">← 返回關注事項</button><div class="issue-context"><span id="issueType">航道安全</span><h2 id="issueTitle">紅海航道通行受影響</h2><p id="issueImpact">需評估亞洲—北歐航線的備援配置。</p></div><div class="route-detail"><div class="detail-heading"><div><h2 id="routeTitle">亞洲 — 北歐 <span>經蘇伊士</span></h2></div><span id="routeBadge" class="badge red">高風險</span></div><div class="detail-metrics"><div><small>主要風險節點</small><strong id="routeNode">曼德海峽</strong></div><div><small>判讀狀態</small><strong id="routeRisk" class="coral">高</strong></div><div><small>可比較方案</small><strong id="routeAlt">繞行好望角</strong></div></div><p id="routeNote">航道風險升高，建議比較蘇伊士與好望角方案的航程及成本。</p></div><section class="route-chart chart-card"><div class="chart-heading"><h2 id="trendTitle">航道通行趨勢</h2></div><div id="trendData"><div class="chart-value"><strong id="trendValue">72</strong><span>指數 · 期初＝100</span><small id="trendDelta"></small></div><div id="trafficChart"></div></div><p id="trendUnavailable" hidden>綜合事件與航線資訊。</p><p class="chart-footnote" id="chartExplanation">指數，基準期＝100。</p></section><section class="evidence-summary"><h3>判讀依據</h3><p id="evidenceText"></p></section><div class="route-action"><h3>下一步</h3><button id="compare">比較備援方案 <span>→</span></button><button id="reportSelected" class="secondary-action">建立此航線報告 ↗</button></div></section></div></aside>
-<section class="monitor"><div class="monitor-top"><h2>關注航線</h2><span>選擇航線查看風險</span></div><div class="route-strip"><div id="routeCards"></div></div></section><footer><button id="replayToggle" aria-expanded="false" aria-controls="replayControls">◷ 情境回放</button><div id="replayControls" hidden><button id="play" class="play">▶</button><div class="time-title"><strong>情境回放</strong><span id="dateBottom">2026.10.08</span></div><div class="timeline"><input id="time" aria-label="情境時間" type="range" min="0" max="4" value="4"><div><span>06 月</span><span>07 月</span><span>08 月</span><span>09 月</span><span>現在</span></div></div><button id="now">回到現在 ↗</button><p></p></div><span class="replay-hint">回顧風險變化</span></footer></main><section id="pageContent" class="page-content" hidden aria-label="主要頁面"></section><dialog id="comparison"><button class="close" aria-label="關閉">×</button><span class="eyebrow">情境比較</span><h2>航線方案比較</h2><p></p><div id="comparisonContent"></div><button class="outline" id="report2">↗ 建立報告連結</button></dialog><div id="toast" role="status"></div><script src="assets/countries.js?v=ym-ui-20261013"></script><script src="map-motion.js?v=ym-motion-20261013"></script><script src="app.js?v=header-alert-20261014"></script><script src="pages.js?v=matrix-20261014"></script><script src="strategy.js?v=p1b-20261014"></script><script src="risk-registry.js?v=routecard-20261014"></script><script src="intelligence-model.js?v=p1-20261014"></script><script src="assessment.js?v=ym-blue-20261013"></script><script src="report-codec.js?v=ym-ui-20261013"></script><script src="report-links.js?v=ym-links-20261013"></script><script src="ai-assistant.js?v=motion-20261013"></script><script src="risk-radar.js?v=p1-20261014"></script><script src="shell-layout.js?v=maritime-20261014"></script></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<script src="gate.js?v=ym-blue-20261013">
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>陽明航運情報</title>
+<link rel="stylesheet" href="style.css?v=ym-ui-20261013">
+<link rel="stylesheet" href="pages.css?v=ym-ui-20261019">
+<link rel="stylesheet" href="strategy.css?v=ym-ui-20261013">
+<link rel="stylesheet" href="assessment.css?v=ym-ui-20261013">
+<link rel="stylesheet" href="overview-map.css?v=ym-ui-20261013">
+<link rel="stylesheet" href="ui-theme.css?v=report-risk-20261019">
+<link rel="stylesheet" href="ai-assistant.css?v=layout-20261013">
+<link rel="stylesheet" href="intelligence-model.css?v=p1-20261019">
+<link rel="stylesheet" href="risk-radar.css?v=stickynav3-20261014">
+</head>
+<body>
+<header>
+<a class="brand" href="index.html">
+<img src="assets/logo.png" alt="Yang Ming 陽明海運">
+</a>
+<div class="product">
+<span>航運情報</span>
+</div>
+<nav class="primary-nav" aria-label="主選單">
+<a href="#overview" data-page="overview">戰略總覽</a>
+<a href="#intelligence" data-page="intelligence">風險情報</a>
+<a href="#routes" data-page="routes">航線方案評估</a>
+<a href="#reports" data-page="reports">決策報告</a>
+</nav>
+<div class="header-right">
+<div class="header-alert" aria-label="整體警戒：危急">
+<span class="header-alert-label">整體警戒</span>
+<span class="header-alert-level">
+<span class="header-alert-square" aria-hidden="true">
+</span>危急</span>
+</div>
+<button id="aiAssistantTrigger" class="ai-trigger" aria-haspopup="dialog" aria-controls="aiAssistant" aria-expanded="false">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/>
+</svg>AI 助手</button>
+<span class="header-avatar" role="img" aria-label="使用者頭像：YM" title="YM">YM</span>
+</div>
+</header>
+<div id="topicNavSlot" hidden>
+</div>
+<main class="workspace">
+<section class="map-column">
+<div class="map-top">
+<div>
+<h1>全球航線</h1>
+</div>
+<div class="map-actions">
+<button id="labelsToggle" aria-pressed="true">國界地名</button>
+<button id="networkToggle" aria-pressed="true">航線圖層</button>
+<button id="reset">↻ 重設</button>
+</div>
+</div>
+<div class="globe-wrap">
+<canvas id="globe" aria-label="全球航線地圖；拖曳平移、滾輪縮放，也可使用下方航線按鈕選取">
+</canvas>
+<div class="earth-controls">
+<button id="north" aria-label="顯示完整地圖">
+<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="12" cy="12" r="7"/>
+<path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+</svg>
+</button>
+<button id="zoomIn" aria-label="放大地圖">
+<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 5v14M5 12h14"/>
+</svg>
+</button>
+<button id="zoomOut" aria-label="縮小地圖">
+<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+<path d="M5 12h14"/>
+</svg>
+</button>
+</div>
+<div class="earth-credit">Natural Earth<span>航線與狀態示意</span>
+</div>
+<div class="map-legend">
+<span>
+<i class="red-dot">
+</i>風險節點</span>
+<span>
+<i class="cyan-dot">
+</i>掛靠港</span>
+<span class="route-key">━ 原航線　┄ 備援航線</span>
+<span>船舶動態示意</span>
+</div>
+</div>
+</section>
+<aside class="right-column">
+<div class="panel-tabs">
+<span id="panelTitle">需關注事項</span>
+<button id="panelCollapse" aria-label="展開或收合資訊面板">⌄</button>
+</div>
+<div class="panel-scroll">
+<section id="eventsPanel">
+<section class="overview-digest" aria-label="本期戰略摘要">
+<div class="overview-digest-head">
+<div>
+<small>本期戰略摘要</small>
+<strong>航道、成本與配置</strong>
+</div>
+<span id="overviewSummaryCount">
+</span>
+</div>
+<ul class="overview-summary-list">
+<li>
+<a href="#safety">
+<strong>航道備援</strong>
+<p>荷莫茲與紅海風險優先評估；比較替代掛靠、繞行與交付安排。</p>
+</a>
+</li>
+<li>
+<a href="#fuel">
+<strong>燃油成本</strong>
+<p>油價需搭配 OVX 與裂解價差；備援方案一併比較航程與燃油支出。</p>
+</a>
+</li>
+<li>
+<a href="#intelligence">
+<strong>貨流與市場配置</strong>
+<p>核對美線提前出貨訊號，並結合港口、內陸與國家評級安排運力。</p>
+</a>
+</li>
+</ul>
+<a href="#intelligence">查看情報總覽 </a>
+</section>
+<div class="feed-filters">
+<button class="active" data-filter="全部">全部</button>
+<button data-filter="航道安全">航道</button>
+<button data-filter="燃油成本">燃油</button>
+<button data-filter="政策與關稅">政策</button>
+<button data-filter="港口與內陸">港口</button>
+<button data-filter="國家風險">國家</button>
+</div>
+<div id="eventList">
+</div>
+</section>
+<section id="routePanel" hidden>
+<button id="backToIssues" class="back-button">← 返回關注事項</button>
+<div class="issue-context">
+<span id="issueType">航道安全</span>
+<h2 id="issueTitle">紅海航道通行受影響</h2>
+<p id="issueImpact">需評估亞洲—北歐航線的備援配置。</p>
+</div>
+<div class="route-detail">
+<div class="detail-heading">
+<div>
+<h2 id="routeTitle">亞洲 — 北歐 <span>經蘇伊士</span>
+</h2>
+</div>
+<span id="routeBadge" class="badge red">高風險</span>
+</div>
+<div class="detail-metrics">
+<div>
+<small>主要風險節點</small>
+<strong id="routeNode">曼德海峽</strong>
+</div>
+<div>
+<small>判讀狀態</small>
+<strong id="routeRisk" class="coral">高</strong>
+</div>
+<div>
+<small>可比較方案</small>
+<strong id="routeAlt">繞行好望角</strong>
+</div>
+</div>
+<p id="routeNote">航道風險升高，建議比較蘇伊士與好望角方案的航程及成本。</p>
+</div>
+<section class="route-chart chart-card">
+<div class="chart-heading">
+<h2 id="trendTitle">航道通行趨勢</h2>
+</div>
+<div id="trendData">
+<div class="chart-value">
+<strong id="trendValue">72</strong>
+<span>指數 · 期初＝100</span>
+<small id="trendDelta">
+</small>
+</div>
+<div id="trafficChart">
+</div>
+</div>
+<p id="trendUnavailable" hidden>綜合事件與航線資訊。</p>
+<p class="chart-footnote" id="chartExplanation">指數，基準期＝100。</p>
+</section>
+<section class="evidence-summary">
+<h3>判讀依據</h3>
+<p id="evidenceText">
+</p>
+</section>
+<div class="route-action">
+<h3>下一步</h3>
+<button id="compare">比較備援方案 <span>→</span>
+</button>
+<button id="reportSelected" class="secondary-action">建立此航線報告 ↗</button>
+</div>
+</section>
+</div>
+</aside>
+<section class="monitor">
+<div class="monitor-top">
+<h2>關注航線</h2>
+<span>選擇航線查看風險</span>
+</div>
+<div class="route-strip">
+<div id="routeCards">
+</div>
+</div>
+</section>
+<footer>
+<button id="replayToggle" aria-expanded="false" aria-controls="replayControls">◷ 情境回放</button>
+<div id="replayControls" hidden>
+<button id="play" class="play">▶</button>
+<div class="time-title">
+<strong>情境回放</strong>
+<span id="dateBottom">2026.10.08</span>
+</div>
+<div class="timeline">
+<input id="time" aria-label="情境時間" type="range" min="0" max="4" value="4">
+<div>
+<span>06 月</span>
+<span>07 月</span>
+<span>08 月</span>
+<span>09 月</span>
+<span>現在</span>
+</div>
+</div>
+<button id="now">回到現在 ↗</button>
+<p>
+</p>
+</div>
+<span class="replay-hint">回顧風險變化</span>
+</footer>
+</main>
+<section id="pageContent" class="page-content" hidden aria-label="主要頁面">
+</section>
+<dialog id="comparison">
+<button class="close" aria-label="關閉">×</button>
+<span class="eyebrow">情境比較</span>
+<h2>航線方案比較</h2>
+<p>
+</p>
+<div id="comparisonContent">
+</div>
+<button class="outline" id="report2">↗ 建立報告連結</button>
+</dialog>
+<div id="toast" role="status">
+</div>
+<script src="assets/countries.js?v=ym-ui-20261013">
+</script>
+<script src="map-motion.js?v=ym-motion-20261013">
+</script>
+<script src="app.js?v=header-alert-20261014">
+</script>
+<script src="pages.js?v=matrix-20261019">
+</script>
+<script src="strategy.js?v=p1b-20261019">
+</script>
+<script src="risk-registry.js?v=routecard-20261014">
+</script>
+<script src="intelligence-model.js?v=p1-20261014">
+</script>
+<script src="assessment.js?v=ym-blue-20261013">
+</script>
+<script src="report-codec.js?v=ym-ui-20261013">
+</script>
+<script src="report-links.js?v=ym-links-20261013">
+</script>
+<script src="ai-assistant.js?v=motion-20261013">
+</script>
+<script src="risk-radar.js?v=p1-20261014">
+</script>
+<script src="shell-layout.js?v=maritime-20261014">
+</script>
+<link rel="stylesheet" href="report-layout.css?v=20261019c">
+<script src="report-fonts.js?v=20261015">
+</script>
+<script src="report-layout.js?v=20261019">
+</script>
+<style id="report-local-overrides">
+/* Report-only normalization. This stays in index.html by request. */
+.report-workspace .report-route-tabs{gap:8px;margin-bottom:14px;padding:2px 0 7px}
+.report-workspace .report-route-tabs button{flex:0 0 auto;gap:10px;min-width:0;height:52px;padding:7px 10px 7px 12px;border-color:#334155}
+.report-workspace .report-route-tabs button:before{display:none}
+.report-workspace .report-route-tabs strong{font-size:13px;line-height:1.25}
+.report-workspace .report-route-tabs small{font-size:12px;line-height:1.25}
+.report-workspace .report-route-level{min-width:34px;min-height:32px;padding:0 8px;border-radius:7px;font-size:12px}
+.report-document .risk-analysis-grid>.page-card,.report-document .risk-analysis-grid>.page-card:nth-child(2){border-top-width:1px;border-top-color:#27272a}
+.report-document .report-section-indicator a span{display:none}
+.report-document .report-section-indicator a{gap:0}
+.report-document .signal-dynamics{display:grid;gap:0}
+.report-document .signal-dynamic-item{display:grid;grid-template-columns:112px minmax(0,1fr) auto;gap:8px 14px;padding:16px 0;border-bottom:1px solid #27272a}
+.report-document .signal-dynamic-item:last-child{border-bottom:0}
+.report-document .signal-dynamic-meta{display:contents}
+.report-document .signal-dynamic-date{color:#a1a1aa;font:500 10px/1.6 Inter,'Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums}
+.report-document .signal-dynamic-topic{color:#a1a1aa;font-size:12px;line-height:1.6}
+.report-document .signal-dynamic-kind{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;color:#a1a1aa;font-size:12px;line-height:1.6;white-space:nowrap}
+.report-document .signal-dynamic-kind:before{content:'';width:7px;height:7px;border-radius:50%;background:#fb7185}
+.report-document .signal-dynamic-kind.is-indicator:before{background:#fbbf24}
+.report-document .signal-dynamic-copy{grid-column:1/-1;margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
+.report-document .risk-interpretation dd{font-size:14px}
+.report-document .report-affected-routes{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #27272a}
+.report-document .report-affected-routes>span{color:#a1a1aa;font-size:12px}
+.report-document .report-affected-routes>a{display:inline-flex;align-items:center;gap:12px;color:#609fe4;font-size:13px;font-weight:600}
+.report-document .report-affected-routes>a:hover{text-decoration:none;color:#93c5fd}
+.report-document .report-safety-supplement{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:20px 0 0;align-items:stretch}
+.report-document .report-safety-supplement>.page-card{margin:0}
+.report-document .chokepoint-chart{display:grid;gap:12px;margin:4px 0 18px}
+.report-document .chokepoint-legend{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;color:#a1a1aa;font-size:10px}
+.report-document .chokepoint-legend span{display:inline-flex;align-items:center;gap:7px}
+.report-document .chokepoint-legend i{display:block;width:18px;height:2px;background:#60a5fa}
+.report-document .chokepoint-legend .is-baseline i{background:#71717a}
+.report-document .chokepoint-legend .is-alert i{width:7px;height:7px;border:2px solid #e4e4e7;border-radius:50%;background:transparent}
+.report-document .chokepoint-plot{display:block;width:100%;height:auto;min-height:220px;background:#101010;border-radius:6px}
+.report-document .chokepoint-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;color:#a1a1aa;font-size:10px}
+.report-document .chokepoint-events span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.report-document .chokepoint-events b{display:inline-grid;width:18px;height:18px;place-items:center;border:1px solid #a1a1aa;border-radius:50%;color:#e4e4e7;font-size:10px;font-weight:500}
+.report-document .chokepoint-table-wrap{width:100%;overflow:visible}
+.report-document .chokepoint-table{width:100%;table-layout:fixed;border-collapse:collapse;color:#e4e4e7;font-size:12px}
+.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:13px 10px;border-bottom:1px solid #27272a;text-align:left;vertical-align:middle}
+.report-document .chokepoint-table th{color:#a1a1aa;font-size:12px;font-weight:600}
+.report-document .chokepoint-table tbody tr:last-child td{border-bottom:0}
+.report-document .chokepoint-table th:first-child,.report-document .chokepoint-table td:first-child{width:38%}
+.report-document .chokepoint-table th:nth-child(2),.report-document .chokepoint-table td:nth-child(2),.report-document .chokepoint-table th:nth-child(3),.report-document .chokepoint-table td:nth-child(3){width:14%}
+.report-document .chokepoint-table th:nth-child(4),.report-document .chokepoint-table td:nth-child(4){width:14%}
+.report-document .chokepoint-table th:last-child,.report-document .chokepoint-table td:last-child{width:20%}
+.report-document .chokepoint-name{color:#f1f1f1;font-weight:600}
+.report-document .chokepoint-coordinates{margin-left:8px;color:#71717a;font-weight:400;white-space:nowrap}
+.report-document .chokepoint-risk{display:inline-flex;align-items:center;gap:7px;padding:4px 8px;border-radius:5px;font-weight:600;white-space:nowrap}
+.report-document .chokepoint-risk:before{content:'';width:7px;height:7px;flex:none;background:currentColor}
+.report-document .chokepoint-risk.is-critical{background:#ef44442e;color:#fda4af}
+.report-document .chokepoint-risk.is-high{background:#f9731628;color:#fb923c}
+.report-document .chokepoint-risk.is-high:before{transform:rotate(45deg)}
+.report-document .chokepoint-risk.is-medium{background:#fbbf2426;color:#fbbf24}
+.report-document .chokepoint-risk.is-medium:before{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.report-document .chokepoint-risk.is-low{background:#34d39920;color:#34d399}
+.report-document .chokepoint-risk.is-low:before{border-radius:50%}
+.report-document .qualitative-report{display:grid;gap:14px;margin:0}
+.report-document .qualitative-report>div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;padding-bottom:13px;border-bottom:1px solid #27272a}
+.report-document .qualitative-report>div:last-child{padding-bottom:0;border-bottom:0}
+.report-document .qualitative-report dt{color:#a1a1aa;font-size:12px}
+.report-document .qualitative-report dd{margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
+.report-document .scenario-report{display:grid;gap:20px}
+.report-document .scenario-intro{display:grid;gap:8px}
+.report-document .scenario-intro p{margin:0;color:#d4d4d8;font-size:13px}
+.report-document .scenario-intro strong{color:#f1f1f1}
+.report-document .scenario-comparison{display:grid;gap:22px}
+.report-document .scenario-metric{display:grid;gap:12px;padding-top:18px;border-top:1px solid #27272a}
+.report-document .scenario-metric-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.report-document .scenario-metric-head h3{margin:0;font-size:15px}
+.report-document .scenario-metric-head strong{color:#609fe4;font-size:13px}
+.report-document .scenario-bar-row{display:grid;grid-template-columns:42px minmax(0,1fr) 128px;gap:12px;align-items:center}
+.report-document .scenario-bar-row>span{color:#a1a1aa;font-size:12px}
+.report-document .scenario-bar-row>b{text-align:right;color:#f1f1f1;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.report-document .scenario-bar-track{height:8px;border-radius:999px;background:#27272a;overflow:hidden}
+.report-document .scenario-bar-track i{display:block;height:100%;border-radius:inherit;background:#d4d4d8}
+.report-document .scenario-bar-row.is-alt .scenario-bar-track i{background:#0b67c9}
+.report-document .scenario-notes{display:grid;gap:8px;color:#d4d4d8;font-size:13px;line-height:1.75}
+.report-document .scenario-notes p{margin:0}
+@media(max-width:850px){.report-document .report-safety-supplement{grid-template-columns:1fr}.report-document .signal-dynamic-item{grid-template-columns:96px minmax(0,1fr) auto}.report-document .scenario-bar-row{grid-template-columns:38px minmax(0,1fr) 104px}.report-document .chokepoint-table{font-size:12px}.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:11px 6px}.report-document .chokepoint-coordinates{display:block;margin:2px 0 0;font-size:12px}.report-document .chokepoint-risk{padding:3px 6px}}
+</style>
+<script>
+(function(){
+  const signalDynamics={
+    policy:[
+      ['2026-05-20','指標','貿易政策不確定性回落至 180，近三個月 -40%'],
+      ['2026-03-20','事件','美國宣布臨時 10% 全球進口關稅'],
+      ['2025-05-15','事件','美方宣布中國建造船舶靠港收費措施'],
+      ['2025-05-12','事件','美中暫緩加徵關稅 90 天'],
+      ['2025-04-05','事件','美國實施全面基準關稅 10%'],
+      ['2025-03-20','事件','美國商品進口月增 12%，提前拉貨訊號浮現']
+    ],
+    safety:[
+      ['2026-03-09','指標','荷莫茲封鎖事件市場機率逼近 100%'],
+      ['2026-02-28','事件','戰爭爆發，封鎖機率當週升至約 70%'],
+      ['2026-03','事件','荷莫茲衝擊具體化，需交叉確認實際通行條件'],
+      ['2025-06','事件','商船航道預警出現'],
+      ['2025-04','事件','區域成本預警啟動']
+    ],
+    fuel:[
+      ['2026-04','指標','OVX 圖表期末為 92，圖示高點為 140'],
+      ['2026-04','指標','380cst − Brent 近月 1、即期 -2 美元／桶'],
+      ['2026-03','事件','裂解價差轉正，一度升至約 16 美元／桶'],
+      ['2026-03','事件','WTI 與 Brent 油價開始明顯上漲'],
+      ['2026-02','指標','OVX 快速飆升，先於油價反映供應中斷風險']
+    ],
+    ports:[
+      ['2026-04','事件','德國供應環境展望因中東戰事下調'],
+      ['2026-03','事件','巴西洪水與土石流影響內陸銜接'],
+      ['2026-02','事件','墨西哥治安事件造成道路封鎖'],
+      ['2026-01','事件','智利野火造成港口關閉或限制'],
+      ['2026-01','事件','荷蘭冬季風暴造成交通中斷']
+    ],
+    countries:[
+      ['七國樣本','指標','阿根廷位於高風險地區，CRR／SRR 均為 DB6a'],
+      ['七國樣本','指標','巴西位於高風險地區，需嚴格風控'],
+      ['七國樣本','指標','智利、墨西哥與巴拿馬位於優先市場區'],
+      ['七國樣本','指標','秘魯列為審慎評估，持續關注 Chancay'],
+      ['七國樣本','指標','哥倫比亞列為機會管理，限制曝險']
+    ]
+  };
+  const topicLabels={policy:'政策與關稅',safety:'航道安全',fuel:'燃油成本',ports:'港口與內陸',countries:'國家風險'};
+  const scenarioDefaults=[
+    {days:28,altDays:36,via:'經蘇伊士',alt:'繞行好望角',watch:'紅海通行條件、船期承諾、好望角海象與可用運力'},
+    {days:36,altDays:28,via:'繞行好望角',alt:'恢復蘇伊士航線',watch:'航安通告、恢復通行條件、保險與合約限制'},
+    {days:18,altDays:21,via:'經荷莫茲',alt:'調整掛靠與陸運銜接',watch:'替代港承載、陸運接駁、客戶交付要求'},
+    {days:16,altDays:16,via:'跨太平洋',alt:'調整出發時段',watch:'政策生效日、訂艙需求、出發日期與到港窗口'},
+    {days:30,altDays:33,via:'經巴拿馬',alt:'調整轉運配置',watch:'運河預約、轉運港、接駁班次與到港窗口'},
+    {days:32,altDays:35,via:'南美西岸',alt:'調整目的港',watch:'目的港作業、替代港條件、內陸路徑與付款安排'}
+  ];
+  const money=value=>new Intl.NumberFormat('en-US').format(value);
+  function dynamicMarkup(topic){
+    return `<div class="signal-dynamics">${signalDynamics[topic].map(([date,kind,copy])=>`<article class="signal-dynamic-item"><div class="signal-dynamic-meta"><time class="signal-dynamic-date">${date}</time><span class="signal-dynamic-topic">${topicLabels[topic]}</span><span class="signal-dynamic-kind ${kind==='指標'?'is-indicator':''}">${kind}</span></div><p class="signal-dynamic-copy">${copy}</p></article>`).join('')}</div>`;
+  }
+  function scenarioMarkup(routeIndex){
+    const s=scenarioDefaults[routeIndex]||scenarioDefaults[0],burn=70,price=600,base=s.days*burn*price,alt=s.altDays*burn*price,dayDelta=s.altDays-s.days,costDelta=alt-base,maxDays=Math.max(s.days,s.altDays),maxCost=Math.max(base,alt);
+    const delta=(value,unit)=>value===0?`相同${unit}`:`${value>0?'增加':'減少'} ${money(Math.abs(value))}${unit}`;
+    return `<div class="scenario-report"><div class="scenario-intro"><p>分析日期：2026-10-12；目標：比較航程與燃油成本</p><p>每日耗油 70 噸，燃油 USD 600／噸。</p><p><strong>原方案：${s.via}／備援：${s.alt}</strong></p></div><div class="scenario-comparison"><div class="scenario-metric"><div class="scenario-metric-head"><h3>航程</h3><strong>${delta(dayDelta,'天')}</strong></div><div class="scenario-bar-row"><span>原案</span><div class="scenario-bar-track"><i style="width:${s.days/maxDays*100}%"></i></div><b>${s.days} 天</b></div><div class="scenario-bar-row is-alt"><span>備援</span><div class="scenario-bar-track"><i style="width:${s.altDays/maxDays*100}%"></i></div><b>${s.altDays} 天</b></div></div><div class="scenario-metric"><div class="scenario-metric-head"><h3>燃油成本</h3><strong>${delta(costDelta,'美元')}</strong></div><div class="scenario-bar-row"><span>原案</span><div class="scenario-bar-track"><i style="width:${base/maxCost*100}%"></i></div><b>${money(base)} 美元</b></div><div class="scenario-bar-row is-alt"><span>備援</span><div class="scenario-bar-track"><i style="width:${alt/maxCost*100}%"></i></div><b>${money(alt)} 美元</b></div></div></div><div class="scenario-notes"><p>${delta(dayDelta,' 天')}；燃油成本${delta(costDelta,' 美元')}。</p><p>尚未記錄方案選擇。</p><p>持續觀察：${s.watch}</p><p>備註：無</p></div></div>`;
+  }
+  function syncReport(preview){
+    if(typeof pageState==='undefined'||!pageState.report)return;
+    pageState.report.body=preview.innerHTML;
+    const documentCopy=new DOMParser().parseFromString(pageState.report.html,'text/html');
+    const target=documentCopy.querySelector('.report-document')||documentCopy.body;
+    target.innerHTML=pageState.report.body;
+    pageState.report.html='<!doctype html>'+documentCopy.documentElement.outerHTML;
+  }
+  function enhanceReport(){
+    const preview=document.querySelector('#reportPreview.report-document');
+    if(!preview)return;
+    preview.querySelector('#report-local-export-overrides')?.remove();
+    const exportStyle=document.querySelector('#report-local-overrides')?.cloneNode(true);
+    if(exportStyle){exportStyle.id='report-local-export-overrides';preview.append(exportStyle)}
+    const executive=[...preview.children].find(section=>section.tagName==='SECTION'&&section.querySelector(':scope>h2')?.textContent.trim()==='執行摘要');
+    if(executive){
+      preview.querySelector(`.report-section-indicator [data-indicator-for="${executive.id}"]`)?.closest('.report-indicator-option')?.remove();
+      executive.remove();
+    }
+    preview.querySelectorAll('.report-topic').forEach(section=>{
+      const topic=[...section.classList].find(()=>false)||Object.keys(topicLabels).find(key=>topicLabels[key]===section.querySelector(':scope>h2')?.textContent.trim());
+      if(!topic)return;
+      const analysis=section.querySelector('.risk-analysis');
+      const cards=analysis?.querySelectorAll('.risk-analysis-grid>.page-card');
+      if(cards?.[0]){
+        const head=cards[0].querySelector('.page-card-head h2');
+        if(head)head.textContent='訊號動態';
+        [...cards[0].children].filter(child=>!child.classList.contains('page-card-head')).forEach(child=>child.remove());
+        cards[0].insertAdjacentHTML('beforeend',dynamicMarkup(topic));
+      }
+      if(cards?.[1]){
+        cards[1].querySelector('.risk-management')?.remove();
+        cards[1].querySelector('.report-affected-routes')?.remove();
+        cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
+      }
+      analysis?.querySelector('.risk-route-advice')?.remove();
+      if(topic==='safety'&&!section.querySelector('.report-safety-supplement')){
+        const supplement=document.createElement('div');
+        supplement.className='report-safety-supplement';
+        supplement.innerHTML='<section class="page-card"><div class="page-card-head"><h2>咽喉點通行量</h2><span>荷莫茲海峽每月通行量 · 各咽喉點</span></div><div class="chokepoint-chart"><div class="chokepoint-legend"><span><i></i>本期</span><span class="is-baseline"><i></i>去年同期</span><span class="is-alert"><i></i>年減 30% 以上（高）</span></div><svg class="chokepoint-plot" viewBox="0 0 620 260" role="img" aria-label="荷莫茲海峽本期與去年同期每月通行量趨勢"><g stroke="#27272a" stroke-width="1"><path d="M46 34H600M46 92H600M46 150H600M46 208H600"/></g><g fill="#71717a" font-size="11"><text x="17" y="38">90</text><text x="17" y="96">60</text><text x="17" y="154">30</text><text x="25" y="212">0</text><text x="46" y="232">2025 年</text><text x="165" y="232">4 月</text><text x="285" y="232">7 月</text><text x="398" y="232">10 月</text><text x="486" y="232">2026 年</text><text x="565" y="232">4 月</text></g><path d="M46 62L101 64L156 66L211 68L266 67L321 68L376 70L431 72L466 82L498 112L530 194L558 207L579 207L600 208L600 208L46 208Z" fill="#3b82f633"/><path d="M46 53L101 55L156 56L211 57L266 56L321 57L376 58L431 59L486 60L542 61L600 63" fill="none" stroke="#71717a" stroke-width="2"/><path d="M46 62L101 64L156 66L211 68L266 67L321 68L376 70L431 72L466 82L498 112L530 194L558 207L579 207L600 208" fill="none" stroke="#60a5fa" stroke-width="2.5"/><g stroke="#52525b"><path d="M156 24V208M211 24V208M530 24V208"/></g><g fill="#101010" stroke="#a1a1aa" stroke-width="1.5"><circle cx="156" cy="20" r="11"/><circle cx="211" cy="20" r="11"/><circle cx="530" cy="20" r="11"/></g><g fill="#e4e4e7" font-size="11" text-anchor="middle"><text x="156" y="24">1</text><text x="211" y="24">2</text><text x="530" y="24">3</text></g><g fill="#101010" stroke="#e4e4e7" stroke-width="2"><circle cx="530" cy="194" r="6"/><circle cx="558" cy="207" r="6"/><circle cx="579" cy="207" r="6"/><circle cx="600" cy="208" r="6" fill="#60a5fa"/></g><text x="600" y="191" fill="#93c5fd" font-size="12" text-anchor="end">2.3</text></svg><div class="chokepoint-events"><span><b>1</b>2025/4 報告警示</span><span><b>2</b>2025/6 報告警示</span><span><b>3</b>2026/2/28 戰爭爆發</span></div></div><div class="chokepoint-table-wrap"><table class="chokepoint-table"><thead><tr><th>咽喉點</th><th>本期</th><th>基準</th><th>變動</th><th>風險</th></tr></thead><tbody><tr><td><span class="chokepoint-name">荷莫茲海峽</span><span class="chokepoint-coordinates">26.6°N 56.4°E</span></td><td>2.3</td><td>76.7</td><td>−97%</td><td><span class="chokepoint-risk is-critical">危急</span></td></tr><tr><td><span class="chokepoint-name">曼德海峽</span><span class="chokepoint-coordinates">12.6°N 43.4°E</span></td><td>23.7</td><td>41.6</td><td>−43%</td><td><span class="chokepoint-risk is-high">高</span></td></tr><tr><td><span class="chokepoint-name">麻六甲海峽</span><span class="chokepoint-coordinates">3.2°N 100.2°E</span></td><td>211.7</td><td>246.2</td><td>−14%</td><td><span class="chokepoint-risk is-medium">中</span></td></tr><tr><td><span class="chokepoint-name">巴拿馬運河</span><span class="chokepoint-coordinates">9.1°N 79.7°W</span></td><td>27.7</td><td>30.1</td><td>−8%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">蘇伊士運河</span><span class="chokepoint-coordinates">30.0°N 32.6°E</span></td><td>37.0</td><td>39.8</td><td>−7%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">台灣海峽</span><span class="chokepoint-coordinates">24.3°N 119.6°E</span></td><td>227.1</td><td>239.0</td><td>−5%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">好望角</span><span class="chokepoint-coordinates">34.4°S 18.5°E</span></td><td>89.0</td><td>92.7</td><td>−4%</td><td><span class="chokepoint-risk is-low">低</span></td></tr></tbody></table></div></section><section class="page-card"><div class="page-card-head"><h2>質化報告</h2><span>航安交叉驗證</span></div><dl class="qualitative-report"><div><dt>風險判讀</dt><dd>關鍵航道風險升溫，繞行可能常態化。</dd></div><div><dt>營運影響</dt><dd>若通行受限，航程、交期、船舶配置與風險附加費將同步承壓。</dd></div><div><dt>驗證依據</dt><dd>航安通告、實際通行、保險承保及客戶到港窗口。</dd></div><div><dt>決策方向</dt><dd>維持主幹與備援，並把延誤及風險附加費納入合約。</dd></div></dl></section>';
+        analysis.before(supplement);
+      }
+    });
+    const comparison=[...preview.children].find(section=>section.tagName==='SECTION'&&['情境比較','情境條件與比較'].includes(section.querySelector(':scope>h2')?.textContent.trim()));
+    if(comparison){
+      comparison.querySelector(':scope>h2').textContent='情境條件與比較';
+      [...comparison.children].slice(1).forEach(child=>child.remove());
+      const routeIndex=+(document.querySelector('[data-report-route].is-active')?.dataset.reportRoute||0);
+      comparison.insertAdjacentHTML('beforeend',scenarioMarkup(routeIndex));
+    }
+    const countries=[...preview.children].find(section=>section.tagName==='SECTION'&&section.querySelector(':scope>h2')?.textContent.trim()==='國家風險');
+    if(comparison&&countries){
+      countries.after(comparison);
+      const indicator=preview.querySelector('.report-section-indicator');
+      const countryOption=indicator?.querySelector(`[data-indicator-for="${countries.id}"]`)?.closest('.report-indicator-option');
+      const comparisonOption=indicator?.querySelector(`[data-indicator-for="${comparison.id}"]`)?.closest('.report-indicator-option');
+      if(countryOption&&comparisonOption)countryOption.after(comparisonOption);
+    }
+    syncReport(preview);
+  }
+  if(typeof makeReport==='function'){
+    const makeReportBeforeIndexOverrides=makeReport;
+    makeReport=function(){makeReportBeforeIndexOverrides();enhanceReport()};
+  }
+  if(typeof bindPage==='function'){
+    const bindPageBeforeIndexOverrides=bindPage;
+    bindPage=function(page){bindPageBeforeIndexOverrides(page);if(page==='reports')requestAnimationFrame(enhanceReport)};
+  }
+  if(location.hash==='#reports')requestAnimationFrame(enhanceReport);
+})();
+</script>
+</body>
+</html>

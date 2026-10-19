@@ -19,7 +19,7 @@ function riskTopicModel(key,scope={}){
    impact:'港口作業、道路鐵路、付款與文件流程都可能影響港到門交付。',outlook:'若中斷持續且無法在到港窗口前恢復，需評估替代交付安排；前瞻事件先確認時程與影響範圍。',watch:'港口復工、道路與鐵路容量、接駁時程及付款安排。',actions:['依事件階段安排立即處理、持續追蹤或預先備援。','提早預訂港口與運輸，評估分批出貨；新港機會需核對實際營運能力。'],
    routeIdeas:[{index:0,kind:'航程與交付',proposal:'比較亞歐主線與備援船期',when:'歐洲交付中斷，需同步調整海上航程與到港窗口。',tradeoff:'此處比較蘇伊士與好望角航程；內陸替代運輸與費用需另外確認。'},{index:3,kind:'船期與交付',proposal:'調整美西到港與跨境安排',when:'墨西哥治安或跨境流程影響既定交付。',tradeoff:'需核對跨境與資金週轉，不直接推導更換海路。'},{index:5,kind:'目的港配置',proposal:'比較南美目的港與內陸銜接',when:'原港作業受限，替代港具有可用容量與內陸連接。',tradeoff:'重新估算港費、內陸距離、時程與付款條件。'}]},
   countries:{headline:highRiskCountryRows().length+' 個高風險地區',signal:'結合國家與航運產業評級配置曝險',description:'以 CRR 與 SRR 同時高於七國樣本平均辨識高風險地區。',
-   signals:[['高風險地區',highRiskCountryRows().length+' 國','七國樣本 · CRR 與 SRR 均高於平均',highRiskCountryRows().map(c=>c[0]).join('、')+'；樣本平均不是官方警示門檻。'],['國家與產業評級',COUNTRY_ROWS.length+' 國','CRR／SRR · 1–7 級', '數字越大風險越高；a–d 子級僅作排序，不代表風險機率。']],
+   signals:[['高風險地區',highRiskCountryRows().length+' 國','七國樣本 · CRR 與 SRR 均高於平均',highRiskCountryRows().map(c=>countryLabel(c[0])).join('、')+'；樣本平均不是官方警示門檻。'],['國家與產業評級',COUNTRY_ROWS.length+' 國','CRR／SRR · 1–7 級', '數字越大風險越高；a–d 子級僅作排序，不代表風險機率。']],
    impact:'國家環境、貨幣、港口與產業風險共同影響市場進入方式與資產曝險。',outlook:'若目的地國家與航運產業風險同時偏高，宜先限制曝險並比較交付配置；評級本身不能預測單次延誤。',watch:'國家與產業評級、目的港作業、付款條件、運量與商業目標。',actions:['阿根廷依既有評級限制曝險；巴西結合港口擁堵與營運條件加強風控。','對智利、墨西哥、巴拿馬及秘魯依評級與市場條件選擇進入方式。'],
    routeIdeas:[{index:5,kind:'市場與目的港',proposal:'比較南美目的港及曝險配置',when:'目的地評級與實際港口條件影響商業目標。',tradeoff:'現有路徑為南美西岸示意；巴西與阿根廷需另確認實際掛靠。並評估內陸成本、付款風險及收益。'},{index:3,kind:'北美市場配置',proposal:'評估墨西哥需求與船期安排',when:'國家與產業評級、跨境需求支持北美延伸。',tradeoff:'海上航程維持跨太平洋，需確認跨境與內陸交付條件。'},{index:4,kind:'轉運配置',proposal:'評估巴拿馬轉運安排',when:'港口與接駁容量符合轉運需求。',tradeoff:'核對運河預約、轉運費用與接駁時程。'}]}
  };
@@ -35,7 +35,7 @@ function riskTopicModel(key,scope={}){
  }
  if(key==='countries'&&scope.countryRows){
   const selected=scope.countryRows,high=highRiskCountryRows().filter(c=>selected.includes(c));
-  model.signals=[['高風險地區',high.length+'／'+selected.length+' 國','目前選取 · 以完整七國樣本平均判定',high.length?high.map(c=>c[0]).join('、')+'的 CRR 與 SRR 均高於七國平均。':'目前選取未同時高於七國 CRR 與 SRR 平均。'],['國家與產業評級',selected.length+' 國','CRR／SRR · 1–7 級',selected.length===1?selected[0][0]+'：CRR '+selected[0][1]+'／SRR '+selected[0][2]:'國家環境與航運產業風險分開觀察。']];
+  model.signals=[['高風險地區',high.length+'／'+selected.length+' 國','目前選取 · 以完整七國樣本平均判定',high.length?high.map(c=>countryLabel(c[0])).join('、')+'的 CRR 與 SRR 均高於七國平均。':'目前選取未同時高於七國 CRR 與 SRR 平均。'],['國家與產業評級',selected.length+' 國','CRR／SRR · 1–7 級',selected.length===1?countryLabel(selected[0][0])+'：CRR '+selected[0][1]+'／SRR '+selected[0][2]:'國家環境與航運產業風險分開觀察。']];
   model.actions=selected.map(c=>c[0]+'：'+c[3]+'。'+(c[0]==='阿根廷'?'搭配貨幣與政治風險觀察。':c[0]==='巴西'?'搭配港口擁堵與營運風險觀察。':''));
   const indices=new Set(selected.map(c=>c[0]==='墨西哥'?3:c[0]==='巴拿馬'?4:5));model.routeIdeas=model.routeIdeas.filter(r=>indices.has(r.index));
  }
