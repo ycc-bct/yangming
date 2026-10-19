@@ -98,7 +98,7 @@
 .report-document .chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:0;background:none;font-size:10px}
 .report-document svg{max-width:100%;height:auto}
 .report-document .wide-chart>svg,.report-document .page-card>svg,.report-document .report-topic>svg{display:block;width:100%;max-height:360px;padding:0;background:#101010}
-.report-document .country-report-grid{grid-template-columns:1fr}
+.report-document .country-report-grid{grid-template-columns:minmax(0,1.45fr) minmax(360px,.9fr)}
 .report-document .country-risk-panel>.page-card-head h2{font-size:24px;letter-spacing:-.02em}
 .report-document .country-risk-chart{display:block;width:100%;min-height:420px;max-height:none!important;background:#101010}
 .report-document .country-point-label{fill:#f1f1f1;font-size:14px;font-weight:500}
@@ -148,7 +148,7 @@
 .report-document .strategy-summary p,
 .report-document .qualitative-report dd{font-size:14px}
 .report-document .signal-dynamic-copy,
-.report-document .risk-interpretation dd{font-size:16px}
+.report-document .risk-interpretation dd{font-size:14px}
 .report-share-toast{position:fixed;z-index:30;top:20px;left:50%;max-width:calc(100vw - 32px);padding:10px 16px;border:1px solid #609fe4;border-radius:6px;background:#111113;color:#f1f1f1;font-size:13px;line-height:1.5;opacity:0;visibility:hidden;transform:translate(-50%,-8px);transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}
 .report-share-toast.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
 .report-document .table-scroll{overflow-x:auto}
