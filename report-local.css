@@ -3,64 +3,22 @@
 .report-workspace .report-route-tabs button{flex:0 0 auto;gap:10px;min-width:0;height:52px;padding:7px 10px 7px 12px;border-color:#334155}
 .report-workspace .report-route-tabs button:before{display:none}
 .report-workspace .report-route-tabs strong{font-size:13px;line-height:1.25}
-.report-workspace .report-route-tabs small{font-size:11px;line-height:1.25}
+.report-workspace .report-route-tabs small{font-size:12px;line-height:1.25}
 .report-workspace .report-route-level{min-width:34px;min-height:32px;padding:0 8px;border-radius:7px;font-size:12px}
 .report-document .risk-analysis-grid>.page-card,.report-document .risk-analysis-grid>.page-card:nth-child(2){border-top-width:1px;border-top-color:#27272a}
 .report-document .report-section-indicator a span{display:none}
 .report-document .report-section-indicator a{gap:0}
-.report-document .country-risk-chart{max-height:none!important;aspect-ratio:900/550;border-radius:10px;background:#101010}
-.report-document .country-risk-chart text{font-family:Inter,'Noto Sans TC',sans-serif}
-.report-document .country-risk-chart .country-chart-title{fill:#f4f4f5;font-size:24px;font-weight:700}
-.report-document .country-risk-chart .country-chart-meta,.report-document .country-risk-chart .country-chart-axis,.report-document .country-risk-chart .country-chart-ticks{fill:#a1a1aa;font-size:17px}
-.report-document .country-risk-chart .quadrant-caution{fill:#3b3217;fill-opacity:.58}
-.report-document .country-risk-chart .quadrant-risk{fill:#421d20;fill-opacity:.72}
-.report-document .country-risk-chart .quadrant-priority{fill:#15382f;fill-opacity:.58}
-.report-document .country-risk-chart .quadrant-opportunity{fill:#1a2a40;fill-opacity:.68}
-.report-document .country-risk-chart .country-chart-grid{fill:none;stroke:#3f3f46;stroke-width:1;opacity:.55}
-.report-document .country-risk-chart .country-chart-average{fill:none;stroke:#a1a1aa;stroke-width:2;stroke-dasharray:7 7}
-.report-document .country-risk-chart .country-chart-frame{fill:none;stroke:#52525b;stroke-width:1}
-.report-document .country-risk-chart .quadrant-label{font-size:18px;font-weight:700}
-.report-document .country-risk-chart .label-caution{fill:#ffd449}.report-document .country-risk-chart .label-risk{fill:#fda4af}.report-document .country-risk-chart .label-priority{fill:#6ee7c0}.report-document .country-risk-chart .label-opportunity{fill:#93c5fd}
-.report-document .country-risk-chart .country-chart-points circle{stroke:#101010;stroke-width:4}
-.report-document .country-risk-chart .country-point-label{fill:#e4e4e7;font-size:17px;font-weight:500}
-.report-document .report-country-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.9fr);gap:20px;align-items:stretch;margin:20px 0}
-.report-document .report-country-grid>.page-card{min-width:0;margin:0;padding:24px;border:1px solid #27272a;border-radius:10px;background:#111113}
-.report-document .report-country-chart-card{display:flex;align-items:flex-start}
-.report-document .report-country-chart-card .country-risk-chart{width:100%;height:auto}
-.report-document .report-country-table-card .table-scroll{overflow:visible}
-.report-document .report-country-table-card .data-table{width:100%;table-layout:fixed;font-size:12px}
-.report-document .report-country-table-card .data-table th,.report-document .report-country-table-card .data-table td{padding:13px 10px}
-.report-document .report-country-table-card .data-table th:first-child{width:22%}
-.report-document .report-country-table-card .data-table th:nth-child(2),.report-document .report-country-table-card .data-table th:nth-child(3){width:15%}
-.report-document .report-country-table-card .data-table th:last-child{width:48%}
-.report-document .risk-interpretation dd{font-size:14px;line-height:1.85}
-.report-document .risk-signal-list p{font-size:14px;line-height:1.8}
-.report-document .strategy-summary p,.report-document .qualitative-report dd{font-size:14px}
-.report-document .port-matrix-wrap{margin:20px 0;overflow-x:auto}
-.report-document .port-matrix-event strong{font-size:14px}
-.report-document .port-matrix-impact{font-size:14px}
-.report-document .port-matrix-country{font-size:12px}
-.report-document .port-matrix-country small,.report-document .risk-signal-list small,.report-document .risk-action-type,.report-document .risk-route-advice .page-card-head>span,.report-document .chokepoint-table th,.report-document .report-drag-hint,.report-document .report-section-indicator{font-size:12px}
-/* 報告字級下限：單位、圖例、日期與期間可維持 10px，其餘輔助文字至少 12px。 */
-.report-document time,.report-document .report-cover-date p,.report-document .signal-dynamic-date,.report-document .risk-signal-list small:not(.risk-threshold-line){font-size:10px}
-.report-document .risk-signal-list small.risk-threshold-line,.report-document .route-map-node-label,.report-document .route-kind,.report-document .odds-pair span{font-size:12px}
-.report-document .route-map-key,.report-document .route-impact-legend,.report-document .route-impact-legend span,.report-document .route-impact-legend i,.report-document .chart-legend{font-size:10px}
-.report-document .route-impacts i{font-size:12px}
-.report-document svg text[font-size="8"],.report-document svg text[font-size="9"],.report-document svg text[font-size="10"],.report-document svg text[font-size="11"]{font-size:12px}
-.report-document .risk-management summary,.report-document .risk-management ul,.report-document .risk-advice-card dd{font-size:14px}
-.report-document .safety-evidence-grid{grid-auto-flow:row}
-.report-document .safety-evidence-grid>.page-card:nth-child(3){grid-column:1;grid-row:2}
-.report-document .safety-evidence-grid>.page-card:nth-child(4){grid-column:2;grid-row:2}
 .report-document .signal-dynamics{display:grid;gap:0}
 .report-document .signal-dynamic-item{display:grid;grid-template-columns:112px minmax(0,1fr) auto;gap:8px 14px;padding:16px 0;border-bottom:1px solid #27272a}
 .report-document .signal-dynamic-item:last-child{border-bottom:0}
 .report-document .signal-dynamic-meta{display:contents}
-.report-document .signal-dynamic-date{color:#a1a1aa;font:500 12px/1.6 Inter,'Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums}
+.report-document .signal-dynamic-date{color:#a1a1aa;font:500 10px/1.6 Inter,'Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums}
 .report-document .signal-dynamic-topic{color:#a1a1aa;font-size:12px;line-height:1.6}
 .report-document .signal-dynamic-kind{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;color:#a1a1aa;font-size:12px;line-height:1.6;white-space:nowrap}
 .report-document .signal-dynamic-kind:before{content:'';width:7px;height:7px;border-radius:50%;background:#fb7185}
 .report-document .signal-dynamic-kind.is-indicator:before{background:#fbbf24}
 .report-document .signal-dynamic-copy{grid-column:1/-1;margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
+.report-document .risk-interpretation dd{font-size:14px}
 .report-document .report-affected-routes{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #27272a}
 .report-document .report-affected-routes>span{color:#a1a1aa;font-size:12px}
 .report-document .report-affected-routes>a{display:inline-flex;align-items:center;gap:12px;color:#609fe4;font-size:13px;font-weight:600}
@@ -68,7 +26,7 @@
 .report-document .report-safety-supplement{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:20px 0 0;align-items:stretch}
 .report-document .report-safety-supplement>.page-card{margin:0}
 .report-document .chokepoint-chart{display:grid;gap:12px;margin:4px 0 18px}
-.report-document .chokepoint-legend{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;color:#a1a1aa;font-size:11px}
+.report-document .chokepoint-legend{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;color:#a1a1aa;font-size:10px}
 .report-document .chokepoint-legend span{display:inline-flex;align-items:center;gap:7px}
 .report-document .chokepoint-legend i{display:block;width:18px;height:2px;background:#60a5fa}
 .report-document .chokepoint-legend .is-baseline i{background:#71717a}
@@ -80,7 +38,7 @@
 .report-document .chokepoint-table-wrap{width:100%;overflow:visible}
 .report-document .chokepoint-table{width:100%;table-layout:fixed;border-collapse:collapse;color:#e4e4e7;font-size:12px}
 .report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:13px 10px;border-bottom:1px solid #27272a;text-align:left;vertical-align:middle}
-.report-document .chokepoint-table th{color:#a1a1aa;font-size:11px;font-weight:600}
+.report-document .chokepoint-table th{color:#a1a1aa;font-size:12px;font-weight:600}
 .report-document .chokepoint-table tbody tr:last-child td{border-bottom:0}
 .report-document .chokepoint-table th:first-child,.report-document .chokepoint-table td:first-child{width:38%}
 .report-document .chokepoint-table th:nth-child(2),.report-document .chokepoint-table td:nth-child(2),.report-document .chokepoint-table th:nth-child(3),.report-document .chokepoint-table td:nth-child(3){width:14%}
@@ -101,7 +59,7 @@
 .report-document .qualitative-report>div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;padding-bottom:13px;border-bottom:1px solid #27272a}
 .report-document .qualitative-report>div:last-child{padding-bottom:0;border-bottom:0}
 .report-document .qualitative-report dt{color:#a1a1aa;font-size:12px}
-.report-document .qualitative-report dd{margin:0;color:#f1f1f1;font-size:13px;line-height:1.75}
+.report-document .qualitative-report dd{margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
 .report-document .scenario-report{display:grid;gap:20px}
 .report-document .scenario-intro{display:grid;gap:8px}
 .report-document .scenario-intro p{margin:0;color:#d4d4d8;font-size:13px}
@@ -119,4 +77,4 @@
 .report-document .scenario-bar-row.is-alt .scenario-bar-track i{background:#0b67c9}
 .report-document .scenario-notes{display:grid;gap:8px;color:#d4d4d8;font-size:13px;line-height:1.75}
 .report-document .scenario-notes p{margin:0}
-@media(max-width:850px){.report-document .report-country-grid,.report-document .report-safety-supplement{grid-template-columns:1fr}.report-document .safety-evidence-grid>.page-card:nth-child(n){grid-column:1;grid-row:auto}.report-document .signal-dynamic-item{grid-template-columns:96px minmax(0,1fr) auto}.report-document .scenario-bar-row{grid-template-columns:38px minmax(0,1fr) 104px}.report-document .chokepoint-table{font-size:11px}.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:11px 6px}.report-document .chokepoint-coordinates{display:block;margin:2px 0 0;font-size:10px}.report-document .chokepoint-risk{padding:3px 6px}}
+@media(max-width:850px){.report-document .report-safety-supplement{grid-template-columns:1fr}.report-document .signal-dynamic-item{grid-template-columns:96px minmax(0,1fr) auto}.report-document .scenario-bar-row{grid-template-columns:38px minmax(0,1fr) 104px}.report-document .chokepoint-table{font-size:12px}.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:11px 6px}.report-document .chokepoint-coordinates{display:block;margin:2px 0 0;font-size:12px}.report-document .chokepoint-risk{padding:3px 6px}}

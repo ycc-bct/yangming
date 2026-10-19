@@ -10,10 +10,10 @@
 .report-document>section.is-dragging{opacity:.58;cursor:grabbing;background-color:#004ea20c}
 .report-document>section:focus{outline-color:#004ea2}
 .report-document>section:focus:not(:focus-visible){outline-color:transparent}
-.report-document .report-drag-hint{position:absolute;z-index:2;right:12px;top:12px;display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #3f3f46;border-radius:5px;background:#18181b;color:#a1a1aa;font-size:11px;line-height:1.4;opacity:0;visibility:hidden;transform:translateY(-4px);pointer-events:none;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s}
+.report-document .report-drag-hint{position:absolute;z-index:2;right:12px;top:12px;display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #3f3f46;border-radius:5px;background:#18181b;color:#a1a1aa;font-size:12px;line-height:1.4;opacity:0;visibility:hidden;transform:translateY(-4px);pointer-events:none;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s}
 .report-document .report-drag-hint i{width:14px;flex:none;color:#d4d4d8;font-style:normal;font-size:15px;line-height:1;text-align:center}
 .report-document>section:hover>.report-drag-hint,.report-document>section:focus-visible>.report-drag-hint{opacity:1;visibility:visible;transform:translateY(0);transition-delay:0s}
-.report-document .report-section-indicator{position:fixed;z-index:10;right:0;top:50%;display:flex;flex-direction:column;gap:6px;width:188px;padding:12px;border:1px solid #3f3f46;border-right:0;border-radius:8px 0 0 8px;background:#111113f2;font-size:11px;opacity:0;transform:translate(156px,-50%);pointer-events:auto;transition:opacity .18s ease,transform .18s ease}
+.report-document .report-section-indicator{position:fixed;z-index:10;right:0;top:50%;display:flex;flex-direction:column;gap:6px;width:188px;padding:12px;border:1px solid #3f3f46;border-right:0;border-radius:8px 0 0 8px;background:#111113f2;font-size:12px;opacity:0;transform:translate(156px,-50%);pointer-events:auto;transition:opacity .18s ease,transform .18s ease}
 .report-document .report-section-indicator:hover,.report-document .report-section-indicator:focus-within,.report-document .report-section-indicator.is-scrolling{opacity:1;transform:translate(0,-50%)}
 .report-document .report-indicator-head{padding:0 4px 8px;color:#f1f1f1;font-size:12px;font-weight:600;border-bottom:1px solid #27272a}
 .report-document .report-indicator-option{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:6px;min-height:28px;color:#71717a}
@@ -26,7 +26,7 @@
 .report-document .report-section-indicator a.is-active span{border-color:#609fe4;background:#609fe4;transform:scale(1.35)}
 .report-document .report-table-icon{display:inline-flex;vertical-align:middle;width:16px;height:16px;margin-right:8px;color:#a1a1aa}
 .report-document .report-table-icon svg{display:block;width:16px;height:16px;padding:0;background:transparent}
-.report-document .country-label{display:inline;white-space:nowrap}.report-document .country-flag{display:inline-block;margin-right:2px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;letter-spacing:0}
+.report-document .country-label{display:inline;white-space:nowrap}
 @media(max-width:850px){.report-document .report-section-indicator{width:180px;transform:translate(154px,-50%)}.report-document .report-section-indicator:hover,.report-document .report-section-indicator:focus-within,.report-document .report-section-indicator.is-scrolling{transform:translate(0,-50%)}.report-document>section{cursor:default}.report-document .report-drag-hint{display:none}}
 @media print{.report-document .report-section-indicator{display:none}}
 @media(prefers-reduced-motion:reduce){.report-document>section,.report-document .report-section-indicator,.report-document .report-section-indicator a span,.report-document .report-drag-hint{transition:none}}
@@ -95,10 +95,13 @@
 .report-document .safety-evidence-grid>.page-card:nth-child(1){grid-column:1;grid-row:1;height:100%}
 .report-document .safety-evidence-grid>.page-card:nth-child(2){grid-column:2;grid-row:1;height:100%}
 .report-document .reading,.report-document .plain-list{font-size:14px;line-height:1.85;color:#f1f1f1}
-.report-document .chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:0;background:none;font-size:12px}
+.report-document .chart-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:0;background:none;font-size:10px}
 .report-document svg{max-width:100%;height:auto}
 .report-document .wide-chart>svg,.report-document .page-card>svg,.report-document .report-topic>svg{display:block;width:100%;max-height:360px;padding:0;background:#101010}
-.report-document .country-risk-chart{display:block;width:100%;max-height:none!important;background:#101010}
+.report-document .country-report-grid{grid-template-columns:minmax(0,1.45fr) minmax(360px,.9fr)}
+.report-document .country-risk-panel>.page-card-head h2{font-size:24px;letter-spacing:-.02em}
+.report-document .country-risk-chart{display:block;width:100%;min-height:420px;max-height:none!important;background:#101010}
+.report-document .country-point-label{fill:#f1f1f1;font-size:14px;font-weight:500}
 .report-document .country-rating,.report-document .country-zone-badge{font-size:12px}
 .report-document .risk-signal-value{margin-left:auto}
 .report-document .risk-signal-value strong{order:1}
@@ -112,8 +115,40 @@
 .report-document .risk-analysis-grid>.page-card{border-top:2px solid #004ea2}
 .report-document .risk-analysis-grid>.page-card:nth-child(2){border-top-color:#58a6e8}
 .report-document .risk-interpretation>div{padding:12px 14px;border:1px solid #27272a;border-radius:6px;background:#151517}
-.report-document .risk-interpretation dt:before{content:'◆';margin-right:7px;color:#58a6e8;font-size:9px}
-.report-document .risk-action-type{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px}
+.report-document .risk-interpretation dt:before{content:'◆';margin-right:7px;color:#58a6e8;font-size:12px}
+.report-document .risk-action-type{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:12px}
+
+/* Report typography floor: supporting copy is never smaller than 12px.
+   Units, legends, dates, and compact time ranges intentionally use 10px. */
+.report-document time,
+.report-document .report-cover-date p,
+.report-document .signal-dynamic-date,
+.report-document .risk-signal-list small:not(.risk-threshold-line){font-size:10px}
+.report-document .risk-signal-list small.risk-threshold-line{font-size:12px}
+.report-document .route-map-node-label,
+.report-document .route-kind,
+.report-document .odds-pair span{font-size:12px}
+.report-document .route-map-key{font-size:10px}
+.report-document .route-impacts i{font-size:12px}
+.report-document .route-impact-legend,
+.report-document .route-impact-legend span,
+.report-document .route-impact-legend i{font-size:10px}
+.report-document svg text[font-size="8"],
+.report-document svg text[font-size="9"],
+.report-document svg text[font-size="10"],
+.report-document svg text[font-size="11"]{font-size:12px}
+
+/* Executive interpretation copy. */
+.report-document .signal-dynamic-copy,
+.report-document .risk-signal-list p,
+.report-document .risk-interpretation dd,
+.report-document .risk-management summary,
+.report-document .risk-management ul,
+.report-document .risk-advice-card dd,
+.report-document .strategy-summary p,
+.report-document .qualitative-report dd{font-size:14px}
+.report-document .signal-dynamic-copy,
+.report-document .risk-interpretation dd{font-size:14px}
 .report-share-toast{position:fixed;z-index:30;top:20px;left:50%;max-width:calc(100vw - 32px);padding:10px 16px;border:1px solid #609fe4;border-radius:6px;background:#111113;color:#f1f1f1;font-size:13px;line-height:1.5;opacity:0;visibility:hidden;transform:translate(-50%,-8px);transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}
 .report-share-toast.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
 .report-document .table-scroll{overflow-x:auto}
@@ -130,7 +165,7 @@
 .report-file .report-document{max-width:1040px;margin:auto}
 .report-file [hidden]{display:none!important}
 @media(max-width:1100px){.report-workspace .report-grid{grid-template-columns:240px minmax(0,1fr)}.report-document .strategy-summary{grid-template-columns:1fr}}
-@media(max-width:850px){.report-workspace .report-grid{grid-template-columns:1fr}.report-workspace .report-grid>.page-card:first-child{position:static;max-height:none}.report-workspace .report-route-tabs button{min-width:240px}.report-workspace .report-route-tabs strong{font-size:16px}.report-document .page-grid,.report-document .risk-analysis-grid{grid-template-columns:1fr}.report-document .report-cover{padding:24px;min-height:280px}.report-document .report-cover-copy{max-width:100%}.report-document>section,.report-document .report-executive-summary{margin-inline:24px}}
+@media(max-width:850px){.report-workspace .report-grid{grid-template-columns:1fr}.report-workspace .report-grid>.page-card:first-child{position:static;max-height:none}.report-workspace .report-route-tabs button{min-width:240px}.report-workspace .report-route-tabs strong{font-size:16px}.report-document .page-grid,.report-document .risk-analysis-grid{grid-template-columns:1fr}.report-document .country-risk-chart{min-height:320px}.report-document .report-cover{padding:24px;min-height:280px}.report-document .report-cover-copy{max-width:100%}.report-document>section,.report-document .report-executive-summary{margin-inline:24px}}
 @media(max-width:640px){.report-document .safety-evidence-grid{grid-template-columns:1fr!important}.report-document .safety-evidence-grid>.page-card:nth-child(n){grid-column:1;grid-row:auto}}
 @media(max-width:520px){.report-file{padding:12px}.report-document .report-cover{padding:20px}.report-document .report-cover h1{font-size:24px}.report-document .report-cover h2{font-size:18px}.report-document>section,.report-document .report-executive-summary{margin-inline:16px;padding-block:24px}.report-document>section.report-calculation-note{margin-inline:16px;padding:12px 14px}.report-document .page-card{padding:16px}.report-document .bar-row{flex-wrap:wrap}.report-document .bar-row>strong{width:auto}.report-document .bar-track{min-width:60px}.report-document .route-advice-card{grid-template-columns:1fr}}
 @media print{.report-file{background:#fff;padding:0}.report-document.report-preview{border:0;background:#fff;color:#18181b}.report-document .report-cover{min-height:200px;background:#fff}.report-document .report-cover-photo{opacity:.15}.report-document .report-cover:after{display:none}.report-document h1,.report-document h2,.report-document h3,.report-document .report-cover h1,.report-document .report-cover h2,.report-document .report-risk-lead>p:first-of-type,.report-document .reading,.report-document .plain-list,.report-document .strategy-summary p,.report-document .data-table td{color:#18181b}.report-document .page-card,.report-document .strategy-summary{background:#fff;border-color:#d4d4d8}.report-document .report-contents{display:none}.report-document small,.report-document .report-cover-date p,.report-document .report-summary-parts strong,.report-document .micro-note{color:#52525b}.report-document>section{break-inside:auto}.report-document .page-card{break-inside:avoid}.report-document svg{print-color-adjust:exact;-webkit-print-color-adjust:exact}.report-document .report-topic{break-before:page}.report-document .route-map-alt,.report-document .route-map-pulse{animation:none}}

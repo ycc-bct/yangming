@@ -47,11 +47,6 @@
     {days:32,altDays:35,via:'南美西岸',alt:'調整目的港',watch:'目的港作業、替代港條件、內陸路徑與付款安排'}
   ];
   const money=value=>new Intl.NumberFormat('en-US').format(value);
-  function portMatrixMarkup(){
-    const stages=['已發生','常態化','前瞻預警'];
-    const areas=['中南美洲','歐洲'];
-    return `<table class="port-matrix"><caption class="sr-only">港口與內陸事件，依區域與事件階段分組</caption><colgroup><col class="port-region-col">${stages.map(()=>'<col>').join('')}</colgroup><thead><tr><th scope="col">區域</th>${stages.map((stage,index)=>`<th scope="col" class="port-stage-${index}"><div class="port-matrix-stage"><span>${stage}</span><b>${PORT_EVENTS.filter(event=>event.status===stage).length}</b></div></th>`).join('')}</tr></thead><tbody>${areas.map(area=>`<tr><th scope="row"><span>${area}</span><small>${PORT_EVENTS.filter(event=>event.area===area).length} 件事件</small></th>${stages.map((stage,index)=>{const events=PORT_EVENTS.filter(event=>event.area===area&&event.status===stage);return `<td data-stage-label="${stage}" class="port-stage-${index}"><div class="port-matrix-cell">${events.map(event=>`<article class="port-matrix-event"><span class="port-matrix-country">${escapeHTML(event.country)}<small>${escapeHTML(event.kind)}</small></span><strong>${escapeHTML(event.title)}</strong><span class="port-matrix-impact">${escapeHTML(event.impact)}</span></article>`).join('')}</div></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
-  }
   function dynamicMarkup(topic){
     return `<div class="signal-dynamics">${signalDynamics[topic].map(([date,kind,copy])=>`<article class="signal-dynamic-item"><div class="signal-dynamic-meta"><time class="signal-dynamic-date">${date}</time><span class="signal-dynamic-topic">${topicLabels[topic]}</span><span class="signal-dynamic-kind ${kind==='指標'?'is-indicator':''}">${kind}</span></div><p class="signal-dynamic-copy">${copy}</p></article>`).join('')}</div>`;
   }
@@ -92,36 +87,11 @@
       }
       if(cards?.[1]){
         cards[1].querySelector('.risk-management')?.remove();
-        cards[1].querySelector('.risk-route-exits')?.remove();
         cards[1].querySelector('.report-affected-routes')?.remove();
         cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
       }
       analysis?.querySelector('.risk-route-advice')?.remove();
-      if(topic==='ports'&&!section.querySelector('.port-matrix')){
-        const tableWrap=section.querySelector(':scope>.table-scroll');
-        if(tableWrap){
-          tableWrap.className='port-matrix-wrap';
-          tableWrap.innerHTML=portMatrixMarkup();
-        }
-      }
-      if(topic==='countries'&&!section.querySelector('.report-country-grid')){
-        const chart=section.querySelector(':scope>.country-risk-chart');
-        const tableWrap=section.querySelector(':scope>.table-scroll');
-        if(chart&&tableWrap){
-          const grid=document.createElement('div');
-          grid.className='report-country-grid';
-          const chartCard=document.createElement('section');
-          chartCard.className='page-card report-country-chart-card';
-          const tableCard=document.createElement('section');
-          tableCard.className='page-card report-country-table-card';
-          tableCard.innerHTML='<div class="page-card-head"><h2>國家評級與管理建議</h2></div>';
-          chart.before(grid);
-          chartCard.append(chart);
-          tableCard.append(tableWrap);
-          grid.append(chartCard,tableCard);
-        }
-      }
-      if(topic==='safety'&&!section.querySelector('.report-safety-supplement')&&!section.querySelector('.safety-evidence-grid')){
+      if(topic==='safety'&&!section.querySelector('.report-safety-supplement')){
         const supplement=document.createElement('div');
         supplement.className='report-safety-supplement';
         supplement.innerHTML='<section class="page-card"><div class="page-card-head"><h2>咽喉點通行量</h2><span>荷莫茲海峽每月通行量 · 各咽喉點</span></div><div class="chokepoint-chart"><div class="chokepoint-legend"><span><i></i>本期</span><span class="is-baseline"><i></i>去年同期</span><span class="is-alert"><i></i>年減 30% 以上（高）</span></div><svg class="chokepoint-plot" viewBox="0 0 620 260" role="img" aria-label="荷莫茲海峽本期與去年同期每月通行量趨勢"><g stroke="#27272a" stroke-width="1"><path d="M46 34H600M46 92H600M46 150H600M46 208H600"/></g><g fill="#71717a" font-size="11"><text x="17" y="38">90</text><text x="17" y="96">60</text><text x="17" y="154">30</text><text x="25" y="212">0</text><text x="46" y="232">2025 年</text><text x="165" y="232">4 月</text><text x="285" y="232">7 月</text><text x="398" y="232">10 月</text><text x="486" y="232">2026 年</text><text x="565" y="232">4 月</text></g><path d="M46 62L101 64L156 66L211 68L266 67L321 68L376 70L431 72L466 82L498 112L530 194L558 207L579 207L600 208L600 208L46 208Z" fill="#3b82f633"/><path d="M46 53L101 55L156 56L211 57L266 56L321 57L376 58L431 59L486 60L542 61L600 63" fill="none" stroke="#71717a" stroke-width="2"/><path d="M46 62L101 64L156 66L211 68L266 67L321 68L376 70L431 72L466 82L498 112L530 194L558 207L579 207L600 208" fill="none" stroke="#60a5fa" stroke-width="2.5"/><g stroke="#52525b"><path d="M156 24V208M211 24V208M530 24V208"/></g><g fill="#101010" stroke="#a1a1aa" stroke-width="1.5"><circle cx="156" cy="20" r="11"/><circle cx="211" cy="20" r="11"/><circle cx="530" cy="20" r="11"/></g><g fill="#e4e4e7" font-size="11" text-anchor="middle"><text x="156" y="24">1</text><text x="211" y="24">2</text><text x="530" y="24">3</text></g><g fill="#101010" stroke="#e4e4e7" stroke-width="2"><circle cx="530" cy="194" r="6"/><circle cx="558" cy="207" r="6"/><circle cx="579" cy="207" r="6"/><circle cx="600" cy="208" r="6" fill="#60a5fa"/></g><text x="600" y="191" fill="#93c5fd" font-size="12" text-anchor="end">2.3</text></svg><div class="chokepoint-events"><span><b>1</b>2025/4 報告警示</span><span><b>2</b>2025/6 報告警示</span><span><b>3</b>2026/2/28 戰爭爆發</span></div></div><div class="chokepoint-table-wrap"><table class="chokepoint-table"><thead><tr><th>咽喉點</th><th>本期</th><th>基準</th><th>變動</th><th>風險</th></tr></thead><tbody><tr><td><span class="chokepoint-name">荷莫茲海峽</span><span class="chokepoint-coordinates">26.6°N 56.4°E</span></td><td>2.3</td><td>76.7</td><td>−97%</td><td><span class="chokepoint-risk is-critical">危急</span></td></tr><tr><td><span class="chokepoint-name">曼德海峽</span><span class="chokepoint-coordinates">12.6°N 43.4°E</span></td><td>23.7</td><td>41.6</td><td>−43%</td><td><span class="chokepoint-risk is-high">高</span></td></tr><tr><td><span class="chokepoint-name">麻六甲海峽</span><span class="chokepoint-coordinates">3.2°N 100.2°E</span></td><td>211.7</td><td>246.2</td><td>−14%</td><td><span class="chokepoint-risk is-medium">中</span></td></tr><tr><td><span class="chokepoint-name">巴拿馬運河</span><span class="chokepoint-coordinates">9.1°N 79.7°W</span></td><td>27.7</td><td>30.1</td><td>−8%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">蘇伊士運河</span><span class="chokepoint-coordinates">30.0°N 32.6°E</span></td><td>37.0</td><td>39.8</td><td>−7%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">台灣海峽</span><span class="chokepoint-coordinates">24.3°N 119.6°E</span></td><td>227.1</td><td>239.0</td><td>−5%</td><td><span class="chokepoint-risk is-low">低</span></td></tr><tr><td><span class="chokepoint-name">好望角</span><span class="chokepoint-coordinates">34.4°S 18.5°E</span></td><td>89.0</td><td>92.7</td><td>−4%</td><td><span class="chokepoint-risk is-low">低</span></td></tr></tbody></table></div></section><section class="page-card"><div class="page-card-head"><h2>質化報告</h2><span>航安交叉驗證</span></div><dl class="qualitative-report"><div><dt>風險判讀</dt><dd>關鍵航道風險升溫，繞行可能常態化。</dd></div><div><dt>營運影響</dt><dd>若通行受限，航程、交期、船舶配置與風險附加費將同步承壓。</dd></div><div><dt>驗證依據</dt><dd>航安通告、實際通行、保險承保及客戶到港窗口。</dd></div><div><dt>決策方向</dt><dd>維持主幹與備援，並把延誤及風險附加費納入合約。</dd></div></dl></section>';

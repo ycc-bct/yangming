@@ -169,6 +169,7 @@
       return rank(a)-rank(b);
     }).forEach(el => source.append(el));
     source.querySelectorAll('th').forEach(cell => {
+      if (cell.closest('.port-matrix')) return;
       const icon = document.createElement('span');
       icon.className = 'report-table-icon';
       icon.setAttribute('aria-hidden','true');
