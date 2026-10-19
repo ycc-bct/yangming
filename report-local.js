@@ -87,6 +87,7 @@
       }
       if(cards?.[1]){
         cards[1].querySelector('.risk-management')?.remove();
+        cards[1].querySelector('.risk-route-exits')?.remove();
         cards[1].querySelector('.report-affected-routes')?.remove();
         cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
       }
