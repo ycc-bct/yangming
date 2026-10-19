@@ -23,17 +23,24 @@
 .report-document .country-risk-chart .label-caution{fill:#ffd449}.report-document .country-risk-chart .label-risk{fill:#fda4af}.report-document .country-risk-chart .label-priority{fill:#6ee7c0}.report-document .country-risk-chart .label-opportunity{fill:#93c5fd}
 .report-document .country-risk-chart .country-chart-points circle{stroke:#101010;stroke-width:4}
 .report-document .country-risk-chart .country-point-label{fill:#e4e4e7;font-size:17px;font-weight:500}
-.report-document .report-country-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch;margin:20px 0}
+.report-document .report-country-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(360px,.85fr);gap:20px;align-items:stretch;margin:20px 0}
 .report-document .report-country-grid>.page-card{min-width:0;margin:0;padding:24px;border:1px solid #27272a;border-radius:10px;background:#111113}
 .report-document .report-country-chart-card{display:flex;align-items:flex-start}
 .report-document .report-country-chart-card .country-risk-chart{width:100%;height:auto}
 .report-document .report-country-table-card .table-scroll{overflow:visible}
 .report-document .report-country-table-card .data-table{width:100%;table-layout:fixed;font-size:12px}
 .report-document .report-country-table-card .data-table th,.report-document .report-country-table-card .data-table td{padding:13px 10px}
-.report-document .report-country-table-card .data-table th:first-child{width:13%}
-.report-document .report-country-table-card .data-table th:nth-child(2),.report-document .report-country-table-card .data-table th:nth-child(3){width:12%}
-.report-document .report-country-table-card .data-table th:nth-child(4){width:21%}
-.report-document .report-country-table-card .data-table th:last-child{width:42%}
+.report-document .report-country-table-card .data-table th:first-child{width:22%}
+.report-document .report-country-table-card .data-table th:nth-child(2),.report-document .report-country-table-card .data-table th:nth-child(3){width:15%}
+.report-document .report-country-table-card .data-table th:last-child{width:48%}
+.report-document .risk-interpretation dd{font-size:14px;line-height:1.85}
+.report-document .risk-signal-list p{font-size:14px;line-height:1.8}
+.report-document .strategy-summary p,.report-document .qualitative-report dd{font-size:14px}
+.report-document .port-matrix-wrap{margin:20px 0;overflow-x:auto}
+.report-document .port-matrix-event strong{font-size:14px}
+.report-document .port-matrix-impact{font-size:14px}
+.report-document .port-matrix-country{font-size:12px}
+.report-document .port-matrix-country small,.report-document .risk-signal-list small,.report-document .risk-action-type,.report-document .risk-route-advice .page-card-head>span,.report-document .chokepoint-table th,.report-document .report-drag-hint,.report-document .report-section-indicator{font-size:12px}
 .report-document .safety-evidence-grid{grid-auto-flow:row}
 .report-document .safety-evidence-grid>.page-card:nth-child(3){grid-column:1;grid-row:2}
 .report-document .safety-evidence-grid>.page-card:nth-child(4){grid-column:2;grid-row:2}

@@ -47,6 +47,11 @@
     {days:32,altDays:35,via:'南美西岸',alt:'調整目的港',watch:'目的港作業、替代港條件、內陸路徑與付款安排'}
   ];
   const money=value=>new Intl.NumberFormat('en-US').format(value);
+  function portMatrixMarkup(){
+    const stages=['已發生','常態化','前瞻預警'];
+    const areas=['中南美洲','歐洲'];
+    return `<table class="port-matrix"><caption class="sr-only">港口與內陸事件，依區域與事件階段分組</caption><colgroup><col class="port-region-col">${stages.map(()=>'<col>').join('')}</colgroup><thead><tr><th scope="col">區域</th>${stages.map((stage,index)=>`<th scope="col" class="port-stage-${index}"><div class="port-matrix-stage"><span>${stage}</span><b>${PORT_EVENTS.filter(event=>event.status===stage).length}</b></div></th>`).join('')}</tr></thead><tbody>${areas.map(area=>`<tr><th scope="row"><span>${area}</span><small>${PORT_EVENTS.filter(event=>event.area===area).length} 件事件</small></th>${stages.map((stage,index)=>{const events=PORT_EVENTS.filter(event=>event.area===area&&event.status===stage);return `<td data-stage-label="${stage}" class="port-stage-${index}"><div class="port-matrix-cell">${events.map(event=>`<article class="port-matrix-event"><span class="port-matrix-country">${escapeHTML(event.country)}<small>${escapeHTML(event.kind)}</small></span><strong>${escapeHTML(event.title)}</strong><span class="port-matrix-impact">${escapeHTML(event.impact)}</span></article>`).join('')}</div></td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+  }
   function dynamicMarkup(topic){
     return `<div class="signal-dynamics">${signalDynamics[topic].map(([date,kind,copy])=>`<article class="signal-dynamic-item"><div class="signal-dynamic-meta"><time class="signal-dynamic-date">${date}</time><span class="signal-dynamic-topic">${topicLabels[topic]}</span><span class="signal-dynamic-kind ${kind==='指標'?'is-indicator':''}">${kind}</span></div><p class="signal-dynamic-copy">${copy}</p></article>`).join('')}</div>`;
   }
@@ -92,6 +97,13 @@
         cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
       }
       analysis?.querySelector('.risk-route-advice')?.remove();
+      if(topic==='ports'&&!section.querySelector('.port-matrix')){
+        const tableWrap=section.querySelector(':scope>.table-scroll');
+        if(tableWrap){
+          tableWrap.className='port-matrix-wrap';
+          tableWrap.innerHTML=portMatrixMarkup();
+        }
+      }
       if(topic==='countries'&&!section.querySelector('.report-country-grid')){
         const chart=section.querySelector(':scope>.country-risk-chart');
         const tableWrap=section.querySelector(':scope>.table-scroll');
