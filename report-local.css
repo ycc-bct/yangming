@@ -1,0 +1,80 @@
+/* Report-only normalization. This stays in index.html by request. */
+.report-workspace .report-route-tabs{gap:8px;margin-bottom:14px;padding:2px 0 7px}
+.report-workspace .report-route-tabs button{flex:0 0 auto;gap:10px;min-width:0;height:52px;padding:7px 10px 7px 12px;border-color:#334155}
+.report-workspace .report-route-tabs button:before{display:none}
+.report-workspace .report-route-tabs strong{font-size:13px;line-height:1.25}
+.report-workspace .report-route-tabs small{font-size:12px;line-height:1.25}
+.report-workspace .report-route-level{min-width:34px;min-height:32px;padding:0 8px;border-radius:7px;font-size:12px}
+.report-document .risk-analysis-grid>.page-card,.report-document .risk-analysis-grid>.page-card:nth-child(2){border-top-width:1px;border-top-color:#27272a}
+.report-document .report-section-indicator a span{display:none}
+.report-document .report-section-indicator a{gap:0}
+.report-document .signal-dynamics{display:grid;gap:0}
+.report-document .signal-dynamic-item{display:grid;grid-template-columns:112px minmax(0,1fr) auto;gap:8px 14px;padding:16px 0;border-bottom:1px solid #27272a}
+.report-document .signal-dynamic-item:last-child{border-bottom:0}
+.report-document .signal-dynamic-meta{display:contents}
+.report-document .signal-dynamic-date{color:#a1a1aa;font:500 10px/1.6 Inter,'Noto Sans TC',sans-serif;font-variant-numeric:tabular-nums}
+.report-document .signal-dynamic-topic{color:#a1a1aa;font-size:12px;line-height:1.6}
+.report-document .signal-dynamic-kind{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;color:#a1a1aa;font-size:12px;line-height:1.6;white-space:nowrap}
+.report-document .signal-dynamic-kind:before{content:'';width:7px;height:7px;border-radius:50%;background:#fb7185}
+.report-document .signal-dynamic-kind.is-indicator:before{background:#fbbf24}
+.report-document .signal-dynamic-copy{grid-column:1/-1;margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
+.report-document .signal-dynamic-copy,.report-document .risk-signal-line h3,.report-document .risk-interpretation dt,.report-document .risk-interpretation dd,.report-document .strategy-summary p{font-size:14px}
+.report-document .report-affected-routes{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #27272a}
+.report-document .report-affected-routes>span{color:#a1a1aa;font-size:12px}
+.report-document .report-affected-routes>a{display:inline-flex;align-items:center;gap:12px;color:#609fe4;font-size:13px;font-weight:600}
+.report-document .report-affected-routes>a:hover{text-decoration:none;color:#93c5fd}
+.report-document .report-safety-supplement{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:20px 0 0;align-items:stretch}
+.report-document .report-safety-supplement>.page-card{margin:0}
+.report-document .chokepoint-chart{display:grid;gap:12px;margin:4px 0 18px}
+.report-document .chokepoint-legend{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;color:#a1a1aa;font-size:10px}
+.report-document .chokepoint-legend span{display:inline-flex;align-items:center;gap:7px}
+.report-document .chokepoint-legend i{display:block;width:18px;height:2px;background:#60a5fa}
+.report-document .chokepoint-legend .is-baseline i{background:#71717a}
+.report-document .chokepoint-legend .is-alert i{width:7px;height:7px;border:2px solid #e4e4e7;border-radius:50%;background:transparent}
+.report-document .chokepoint-plot{display:block;width:100%;height:auto;min-height:220px;background:#101010;border-radius:6px}
+.report-document .chokepoint-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;color:#a1a1aa;font-size:10px}
+.report-document .chokepoint-events span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.report-document .chokepoint-events b{display:inline-grid;width:18px;height:18px;place-items:center;border:1px solid #a1a1aa;border-radius:50%;color:#e4e4e7;font-size:10px;font-weight:500}
+.report-document .chokepoint-table-wrap{width:100%;overflow:visible}
+.report-document .chokepoint-table{width:100%;table-layout:fixed;border-collapse:collapse;color:#e4e4e7;font-size:12px}
+.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:13px 10px;border-bottom:1px solid #27272a;text-align:left;vertical-align:middle}
+.report-document .chokepoint-table th{color:#a1a1aa;font-size:12px;font-weight:600}
+.report-document .chokepoint-table tbody tr:last-child td{border-bottom:0}
+.report-document .chokepoint-table th:first-child,.report-document .chokepoint-table td:first-child{width:38%}
+.report-document .chokepoint-table th:nth-child(2),.report-document .chokepoint-table td:nth-child(2),.report-document .chokepoint-table th:nth-child(3),.report-document .chokepoint-table td:nth-child(3){width:14%}
+.report-document .chokepoint-table th:nth-child(4),.report-document .chokepoint-table td:nth-child(4){width:14%}
+.report-document .chokepoint-table th:last-child,.report-document .chokepoint-table td:last-child{width:20%}
+.report-document .chokepoint-name{color:#f1f1f1;font-weight:600}
+.report-document .chokepoint-coordinates{margin-left:8px;color:#71717a;font-weight:400;white-space:nowrap}
+.report-document .chokepoint-risk{display:inline-flex;align-items:center;gap:7px;padding:4px 8px;border-radius:5px;font-weight:600;white-space:nowrap}
+.report-document .chokepoint-risk:before{content:'';width:7px;height:7px;flex:none;background:currentColor}
+.report-document .chokepoint-risk.is-critical{background:#ef44442e;color:#fda4af}
+.report-document .chokepoint-risk.is-high{background:#f9731628;color:#fb923c}
+.report-document .chokepoint-risk.is-high:before{transform:rotate(45deg)}
+.report-document .chokepoint-risk.is-medium{background:#fbbf2426;color:#fbbf24}
+.report-document .chokepoint-risk.is-medium:before{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.report-document .chokepoint-risk.is-low{background:#34d39920;color:#34d399}
+.report-document .chokepoint-risk.is-low:before{border-radius:50%}
+.report-document .qualitative-report{display:grid;gap:14px;margin:0}
+.report-document .qualitative-report>div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;padding-bottom:13px;border-bottom:1px solid #27272a}
+.report-document .qualitative-report>div:last-child{padding-bottom:0;border-bottom:0}
+.report-document .qualitative-report dt{color:#a1a1aa;font-size:12px}
+.report-document .qualitative-report dd{margin:0;color:#f1f1f1;font-size:14px;line-height:1.75}
+.report-document .scenario-report{display:grid;gap:20px}
+.report-document .scenario-intro{display:grid;gap:8px}
+.report-document .scenario-intro p{margin:0;color:#d4d4d8;font-size:13px}
+.report-document .scenario-intro strong{color:#f1f1f1}
+.report-document .scenario-comparison{display:grid;gap:22px}
+.report-document .scenario-metric{display:grid;gap:12px;padding-top:18px;border-top:1px solid #27272a}
+.report-document .scenario-metric-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.report-document .scenario-metric-head h3{margin:0;font-size:15px}
+.report-document .scenario-metric-head strong{color:#609fe4;font-size:13px}
+.report-document .scenario-bar-row{display:grid;grid-template-columns:42px minmax(0,1fr) 128px;gap:12px;align-items:center}
+.report-document .scenario-bar-row>span{color:#a1a1aa;font-size:12px}
+.report-document .scenario-bar-row>b{text-align:right;color:#f1f1f1;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.report-document .scenario-bar-track{height:8px;border-radius:999px;background:#27272a;overflow:hidden}
+.report-document .scenario-bar-track i{display:block;height:100%;border-radius:inherit;background:#d4d4d8}
+.report-document .scenario-bar-row.is-alt .scenario-bar-track i{background:#0b67c9}
+.report-document .scenario-notes{display:grid;gap:8px;color:#d4d4d8;font-size:13px;line-height:1.75}
+.report-document .scenario-notes p{margin:0}
+@media(max-width:850px){.report-document .report-safety-supplement{grid-template-columns:1fr}.report-document .signal-dynamic-item{grid-template-columns:96px minmax(0,1fr) auto}.report-document .scenario-bar-row{grid-template-columns:38px minmax(0,1fr) 104px}.report-document .chokepoint-table{font-size:12px}.report-document .chokepoint-table th,.report-document .chokepoint-table td{padding:11px 6px}.report-document .chokepoint-coordinates{display:block;margin:2px 0 0;font-size:12px}.report-document .chokepoint-risk{padding:3px 6px}}
