@@ -92,6 +92,12 @@
         cards[1].insertAdjacentHTML('beforeend','<div class="report-affected-routes"><span>影響航線</span><a href="#routes">前往航線方案評估 <b aria-hidden="true">→</b></a></div>');
       }
       analysis?.querySelector('.risk-route-advice')?.remove();
+      if(topic==='safety'){
+        section.querySelectorAll('.safety-evidence-grid>.page-card').forEach(card=>{
+          const title=card.querySelector('.page-card-head h2')?.textContent.trim();
+          if(title==='咽喉點通行量'||title==='質化報告')card.remove();
+        });
+      }
       if(topic==='safety'&&!section.querySelector('.report-safety-supplement')){
         const supplement=document.createElement('div');
         supplement.className='report-safety-supplement';
