@@ -140,7 +140,9 @@
 
 /* Executive interpretation copy. */
 .report-document .signal-dynamic-copy,
+.report-document .risk-signal-line h3,
 .report-document .risk-signal-list p,
+.report-document .risk-interpretation dt,
 .report-document .risk-interpretation dd,
 .report-document .risk-management summary,
 .report-document .risk-management ul,
